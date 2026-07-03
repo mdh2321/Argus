@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/use-profile";
 const links = [
   { href: "/", label: "Dashboard" },
   { href: "/ask", label: "Ask" },
+  { href: "/compare", label: "Compare" },
   { href: "/tracker", label: "Tracker" },
   { href: "/digest", label: "Digest" },
   { href: "/library", label: "Library" },

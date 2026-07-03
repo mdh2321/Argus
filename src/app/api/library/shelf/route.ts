@@ -5,8 +5,8 @@ import { inArray } from "drizzle-orm";
 import { serializeKnowledgeItem } from "@/lib/knowledge-ai";
 
 // The Shelf: frozen, dated artifacts — briefings, pinned Ask answers, and
-// (once the comparator ships) comparison tables. Stamped with generation
-// date, never auto-updated. Counterpart to the living Topics wiki.
+// comparison tables from /compare. Stamped with generation date, never
+// auto-updated. Counterpart to the living Topics wiki.
 const SHELF_TYPES = ["briefing", "pinned_answer", "comparison"];
 
 export async function GET() {

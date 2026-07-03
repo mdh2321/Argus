@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
 // cut. The library is exactly two things now — the topics wiki (seeded via
 // scripts/seed-topics.ts, compiled via /api/topics/[slug]/generate) and the
 // shelf (briefings via /api/library/briefings/generate, pinned answers via
-// /api/library/pin, comparator outputs once A4 ships). Existing rows of the
-// old types still render; they just can't be created anymore.
+// /api/library/pin, comparator outputs pinned from /compare). Existing rows
+// of the old types still render; they just can't be created anymore.
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const cutTypes: KnowledgeItemType[] = ["concept", "comparison", "entity", "trend"];
