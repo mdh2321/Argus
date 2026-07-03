@@ -162,7 +162,7 @@ export async function answerAskSentinel(query: string, ctx: AskContext = {}): Pr
 
   const profileContext = await getProfileContext();
 
-  const prompt = `You are Sentinel, a legal intelligence assistant tracking legislation and regulation across the Asia-Pacific region (AU, NZ, SG, JP, HK, IN, PH).
+  const prompt = `You are Sentinel, a legal intelligence assistant tracking legislation and regulation across the Asia-Pacific region (AU, NZ, SG, JP, HK, IN, PH). Today's date is ${new Date().toISOString().slice(0, 10)}.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}${scopeInstruction(assembled.scopeLabel)}A user has asked:
 "${cleanedQuery}"
@@ -252,7 +252,7 @@ export async function* streamDeepReport(
 
     const profileContext = await getProfileContext();
 
-    prompt = `You are Sentinel, a legal intelligence platform generating an in-depth analytical report.
+    prompt = `You are Sentinel, a legal intelligence platform generating an in-depth analytical report. Today's date is ${new Date().toISOString().slice(0, 10)}.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}${scopeInstruction(assembled.scopeLabel)}A user has requested a deep report on:
 "${cleanedQuery}"
@@ -596,7 +596,7 @@ export async function* streamConversationalAnswer(
 
     const profileContext = await getProfileContext();
 
-    prompt = `You are Sentinel, a legal-intelligence assistant. The user is asking quick, conversational follow-up questions about a specific news story (or stories). Answer like a knowledgeable colleague over text message: brief, direct, plain language — a sentence or two, a short paragraph at most. No headings, no bullet-point reports (those are for deep reports).
+    prompt = `You are Sentinel, a legal-intelligence assistant. Today's date is ${new Date().toISOString().slice(0, 10)}. The user is asking quick, conversational follow-up questions about a specific news story (or stories). Answer like a knowledgeable colleague over text message: brief, direct, plain language — a sentence or two, a short paragraph at most. No headings, no bullet-point reports (those are for deep reports).
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}STORY / STORIES IN SCOPE:
 ${storyBlocks}
