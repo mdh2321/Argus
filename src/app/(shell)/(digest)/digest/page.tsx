@@ -47,6 +47,11 @@ export default function DigestPage() {
           <div className="flex justify-center py-20">
             <Loader2 className="h-5 w-5 animate-spin text-fg-3" />
           </div>
+        ) : issues.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface px-6 py-16 text-center text-[14px] text-fg-3">
+            No digest issues yet. The weekly digest generates automatically each
+            morning — or run one now with <code className="font-mono text-[12px]">npm run digest:ensure</code>.
+          </div>
         ) : (
           <>
             {/* Featured latest issue */}
