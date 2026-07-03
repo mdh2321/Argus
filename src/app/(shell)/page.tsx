@@ -1,9 +1,11 @@
 "use client";
 
+import useSWR from "swr";
 import { useEntries } from "@/hooks/use-entries";
 import { useDeadlines } from "@/hooks/use-deadlines";
 import { useSignals } from "@/hooks/use-signals";
 import { useDigestIssues } from "@/hooks/use-digest";
+import { workflowLabel } from "@/lib/agent-workflows";
 import { getFlag } from "@/lib/digest-utils";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -93,6 +95,8 @@ export default function DashboardPage() {
           <StatPill value={highImpact} label="high impact" color="var(--red)" />
           <StatPill value={pipeline} label="in pipeline" color="var(--amber)" />
         </div>
+
+        <TrustStrip />
       </div>
 
       {/* Ask Sentinel */}
@@ -330,6 +334,42 @@ export default function DashboardPage() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+interface SystemHealth {
+  groundedEntries: number;
+  sourceDocs: number;
+  lastDigestDeliveredAt: string | null;
+  lastAgentRunAt: string | null;
+  lastAgentWorkflow: string | null;
+}
+
+// Trust strip: proof the desk is alive and grounded, in one quiet line.
+function TrustStrip() {
+  const { data } = useSWR<SystemHealth>("/api/system-health", (url: string) =>
+    fetch(url).then((r) => r.json())
+  );
+  if (!data) return null;
+
+  const parts: string[] = [
+    `${data.groundedEntries} grounded entries`,
+    `${data.sourceDocs} sources on file`,
+  ];
+  if (data.lastDigestDeliveredAt) {
+    parts.push(`digest delivered ${relativeTime(data.lastDigestDeliveredAt)}`);
+  }
+  if (data.lastAgentRunAt) {
+    parts.push(
+      `last agent run ${relativeTime(data.lastAgentRunAt)}${data.lastAgentWorkflow ? ` (${workflowLabel(data.lastAgentWorkflow)})` : ""}`
+    );
+  }
+
+  return (
+    <div className="mt-4 flex items-center gap-2 relative z-10 font-mono text-[11px] tracking-[0.02em] text-fg-3">
+      <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+      {parts.join(" · ")}
     </div>
   );
 }
