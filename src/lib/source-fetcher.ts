@@ -84,7 +84,8 @@ async function tryExa(url: string, fetchedAt: string): Promise<FetchResult> {
   }
   try {
     const response = await c.getContents([url], {
-      text: { maxCharacters: 2_000_000, includeHtmlTags: false },
+      // Exa rejects maxCharacters above 1,000,000.
+      text: { maxCharacters: 1_000_000, includeHtmlTags: false },
       livecrawl: "preferred",
     });
 
