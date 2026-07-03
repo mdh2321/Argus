@@ -1,0 +1,2185 @@
+{
+  "entries": [
+    {
+      "action": "update",
+      "id": "01KMJ9FQSZAQFGTJ4KZ55743AS",
+      "data": {
+        "shortName": "AU Privacy Act 1988 (Tranche 1 Reforms)",
+        "fullName": "Privacy Act 1988 (Tranche 1 Reforms)",
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Review and update data handling practices for Australian personal information. Implement enhanced breach notification procedures. Ensure security measures meet the new 'reasonable steps' standard. Update privacy policies to reflect Tranche 1 changes.",
+        "openQuestions": "Tranche 2 reforms timing dependent on post-election government priorities."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSZEN407VMP6ZA03K99",
+      "data": {
+        "shortName": "AU Privacy Act - Statutory Tort for Privacy Invasion",
+        "fullName": "Privacy Act - Statutory Tort for Privacy Invasion",
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Assess exposure to private litigation for data handling practices. Review internal data access controls to minimize risk of 'intrusion upon seclusion' claims. Consider cyber insurance coverage.",
+        "openQuestions": "Court precedents will shape the scope \u2014 early case law expected 2025-2026."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQT71X4ASSVXD26C86RX",
+      "data": {
+        "shortName": "AU Privacy Act - ADM Disclosure Requirements",
+        "fullName": "Privacy Act - ADM Disclosure Requirements",
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Audit all automated decision-making systems in Australian operations. Update privacy policies to disclose ADM use before December 2026 deadline. Document logic, significance, and consequences of ADM that affects individuals.",
+        "openQuestions": "OAIC guidance on 'significantly affects' not yet published. Unclear if AI-assisted document verification qualifies."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQT8XYKFH5S6Z11VY3HC",
+      "data": {
+        "shortName": "AU Children's Online Privacy Code",
+        "fullName": "Children's Online Privacy Code",
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Assess whether DocuSign services are accessed by minors or classified as 'designated internet services'. Low risk for B2B e-signature services but monitor the Code's scope.",
+        "openQuestions": "OAIC still developing the Code. Scope of 'designated internet services' not yet defined."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQT9FDYRRVWQ04XR6WY1",
+      "data": {
+        "shortName": "AU Privacy Act - Tranche 2 Reforms",
+        "fullName": "Privacy Act - Tranche 2 Reforms",
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Monitor legislative developments. If 'fair and reasonable' test is introduced, review all data collection practices. If small business exemption removed, assess impact on DocuSign customers.",
+        "openQuestions": "Timing uncertain \u2014 depends on post-2025 election government. Neither 'fair and reasonable' standard nor small business exemption removal confirmed."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQT9QKAZ3M3ZMFMVD5AC",
+      "data": {
+        "shortName": "AU Electronic Transactions Act 1999",
+        "fullName": "Electronic Transactions Act 1999",
+        "jurisdiction": "AU",
+        "category": "Electronic Signatures & Transactions",
+        "complianceImplications": "Ensure e-signature workflows meet the Act's requirements for consent, signer identification, and intent. Leverage permanent Corporations Act changes supporting electronic execution of company documents.",
+        "openQuestions": "2023 consultation on potential reforms completed but no legislative changes announced."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTA32C3KSRDEKGBVP4Z",
+      "data": {
+        "shortName": "AU Cybersecurity Compliance Framework",
+        "fullName": "Cybersecurity Compliance Framework",
+        "jurisdiction": "AU",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Implement robust cybersecurity measures. Prepare for Phase 2 enforcement from January 2026. Conduct security audits on Australian-facing infrastructure.",
+        "openQuestions": "Phase 2 enforcement specifics still being finalized."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTAK9Q48PD796DDEJJE",
+      "data": {
+        "shortName": "AU AI Regulation (Guardrails)",
+        "fullName": "AI Regulation (Guardrails)",
+        "jurisdiction": "AU",
+        "category": "AI & Emerging Technology",
+        "complianceImplications": "If using AI for document processing or verification in high-risk sectors, prepare for mandatory guardrails. Conduct AI risk assessments for Australian-facing features.",
+        "openQuestions": "Bill expected 2026 but exact scope of 'high-risk AI' still under consultation."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTA0FSMZEGAR6V2RSC3",
+      "data": {
+        "shortName": "JP Act on Protection of Personal Information (APPI)",
+        "fullName": "Act on Protection of Personal Information (APPI)",
+        "jurisdiction": "JP",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Ensure valid consent for collection and use of personal information in e-signature transactions. Comply with cross-border transfer restrictions. Implement breach notification procedures to PPC.",
+        "openQuestions": "Major amendments expected 2025-2026 including administrative fines and biometric data rules."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTBBH90T490AAK69CKY",
+      "data": {
+        "shortName": "JP APPI Amendments (Proposed)",
+        "fullName": "APPI Amendments (Proposed)",
+        "jurisdiction": "JP",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Budget for significant compliance uplift. Administrative fines similar to GDPR would require robust data governance. Review identity verification features if biometric data is categorized as sensitive.",
+        "openQuestions": "Implementation expected 2026 or 2027. Exact penalty quantum not determined."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTBBTAZN1TP2KSHC15A",
+      "data": {
+        "shortName": "JP Electronic Signatures and Certification Business Act",
+        "fullName": "Electronic Signatures and Certification Business Act",
+        "jurisdiction": "JP",
+        "category": "Electronic Signatures & Transactions",
+        "complianceImplications": "Leverage 2020 METI guidance affirming cloud-based e-signatures. Ensure compliance with June 2025 guidelines update. Consider PKI-based certified signatures for high-assurance use cases.",
+        "openQuestions": "June 2025 guidelines update may introduce new requirements."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTCWTNNFTCFXFCNP344",
+      "data": {
+        "shortName": "JP Basic Act on Cybersecurity",
+        "fullName": "Basic Act on Cybersecurity",
+        "jurisdiction": "JP",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Align Japanese operations with national cybersecurity strategy. Sector-specific regulations may impose more detailed obligations.",
+        "openQuestions": "NISC restructuring to NCO may bring new policy direction."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTC35BMHXJS6KX8XTP2",
+      "data": {
+        "shortName": "JP Active Cyber Defense Act (ACDA)",
+        "fullName": "Active Cyber Defense Act (ACDA)",
+        "jurisdiction": "JP",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Monitor for obligations extending to private sector. Be prepared for potential information-sharing requirements with NCO.",
+        "openQuestions": "Full implementation details of NCO's expanded powers still emerging."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTCKVYNSDAF1A6DSP3J",
+      "data": {
+        "shortName": "JP Penal Code Amendment - Electronic Document Falsification",
+        "fullName": "Penal Code Amendment - Electronic Document Falsification",
+        "jurisdiction": "JP",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Strengthen document authenticity and tamper-evidence features for Japanese market. Ensure audit trails demonstrate document integrity. Supports DocuSign's value proposition.",
+        "openQuestions": null
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTE12V3RXAF5QFW760A",
+      "data": {
+        "shortName": "JP AI Promotion Act (AI Act)",
+        "fullName": "AI Promotion Act (AI Act)",
+        "jurisdiction": "JP",
+        "category": "AI & Emerging Technology",
+        "complianceImplications": "Best-effort compliance currently sufficient. Adopt transparency and accountability principles for AI-powered features in Japanese market.",
+        "openQuestions": "May be strengthened with binding obligations in future."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQTER9YRT3C20P1GRMSS",
+      "data": {
+        "shortName": "JP EU-Japan Adequacy Decision",
+        "fullName": "EU-Japan Adequacy Decision",
+        "jurisdiction": "JP",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Leverage for cross-border data transfers between Japan and EU/UK without additional safeguards. Simplifies global operations for customers with EU-Japan data flows.",
+        "openQuestions": "Next renewal expected around 2026 \u2014 should be routine."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSVX0QK05HSPCPYKPCB",
+      "data": {
+        "shortName": "SG Personal Data Protection Act (PDPA)",
+        "fullName": "Personal Data Protection Act (PDPA)",
+        "jurisdiction": "SG",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Appoint a DPO for Singapore operations. Implement 72-hour breach notification. Obtain valid consent for data collection in e-signature workflows. Comply with cross-border transfer requirements.",
+        "openQuestions": "Data portability provisions implementation date still pending."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSWHYWZBM1V2ES5JK3D",
+      "data": {
+        "shortName": "SG PDPA Data Portability Provisions",
+        "fullName": "PDPA Data Portability Provisions",
+        "jurisdiction": "SG",
+        "category": "Privacy & Data Protection",
+        "complianceImplications": "Build technical capability to export user data in machine-readable formats. Prepare data portability workflows and response procedures.",
+        "openQuestions": "Implementation date TBD. Technical standards not yet specified."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSWHRQ2DGR1VME2CQF2",
+      "data": {
+        "shortName": "SG Cybersecurity Act 2018 (Amended 2024)",
+        "fullName": "Cybersecurity Act 2018 (Amended 2024)",
+        "jurisdiction": "SG",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Assess whether DocuSign is classified as CII owner or essential service provider. Comply with audit requirements and incident reporting. Mandatory APT reporting to CSA from July 2025.",
+        "openQuestions": "2024 amendments expanded scope \u2014 assess if DocuSign falls within expanded definitions."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSXYN6AE7B8QRD8PXW2",
+      "data": {
+        "shortName": "SG Electronic Transactions Act (ETA) 2010",
+        "fullName": "Electronic Transactions Act (ETA) 2010",
+        "jurisdiction": "SG",
+        "category": "Electronic Signatures & Transactions",
+        "complianceImplications": "Core enabling legislation. Leverage 2021 MLETR amendments for electronic transferable records. Ensure e-signature workflows meet secure electronic signature requirements.",
+        "openQuestions": "MLETR implementation still evolving \u2014 monitor sector-specific adoption."
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSYX4GDT9HVC71WDQDW",
+      "data": {
+        "shortName": "SG Computer Misuse Act 1993",
+        "fullName": "Computer Misuse Act 1993",
+        "jurisdiction": "SG",
+        "category": "Data Security & Breach Notification",
+        "complianceImplications": "Ensure robust access controls and authentication. Relevant for security posture and incident response planning.",
+        "openQuestions": null
+      }
+    },
+    {
+      "action": "update",
+      "id": "01KMJ9FQSY62VJ87C6FZ15AYMX",
+      "data": {
+        "shortName": "SG AI Governance Framework",
+        "fullName": "AI Governance Framework",
+        "jurisdiction": "SG",
+        "category": "AI & Emerging Technology",
+        "complianceImplications": "Voluntary but strongly encouraged. Use AI Verify toolkit for self-assessment of AI features. Align with Model AI Governance Framework principles.",
+        "openQuestions": "October 2024 guidelines on securing AI systems may inform future binding requirements."
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Australian Consumer Law (ACL)",
+        "fullName": "Australian Consumer Law (Schedule 2, Competition and Consumer Act 2010)",
+        "summary": "Comprehensive consumer protection legislation covering unfair contract terms, consumer guarantees, misleading conduct, and product safety. November 2023 amendments made unfair contract terms unlawful with significant penalties, not just voidable.",
+        "whyItMatters": "Applies to DocuSign's terms of service with Australian consumers and small businesses. Unfair contract term provisions directly affect standard-form contracts \u2014 DocuSign's core product facilitates these.",
+        "complianceImplications": "Review DocuSign's terms of service for unfair contract terms compliance. Ensure marketing materials are not misleading about e-signature legal validity. Customers using DocuSign for consumer contracts must comply.",
+        "penalties": "Up to A$50 million, three times the benefit, or 30% of adjusted turnover (whichever greatest) per contravention",
+        "maxPenaltyValue": 50000000,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2023-11-09",
+            "label": "Unfair contract terms provisions commenced"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.accc.gov.au/about-us/publications/australian-consumer-law"
+        ],
+        "regulator": "Australian Competition and Consumer Commission (ACCC)",
+        "tags": [
+          "consumer-protection",
+          "unfair-contract-terms",
+          "misleading-conduct"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Modern Slavery & Supply Chain",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Modern Slavery Act 2018",
+        "fullName": "Modern Slavery Act 2018 (Cth)",
+        "summary": "Requires entities with A$100M+ consolidated revenue to report annually on modern slavery risks in operations and supply chains. Reports published on public register. Statutory review recommends introducing penalties for non-compliance.",
+        "whyItMatters": "DocuSign likely exceeds the A$100M revenue threshold. Must report on supply chain modern slavery risks. Statutory review may introduce penalties.",
+        "complianceImplications": "Submit annual Modern Slavery Statement. Conduct supply chain due diligence. Monitor statutory review \u2014 penalties may be introduced.",
+        "penalties": "Currently no financial penalties (reporting obligation only). Statutory review recommends introducing penalties.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2019-01-01",
+            "label": "Act commenced"
+          },
+          {
+            "date": "2026-06-30",
+            "label": "Expected amendment bill following statutory review"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.homeaffairs.gov.au/criminal-justice/pages/modern-slavery.aspx"
+        ],
+        "regulator": "Australian Border Force / Department of Home Affairs",
+        "tags": [
+          "modern-slavery",
+          "supply-chain",
+          "ESG",
+          "reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Corporations Act 2001",
+        "fullName": "Corporations Act 2001 (Cth)",
+        "summary": "Primary corporate governance legislation. Permanent 2022 changes allow electronic execution of company documents including deeds, removing wet-ink signature requirements in most cases.",
+        "whyItMatters": "Critical \u2014 the 2022 electronic execution reforms directly validate e-signatures for company documents and deeds. Key selling point for Australian enterprise customers.",
+        "complianceImplications": "Leverage permanent electronic execution provisions in sales. Ensure workflows support the Act's requirements for company document execution (two directors, or director + secretary).",
+        "penalties": "Directors' duties breaches: up to A$1.11M per contravention for individuals, A$11.1M for bodies corporate",
+        "maxPenaltyValue": 11100000,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2022-03-23",
+            "label": "Permanent electronic execution reforms commenced"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.legislation.gov.au/Series/C2004A00818"
+        ],
+        "regulator": "Australian Securities and Investments Commission (ASIC)",
+        "tags": [
+          "corporate-governance",
+          "electronic-execution",
+          "directors-duties",
+          "deeds"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Criminal Code - Foreign Bribery",
+        "fullName": "Criminal Code Act 1995 - Division 70 (Bribery of Foreign Public Officials)",
+        "summary": "Criminalizes bribery of foreign public officials. 2024 reforms introduced 'failure to prevent' corporate offence, lowered fault threshold, and increased penalties.",
+        "whyItMatters": "Relevant to DocuSign's dealings with government agencies across APJ. New 'failure to prevent' offence means adequate anti-bribery procedures must be in place.",
+        "complianceImplications": "Implement adequate anti-bribery procedures as defence to 'failure to prevent' offence. Train staff involved in government sales across APJ.",
+        "penalties": "Individuals: up to 25 years imprisonment. Corporates: greater of A$55.5M, three times benefit, or 10% annual turnover",
+        "maxPenaltyValue": 55500000,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2024-09-01",
+            "label": "Reforms commenced"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.legislation.gov.au/Series/C2004A04868"
+        ],
+        "regulator": "Australian Federal Police (AFP)",
+        "tags": [
+          "anti-corruption",
+          "bribery",
+          "foreign-officials",
+          "failure-to-prevent"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Fair Work Act 2009",
+        "fullName": "Fair Work Act 2009 (Cth)",
+        "summary": "Comprehensive employment legislation. 2024 Closing Loopholes reforms addressed gig economy, contractor classification, and 'right to disconnect' provisions.",
+        "whyItMatters": "Governs DocuSign's employment relationships in Australia. Right to disconnect and contractor classification reforms are relevant to workforce management.",
+        "complianceImplications": "Ensure employment contracts comply with National Employment Standards. Implement right to disconnect policies. Review contractor arrangements.",
+        "penalties": "Up to A$93,900 per contravention for body corporates",
+        "maxPenaltyValue": 93900,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2024-08-26",
+            "label": "Right to disconnect commenced (large employers)"
+          },
+          {
+            "date": "2025-08-26",
+            "label": "Right to disconnect (small employers)"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.fairwork.gov.au/"
+        ],
+        "regulator": "Fair Work Commission / Fair Work Ombudsman",
+        "tags": [
+          "employment",
+          "right-to-disconnect",
+          "contractor-classification"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Sustainability & ESG",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AU Climate-Related Financial Disclosure",
+        "fullName": "Treasury Laws Amendment (Financial Market Infrastructure and Other Measures) Act 2024 \u2014 Climate Disclosure",
+        "summary": "Mandatory climate-related financial disclosure aligned with ISSB standards. Phased: Group 1 from January 2025, Group 2 from July 2026, Group 3 from July 2027.",
+        "whyItMatters": "DocuSign may fall within scope as a large entity in Australia. Market opportunity \u2014 customers need document management for disclosure compliance.",
+        "complianceImplications": "Assess which reporting group DocuSign falls into. Prepare climate-related disclosures aligned with AASB S2.",
+        "penalties": "ASIC enforcement for misleading disclosures under Corporations Act provisions",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2025-01-01",
+            "label": "Group 1 reporting begins"
+          },
+          {
+            "date": "2026-07-01",
+            "label": "Group 2 reporting begins"
+          },
+          {
+            "date": "2027-07-01",
+            "label": "Group 3 reporting begins"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://treasury.gov.au/consultation/c2024-466491"
+        ],
+        "regulator": "Australian Securities and Investments Commission (ASIC)",
+        "tags": [
+          "ESG",
+          "climate-disclosure",
+          "ISSB",
+          "sustainability-reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "SG Consumer Protection (Fair Trading) Act",
+        "fullName": "Consumer Protection (Fair Trading) Act (CPFTA)",
+        "summary": "Protects consumers against unfair trade practices including misleading representations, unfair contract terms, and deceptive conduct. Consumers can seek remedies through Small Claims Tribunals or courts.",
+        "whyItMatters": "Applies to DocuSign's terms of service with Singapore consumers. Customers using DocuSign for consumer contracts must ensure compliance with unfair terms provisions.",
+        "complianceImplications": "Review consumer-facing contracts for unfair terms compliance. Ensure marketing claims about e-signature validity are accurate.",
+        "penalties": "Civil remedies \u2014 courts can void unfair terms and award damages",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://sso.agc.gov.sg/Act/CPFTA2003"
+        ],
+        "regulator": "Competition and Consumer Commission of Singapore (CCCS)",
+        "tags": [
+          "consumer-protection",
+          "unfair-contract-terms",
+          "fair-trading"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "SG Companies Act 1967",
+        "fullName": "Companies Act 1967",
+        "summary": "Governs incorporation, management, and regulation of companies in Singapore. 2014 and 2017 amendments modernized corporate governance and allowed electronic signatures on certain corporate documents.",
+        "whyItMatters": "Governs how Singapore companies execute documents. Electronic execution provisions support e-signatures for corporate filings and agreements.",
+        "complianceImplications": "Ensure e-signature workflows support Singapore company document execution requirements. Leverage electronic execution provisions in enterprise sales.",
+        "penalties": "Various \u2014 fines up to S$5,000 and/or imprisonment up to 12 months for general offences",
+        "maxPenaltyValue": 5000,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://sso.agc.gov.sg/Act/CoA1967"
+        ],
+        "regulator": "Accounting and Corporate Regulatory Authority (ACRA)",
+        "tags": [
+          "corporate-governance",
+          "electronic-execution",
+          "company-law"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "SG Prevention of Corruption Act",
+        "fullName": "Prevention of Corruption Act 1960",
+        "summary": "Primary anti-corruption legislation criminalizing bribery in public and private sectors. Has extraterritorial reach for Singapore citizens and permanent residents.",
+        "whyItMatters": "Applies to DocuSign's business dealings in Singapore. Extraterritorial reach means Singapore-connected staff must comply regardless of location.",
+        "complianceImplications": "Maintain robust anti-bribery policies. Ensure third-party due diligence for resellers and agents. Zero-tolerance enforcement culture.",
+        "penalties": "Fine up to S$100,000 and/or imprisonment up to 5 years (private sector); up to 7 years (public sector)",
+        "maxPenaltyValue": 100000,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://sso.agc.gov.sg/Act/PCA1960"
+        ],
+        "regulator": "Corrupt Practices Investigation Bureau (CPIB)",
+        "tags": [
+          "anti-corruption",
+          "bribery",
+          "extraterritorial"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "SG Employment Act 1968",
+        "fullName": "Employment Act 1968",
+        "summary": "Primary employment legislation covering terms, salary, working hours, overtime, and termination. 2019 amendments expanded coverage and strengthened protections.",
+        "whyItMatters": "Governs DocuSign's employment relationships in Singapore. Relevant for customers managing employment agreements on the platform.",
+        "complianceImplications": "Ensure Singapore employment contracts comply with mandatory provisions.",
+        "penalties": "Fines up to S$20,000 and/or imprisonment up to 12 months",
+        "maxPenaltyValue": 20000,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://sso.agc.gov.sg/Act/EmA1968"
+        ],
+        "regulator": "Ministry of Manpower (MOM)",
+        "tags": [
+          "employment",
+          "workplace",
+          "labour-law"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "passed",
+        "shortName": "SG Workplace Fairness Act 2024",
+        "fullName": "Workplace Fairness Act 2024",
+        "summary": "Anti-discrimination legislation prohibiting workplace discrimination on nationality, age, sex, race, religion, disability, and other grounds. Introduces statutory framework replacing voluntary Tripartite Guidelines.",
+        "whyItMatters": "New compliance obligation for DocuSign's Singapore workforce. Affects employment processes and documentation.",
+        "complianceImplications": "Update HR policies for statutory anti-discrimination framework. Train managers on prohibited grounds. Document hiring and termination decisions.",
+        "penalties": "Employment Claims Tribunals can order compensation and corrective action",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [
+          {
+            "date": "2024-11-25",
+            "label": "Passed by Parliament"
+          },
+          {
+            "date": "2026-01-01",
+            "label": "Expected commencement (phased)"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.mom.gov.sg/employment-practices/workplace-fairness"
+        ],
+        "regulator": "Ministry of Manpower (MOM) / TAFEP",
+        "tags": [
+          "employment",
+          "anti-discrimination",
+          "workplace-fairness"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "SG SGX Sustainability Reporting",
+        "fullName": "SGX Sustainability Reporting Rules (Listing Rules 711A-711B)",
+        "summary": "SGX-listed companies must publish annual sustainability reports. From FY2025, climate reporting must align with ISSB standards. Mandatory external assurance for Scope 1 and 2 emissions phased in.",
+        "whyItMatters": "Relevant to DocuSign's SGX-listed customers. Market opportunity for agreement management in ESG disclosure processes.",
+        "complianceImplications": "Not directly applicable. Market opportunity \u2014 customers need document management for sustainability compliance.",
+        "penalties": "SGX listing rules enforcement \u2014 non-compliance can result in queries, trading halts, or delisting",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [
+          {
+            "date": "2025-01-01",
+            "label": "ISSB climate reporting begins (large caps)"
+          },
+          {
+            "date": "2027-01-01",
+            "label": "All listed companies must report"
+          }
+        ],
+        "impactScore": 1,
+        "sourceUrls": [
+          "https://www.sgx.com/regulation/sustainability-reporting"
+        ],
+        "regulator": "Singapore Exchange (SGX RegCo)",
+        "tags": [
+          "ESG",
+          "sustainability-reporting",
+          "climate-disclosure",
+          "ISSB"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "JP Consumer Contract Act",
+        "fullName": "Consumer Contract Act (Act No. 61 of 2000)",
+        "summary": "Protects consumers from unfair contract terms and deceptive practices. Allows rescission of contracts from misrepresentation or duress. 2022 amendments expanded voidable clause scope.",
+        "whyItMatters": "Applies to DocuSign's terms with Japanese consumers. 2022 amendments expanded unfair term definitions \u2014 affects standard-form contract design.",
+        "complianceImplications": "Review consumer-facing terms for compliance with expanded unfair clause provisions. Ensure contracts allow statutory rescission rights.",
+        "penalties": "Civil remedies \u2014 courts void unfair terms and award damages. Consumer Affairs Agency investigates.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2023-06-01",
+            "label": "2022 amendments fully commenced"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.japaneselawtranslation.go.jp/en/laws/view/4216"
+        ],
+        "regulator": "Consumer Affairs Agency (CAA)",
+        "tags": [
+          "consumer-protection",
+          "unfair-contract-terms",
+          "consumer-rights"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "JP Companies Act",
+        "fullName": "Companies Act (Act No. 86 of 2005)",
+        "summary": "Governs company formation, management, corporate governance, and shareholder rights. 2019 amendments introduced electronic shareholder meeting provisions. Supports shift from hanko to electronic signatures.",
+        "whyItMatters": "The shift from hanko to electronic signatures is a direct market opportunity for DocuSign in Japan. Corporate governance reforms increasingly support digital document execution.",
+        "complianceImplications": "Leverage electronic execution provisions to market to Japanese corporates. Ensure compatibility with Japanese corporate governance requirements.",
+        "penalties": "False filings: imprisonment up to 5 years and/or fine up to JPY 5 million",
+        "maxPenaltyValue": 5000000,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2021-03-01",
+            "label": "2019 amendments commenced"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.japaneselawtranslation.go.jp/en/laws/view/4085"
+        ],
+        "regulator": "Ministry of Justice / Financial Services Agency (FSA)",
+        "tags": [
+          "corporate-governance",
+          "electronic-execution",
+          "hanko-reform"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "JP Unfair Competition Prevention Act",
+        "fullName": "Unfair Competition Prevention Act (Act No. 47 of 1993)",
+        "summary": "Prohibits bribery of foreign public officials and unfair competitive practices including trade secret misappropriation. Aligned with OECD Anti-Bribery Convention.",
+        "whyItMatters": "Applies to DocuSign's dealings with foreign government agencies. Trade secret provisions protect proprietary technology and customer data.",
+        "complianceImplications": "Ensure anti-bribery compliance covers Japan operations. Protect trade secrets with technical and contractual measures.",
+        "penalties": "Foreign bribery: up to 10 years imprisonment and/or JPY 30M for individuals; JPY 1 billion for corporates",
+        "maxPenaltyValue": 1000000000,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.japaneselawtranslation.go.jp/en/laws/view/4052"
+        ],
+        "regulator": "Ministry of Economy, Trade and Industry (METI)",
+        "tags": [
+          "anti-corruption",
+          "bribery",
+          "trade-secrets",
+          "OECD"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "JP Labor Standards Act",
+        "fullName": "Labor Standards Act (Act No. 49 of 1947)",
+        "summary": "Foundational employment law governing conditions, wages, hours, overtime, and leave. 2018 Work Style Reform introduced overtime caps, equal pay for equal work, and flexible working arrangements.",
+        "whyItMatters": "Governs DocuSign's employment relationships in Japan. Strong dismissal protections and documentation requirements relevant to customers managing employment contracts.",
+        "complianceImplications": "Ensure Japan employment contracts comply with mandatory provisions including overtime caps. Relevant for DocuSign HR and customers.",
+        "penalties": "Up to 1 year imprisonment and/or JPY 500,000 for working hours violations",
+        "maxPenaltyValue": 500000,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2024-04-01",
+            "label": "Overtime caps applied to construction, transport, medical sectors"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.japaneselawtranslation.go.jp/en/laws/view/3567"
+        ],
+        "regulator": "Ministry of Health, Labour and Welfare (MHLW)",
+        "tags": [
+          "employment",
+          "labor-standards",
+          "work-style-reform"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "JP SSBJ Sustainability Disclosure Standards",
+        "fullName": "Sustainability Standards Board of Japan (SSBJ) Disclosure Standards",
+        "summary": "Sustainability disclosure standards aligned with ISSB. Mandatory from April 2027 for prime-listed TSE companies. Covers governance, strategy, risk management, and climate metrics.",
+        "whyItMatters": "Relevant to DocuSign's TSE-listed customers. Opportunity to support sustainability reporting workflows.",
+        "complianceImplications": "Market opportunity \u2014 Japanese corporates need document management for sustainability reporting.",
+        "penalties": "TSE listing rules enforcement. FSA oversight for securities reporting.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2025-03-31",
+            "label": "SSBJ standards finalized"
+          },
+          {
+            "date": "2027-04-01",
+            "label": "Mandatory for prime-listed companies"
+          }
+        ],
+        "impactScore": 1,
+        "sourceUrls": [
+          "https://www.ssb-j.jp/en/"
+        ],
+        "regulator": "SSBJ / Financial Services Agency (FSA)",
+        "tags": [
+          "ESG",
+          "sustainability-reporting",
+          "climate-disclosure",
+          "ISSB"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Privacy & Data Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "DPDP Act 2023",
+        "fullName": "Digital Personal Data Protection Act, 2023",
+        "summary": "India's comprehensive data protection law governing the processing of digital personal data. Enacted on 11 August 2023 and notified along with the DPDP Rules 2025 on 13 November 2025. Establishes rights for data principals, obligations for data fiduciaries, and creates the Data Protection Board of India (DPBI) as the enforcement authority.",
+        "whyItMatters": "DocuSign processes personal data (names, email addresses, signatures, document contents) of Indian users as a data fiduciary. The Act imposes consent requirements, data principal rights (access, correction, erasure), breach notification obligations, and restrictions on cross-border data transfers that directly affect how DocuSign collects, stores, and processes signature and identity data in India.",
+        "complianceImplications": "DocuSign must implement lawful consent mechanisms for data collection, provide notice before processing, honor data principal rights (access, correction, erasure, nomination), report data breaches to DPBI and affected individuals, ensure reasonable security safeguards, and may need to register as a consent manager. Cross-border data transfer restrictions may require data localization or approved transfer mechanisms. Significant Data Fiduciary designation would trigger additional obligations including Data Protection Impact Assessments and appointing a Data Protection Officer in India.",
+        "penalties": "Up to INR 250 crore per breach for failure to implement reasonable security safeguards; up to INR 200 crore for failure to notify data breaches; up to INR 200 crore for violations related to children's data; up to INR 150 crore for Significant Data Fiduciary non-compliance; up to INR 50 crore for failure to honor data principal rights.",
+        "maxPenaltyValue": 2500000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2023-08-11",
+            "label": "Act received Presidential assent"
+          },
+          {
+            "date": "2025-11-13",
+            "label": "Act and DPDP Rules 2025 notified; Phase 1 effective (Data Protection Board setup)"
+          },
+          {
+            "date": "2026-11-13",
+            "label": "Phase 2 effective: Consent manager registration and Board inquiry powers"
+          },
+          {
+            "date": "2027-05-13",
+            "label": "Phase 3 effective: All substantive obligations (notice, consent, security, breach reporting, data principal rights, SDF obligations)"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.meity.gov.in/data-protection-framework",
+          "https://prsindia.org/billtrack/digital-personal-data-protection-bill-2023",
+          "https://www.indiacode.nic.in/handle/123456789/19887"
+        ],
+        "regulator": "Data Protection Board of India (DPBI), Ministry of Electronics and Information Technology (MeitY)",
+        "tags": [
+          "data protection",
+          "privacy",
+          "consent",
+          "cross-border transfer",
+          "breach notification",
+          "DPDP",
+          "personal data",
+          "data fiduciary"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Electronic Signatures & Transactions",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "IT Act 2000",
+        "fullName": "Information Technology Act, 2000",
+        "summary": "India's foundational cyber law providing legal recognition to electronic records and digital/electronic signatures. Section 3A (added via 2008 amendment) recognizes electronic signatures, and the Electronic Signature or Electronic Authentication Technique and Procedure Rules 2015 establish the Aadhaar-based eSign framework. The Act also governs cybercrime, intermediary liability, and data protection (Section 43A).",
+        "whyItMatters": "This is the primary law governing the legal validity of DocuSign's core product in India. It defines which electronic signatures are legally recognized, establishes the Certifying Authority framework, and creates the tiered signature system (standard electronic signatures vs. secure digital signatures with enhanced evidentiary presumptions). DocuSign must ensure its e-signature solutions comply with Section 3A requirements and integrate with India's CCA-approved infrastructure including Aadhaar eSign.",
+        "complianceImplications": "DocuSign must ensure electronic signatures meet Section 3A reliability requirements (unique to signatory, capable of identifying the person, under sole control). Integration with CCA-licensed Certifying Authorities and Aadhaar eSign is needed for highest legal standing. Certain document types are excluded from e-signatures (wills, trusts, powers of attorney, negotiable instruments, real estate conveyances per Schedule I). Section 43A requires reasonable security practices for sensitive personal data. Section 79 intermediary safe harbor provisions apply to DocuSign's platform operations.",
+        "penalties": "Section 43: Up to INR 1 crore per contravention for unauthorized computer access/damage. Section 43A: Unlimited compensation for negligent data protection. Section 66: Up to INR 5 lakh fine and/or 3 years imprisonment for dishonest acts. Section 72: Up to INR 2 lakh fine and/or 2 years imprisonment for breach of confidentiality.",
+        "maxPenaltyValue": 10000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2000-10-17",
+            "label": "IT Act 2000 came into force"
+          },
+          {
+            "date": "2009-02-05",
+            "label": "IT (Amendment) Act 2008 notified, adding Section 3A electronic signatures"
+          },
+          {
+            "date": "2015-01-28",
+            "label": "Electronic Signature or Electronic Authentication Technique and Procedure Rules 2015 notified"
+          },
+          {
+            "date": "2021-02-25",
+            "label": "IT (Intermediary Guidelines and Digital Media Ethics Code) Rules 2021 notified"
+          },
+          {
+            "date": "2026-02-20",
+            "label": "IT Rules 2026 Amendment effective (synthetic content/AI labeling)"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.indiacode.nic.in/bitstream/123456789/13116/1/it_act_2000_updated.pdf",
+          "https://www.meity.gov.in/content/information-technology-act",
+          "https://www.docusign.com/products/electronic-signature/legality/india"
+        ],
+        "regulator": "Ministry of Electronics and Information Technology (MeitY), Controller of Certifying Authorities (CCA), CERT-In",
+        "tags": [
+          "electronic signatures",
+          "digital signatures",
+          "IT Act",
+          "Aadhaar eSign",
+          "CCA",
+          "cyber law",
+          "intermediary",
+          "Section 3A"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Commercial & Contract Law",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Indian Contract Act 1872",
+        "fullName": "Indian Contract Act, 1872",
+        "summary": "India's foundational contract law governing the formation and enforcement of agreements. While predating the digital era, the Act does not distinguish between electronic and manual signatures for forming valid contracts, provided essential elements (offer, acceptance, consideration, free consent, lawful object) are satisfied. Read together with the IT Act 2000, it provides the legal basis for electronically signed contracts in India.",
+        "whyItMatters": "DocuSign's entire value proposition rests on contracts signed electronically being legally enforceable. The Indian Contract Act validates e-signed agreements as long as basic contract formation requirements are met. Section 10 (valid agreements) and Section 85A of the Indian Evidence Act (evidentiary presumption for e-signed contracts) together ensure DocuSign-facilitated contracts are admissible and enforceable in Indian courts.",
+        "complianceImplications": "DocuSign must ensure its signing workflows capture evidence of free consent, proper offer and acceptance, and consideration. Audit trails showing the signing process are critical for enforceability. DocuSign should educate Indian customers about document types excluded from e-signing (Schedule I of IT Act) and ensure proper identity verification to satisfy evidentiary standards.",
+        "penalties": "The Act itself does not prescribe criminal penalties. Contracts found void or voidable due to coercion, fraud, misrepresentation, or lack of free consent may be unenforceable, with civil remedies including damages and restitution available to aggrieved parties.",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "1872-09-01",
+            "label": "Indian Contract Act enacted"
+          },
+          {
+            "date": "2000-10-17",
+            "label": "IT Act 2000 extended legal recognition to electronic contracts"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.indiacode.nic.in/handle/123456789/2187",
+          "https://www.docusign.com/products/electronic-signature/legality/india"
+        ],
+        "regulator": "Ministry of Law and Justice",
+        "tags": [
+          "contract law",
+          "electronic contracts",
+          "enforceability",
+          "consent",
+          "evidence",
+          "commercial law"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Consumer Protection Act 2019",
+        "fullName": "Consumer Protection Act, 2019",
+        "summary": "Comprehensive consumer protection legislation replacing the 1986 Act, establishing the Central Consumer Protection Authority (CCPA) with powers to address unfair trade practices, misleading advertisements, and e-commerce violations. The Consumer Protection (E-Commerce) Rules 2020 impose specific obligations on e-commerce entities including disclosure requirements, grievance redressal mechanisms, and fair trade practice mandates.",
+        "whyItMatters": "DocuSign operates as a SaaS platform serving Indian consumers and businesses. The E-Commerce Rules 2020 require disclosure of business information, appointment of a Grievance Officer, complaint acknowledgment within 48 hours and resolution within one month. Unfair contract terms in DocuSign's Terms of Service could be challenged under this Act, and misleading claims about e-signature legality could attract CCPA action.",
+        "complianceImplications": "DocuSign must appoint a Grievance Officer for Indian users, display legal name, registered office, contact details, and GSTIN on its India-facing platforms. Customer complaints must be acknowledged within 48 hours and resolved within 30 days. Product claims about legal validity of signatures must be accurate. Terms of service must not contain unfair contract terms as defined under the Act. CCPA can initiate suo motu investigations.",
+        "penalties": "CCPA can impose penalties up to INR 10 lakh and imprisonment up to 2 years for first offence of misleading advertisements; up to INR 50 lakh and 5 years for subsequent offences. Up to INR 2 crore for unfair trade practices. Consumer commissions can award compensation without upper limit. Criminal prosecution under Section 88 for non-compliance with CCPA orders.",
+        "maxPenaltyValue": 20000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2019-08-09",
+            "label": "Consumer Protection Act 2019 received Presidential assent"
+          },
+          {
+            "date": "2020-07-20",
+            "label": "Act came into force"
+          },
+          {
+            "date": "2020-07-23",
+            "label": "Consumer Protection (E-Commerce) Rules 2020 effective"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://consumeraffairs.nic.in/acts-and-rules/consumer-protection",
+          "https://www.indiacode.nic.in/handle/123456789/15256"
+        ],
+        "regulator": "Central Consumer Protection Authority (CCPA), Department of Consumer Affairs",
+        "tags": [
+          "consumer protection",
+          "e-commerce",
+          "grievance redressal",
+          "unfair trade practices",
+          "CCPA",
+          "SaaS"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Prevention of Corruption Act 1988",
+        "fullName": "Prevention of Corruption Act, 1988",
+        "summary": "India's primary anti-corruption law targeting bribery of public servants, significantly amended in 2018 to criminalize bribe-giving (not just bribe-taking), narrow the definition of criminal misconduct, increase penalties, and introduce provisions for property confiscation. The 2018 amendment also created a 7-day safe harbor for coerced bribe payers who report to authorities.",
+        "whyItMatters": "DocuSign sells to Indian government entities and public sector undertakings. The 2018 amendment criminalized commercial bribery from the giver's side, meaning DocuSign employees or agents offering inducements to government officials during procurement could face prosecution. DocuSign's agreement management platform may also be used in government contracting workflows where anti-corruption compliance is essential.",
+        "complianceImplications": "DocuSign must maintain robust anti-bribery and anti-corruption policies for India operations, especially for government sales channels. Third-party agents and resellers must be vetted and contractually bound to anti-corruption compliance. Gift and hospitality policies must align with Indian standards. Internal audit trails (which DocuSign's platform inherently provides) should be leveraged for transparency in government dealings.",
+        "penalties": "Minimum 3 years to maximum 7 years imprisonment for both bribe-givers and bribe-takers (increased from 6 months to 5 years by 2018 amendment). Courts can order confiscation of property acquired through corruption. Trial must be completed within 2 years (extendable to 4 years maximum).",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "1988-09-09",
+            "label": "Prevention of Corruption Act enacted"
+          },
+          {
+            "date": "2018-07-26",
+            "label": "Prevention of Corruption (Amendment) Act 2018 came into force"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.indiacode.nic.in/handle/123456789/1558",
+          "https://www.indiacode.nic.in/bitstream/123456789/9317/1/corruptiona1988-49.pdf"
+        ],
+        "regulator": "Central Bureau of Investigation (CBI), Central Vigilance Commission (CVC)",
+        "tags": [
+          "anti-corruption",
+          "bribery",
+          "government procurement",
+          "public servants",
+          "FCPA analogue"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Companies Act 2013",
+        "fullName": "Companies Act, 2013",
+        "summary": "India's primary corporate governance legislation governing incorporation, management, and winding up of companies. Mandates digital signatures for filings with the Ministry of Corporate Affairs (MCA), permits virtual/hybrid board meetings and general meetings, and requires maintenance of electronic records. The Corporate Laws (Amendment) Bill 2026 proposes further digitization including fully virtual AGMs/EGMs and mandatory company websites.",
+        "whyItMatters": "The Companies Act creates direct demand for DocuSign's products by requiring digital signatures for regulatory filings (MCA21 portal), board resolutions, and corporate documents. The trend toward virtual board meetings and digital record-keeping under the 2026 amendment bill expands DocuSign's addressable market. Indian companies using DocuSign for board approvals and statutory filings need compliant digital signature integration.",
+        "complianceImplications": "DocuSign must ensure its digital signature certificates are compatible with MCA filing requirements (Class 2/3 DSCs from CCA-licensed authorities). DocuSign's platform should support the secure identification, recording, and audit trail requirements for virtual board meetings. Integration with Indian DSC infrastructure is essential for statutory compliance. The 2026 amendment bill may create new requirements for electronic document service and digital infrastructure.",
+        "penalties": "General non-compliance penalties: up to INR 3 lakh for companies and INR 1 lakh for officers in default. Continuing default: INR 500 per day. Section 450 default penalty: INR 10,000 initial plus INR 1,000 per day of continuing default. Fraud under Section 447: imprisonment of 6 months to 10 years and fine of 1x to 3x the fraud amount.",
+        "maxPenaltyValue": 300000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2013-08-29",
+            "label": "Companies Act 2013 received Presidential assent"
+          },
+          {
+            "date": "2014-04-01",
+            "label": "Most provisions came into force"
+          },
+          {
+            "date": "2026-02-01",
+            "label": "Corporate Laws (Amendment) Bill 2026 introduced in Parliament"
+          },
+          {
+            "date": "2026-04-01",
+            "label": "Bill referred to Joint Parliamentary Committee for examination"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.indiacode.nic.in/handle/123456789/2114",
+          "https://www.mca.gov.in/content/mca/global/en/acts-rules/ebooks/acts.html"
+        ],
+        "regulator": "Ministry of Corporate Affairs (MCA), Registrar of Companies (ROC)",
+        "tags": [
+          "corporate governance",
+          "digital signatures",
+          "MCA",
+          "board meetings",
+          "virtual AGM",
+          "statutory filings",
+          "DSC"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Data Security & Breach Notification",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "CERT-In Directions 2022",
+        "fullName": "CERT-In Cyber Security Directions 2022",
+        "summary": "Mandatory cybersecurity directions issued by the Indian Computer Emergency Response Team (CERT-In) on 28 April 2022, effective 28 June 2022. Requires all service providers, intermediaries, data centers, and corporate bodies to report cyber incidents to CERT-In within 6 hours of detection, maintain ICT system logs for 180 days within Indian jurisdiction, synchronize system clocks to NTP, and designate a point of contact for CERT-In coordination.",
+        "whyItMatters": "DocuSign operates cloud infrastructure serving Indian customers and qualifies as an intermediary and service provider under these directions. The 6-hour incident reporting requirement is among the strictest globally and requires DocuSign to have India-specific incident response procedures. The 180-day log retention requirement within Indian jurisdiction may conflict with DocuSign's global infrastructure architecture.",
+        "complianceImplications": "DocuSign must report 20 categories of cyber incidents to CERT-In within 6 hours of noticing them. ICT logs must be maintained for 180 rolling days and stored within India. A designated point of contact must be available to CERT-In. System clocks must sync to NIC/NPL NTP servers or approved global sources. KYC data for cloud/VPS customers must be retained for 5 years after service cancellation. Non-compliance risks loss of intermediary safe harbor under IT Act Section 79.",
+        "penalties": "Originally up to INR 1 lakh fine and/or 1 year imprisonment under IT Act Section 70B(7). Jan Vishwas Act 2023 increased the fine to up to INR 1 crore (removing imprisonment for first offence). Repeated non-compliance may result in loss of intermediary safe harbor protection under Section 79.",
+        "maxPenaltyValue": 10000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2022-04-28",
+            "label": "CERT-In Directions issued"
+          },
+          {
+            "date": "2022-06-28",
+            "label": "Directions came into force"
+          },
+          {
+            "date": "2023-08-11",
+            "label": "Jan Vishwas Act increased penalties to INR 1 crore"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.cert-in.org.in/PDF/CERT-In_Directions_70B_28.04.2022.pdf",
+          "https://www.cert-in.org.in/"
+        ],
+        "regulator": "Indian Computer Emergency Response Team (CERT-In), MeitY",
+        "tags": [
+          "cybersecurity",
+          "incident reporting",
+          "CERT-In",
+          "log retention",
+          "breach notification",
+          "6-hour reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "AI & Emerging Technology",
+        "type": "guidance",
+        "status": "in_force",
+        "shortName": "India AI Governance Guidelines 2025",
+        "fullName": "India AI Governance Guidelines: Enabling Safe and Trusted AI Innovation",
+        "summary": "Non-binding governance guidelines released by MeitY in November 2025 under the IndiaAI Mission, establishing a principle-based framework for responsible AI development and deployment. Built around seven AI Sutras (Trust, People-first, Innovation, Fairness, Accountability, Transparency, Safety) and six governance pillars. Defines prohibited, high-, medium-, and low-risk AI use cases, banning social scoring and emotion inference in employment.",
+        "whyItMatters": "DocuSign increasingly integrates AI features into its products (AI-assisted contract analysis, intelligent agreement management). While these guidelines are currently non-binding, they signal India's regulatory direction and the IT Rules 2026 Amendment already makes synthetic content labeling mandatory. DocuSign's AI features processing Indian documents and agreements should align with these principles to avoid future regulatory friction.",
+        "complianceImplications": "Although voluntary, DocuSign should align AI features with the framework's risk classification (ensuring no prohibited use cases like social scoring). AI-generated contract suggestions or summaries should be transparent about their AI origin. The IT Rules 2026 Amendment (effective 20 Feb 2026) mandates labeling of synthetically generated information, which could apply to AI-generated contract clauses or document summaries. Organizations deploying high-risk AI should consider establishing AI Risk and Ethics Committees and appointing Chief AI Risk Officers as recommended.",
+        "penalties": "Guidelines are non-binding with no direct penalties. However, the IT (Intermediary Guidelines) Amendment Rules 2026 mandate labeling of AI-generated content with platform-level enforcement (content takedown, account suspension). Non-compliance with IT Rules can result in loss of intermediary safe harbor.",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2025-11-05",
+            "label": "India AI Governance Guidelines released by MeitY"
+          },
+          {
+            "date": "2026-02-19",
+            "label": "India AI Impact Summit 2026 held in New Delhi"
+          },
+          {
+            "date": "2026-02-20",
+            "label": "IT Rules 2026 Amendment effective (mandatory AI content labeling)"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://indiaai.gov.in/article/india-ai-governance-guidelines-empowering-ethical-and-responsible-ai",
+          "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2186639",
+          "https://indiaai.s3.ap-south-1.amazonaws.com/docs/guidelines-governance.pdf"
+        ],
+        "regulator": "Ministry of Electronics and Information Technology (MeitY), IndiaAI Mission",
+        "tags": [
+          "AI governance",
+          "artificial intelligence",
+          "responsible AI",
+          "synthetic content",
+          "deepfakes",
+          "IT Rules 2026",
+          "AI labeling"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Labour Codes 2020",
+        "fullName": "Code on Wages 2019, Code on Social Security 2020, Occupational Safety Health and Working Conditions Code 2020, Industrial Relations Code 2020",
+        "summary": "Four consolidated Labour Codes replacing 29 legacy labour laws, implemented on 21 November 2025 with phased rollout. Restructure wage definitions (basic pay must be at least 50% of total remuneration), expand social security coverage to gig and platform workers, modernize occupational safety standards, and reform industrial dispute resolution. Central rules expected to be fully notified by 1 April 2026.",
+        "whyItMatters": "DocuSign's India operations (employees, contractors, and partners) are subject to these codes. The revised wage definition increases costs for gratuity, overtime, bonuses, and leave encashment. The gig/platform worker provisions may affect how DocuSign engages independent contractors in India. Additionally, DocuSign's platform could be used by Indian enterprises for employment agreement management, making awareness of these codes relevant to product positioning.",
+        "complianceImplications": "DocuSign India must restructure compensation to ensure basic pay is at least 50% of total remuneration per the new wage definition. Payroll systems need updating for revised gratuity, PF, and bonus calculations. Gig worker social security contributions may apply if DocuSign uses platform-based contractors. Occupational Safety Code applies to tech offices with 10+ employees. Standing orders under the Industrial Relations Code may be required. State-specific rules are still being notified and must be monitored.",
+        "penalties": "Code on Wages: Up to INR 1 lakh fine for first offence, up to INR 2 lakh for repeat offences. Social Security Code: Up to INR 3 lakh fine and/or 3 years imprisonment for repeat non-payment of contributions. OSH Code: Up to INR 2 lakh for non-compliance, INR 4 lakh for repeat offences, up to 3 months imprisonment. Industrial Relations Code: Up to INR 10 lakh for illegal strikes/lockouts.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2025-11-21",
+            "label": "Four Labour Codes implemented"
+          },
+          {
+            "date": "2026-04-01",
+            "label": "Central rules expected to be fully notified"
+          },
+          {
+            "date": "2026-06-30",
+            "label": "Expected deadline for state-level rules notification"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.labour.gov.in/labour-codes",
+          "https://www.india-briefing.com/doing-business-guide/india/human-resources-and-payroll/india-new-labor-codes"
+        ],
+        "regulator": "Ministry of Labour and Employment, State Labour Departments",
+        "tags": [
+          "labour law",
+          "employment",
+          "wages",
+          "social security",
+          "gig workers",
+          "workplace safety",
+          "payroll"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "SEBI BRSR Framework",
+        "fullName": "SEBI Business Responsibility and Sustainability Reporting (BRSR) Framework",
+        "summary": "SEBI's mandatory ESG disclosure framework requiring the top 1,000 listed companies in India to report on 140 indicators (98 essential, 42 leadership) covering environmental, social, and governance metrics. BRSR Core introduced in 2023 with 49 KPIs for assured reporting. Top 500 companies must obtain BRSR Core assurance from FY 2025-26, extending to top 1,000 from FY 2026-27. Value chain ESG disclosures become mandatory from FY 2026-27.",
+        "whyItMatters": "While DocuSign itself is US-listed and not directly subject to BRSR, its large Indian enterprise customers (top 1,000 listed companies) need to comply with BRSR reporting. DocuSign can position its agreement management platform as a tool for ESG compliance documentation and sustainable business practices (paperless workflows, reduced carbon footprint from digital signatures). Understanding BRSR helps DocuSign serve Indian enterprise customers better.",
+        "complianceImplications": "Not directly applicable to DocuSign as a US-listed company. However, DocuSign's Indian enterprise customers subject to BRSR may require DocuSign to provide sustainability metrics (carbon savings from paperless transactions, energy usage of cloud services). DocuSign could develop BRSR-aligned reporting features. If DocuSign lists on Indian exchanges or acquires an Indian listed entity, direct compliance would be required.",
+        "penalties": "Non-filing or incomplete BRSR filings attract SEBI enforcement action including show-cause notices, monetary penalties under SEBI Act (up to INR 1 crore per violation), and potential trading restrictions. SEBI can also initiate proceedings under the LODR (Listing Obligations and Disclosure Requirements) Regulations for non-compliance.",
+        "maxPenaltyValue": 10000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2023-07-12",
+            "label": "SEBI introduced BRSR Core with 49 assured KPIs"
+          },
+          {
+            "date": "2026-03-31",
+            "label": "End of FY 2025-26: Top 500 must obtain BRSR Core assurance"
+          },
+          {
+            "date": "2027-03-31",
+            "label": "End of FY 2026-27: Top 1,000 must obtain BRSR Core assurance; value chain disclosures mandatory"
+          }
+        ],
+        "impactScore": 1,
+        "sourceUrls": [
+          "https://www.sebi.gov.in/legal/circulars/jul-2023/brsr-core-framework-for-assurance-and-esg-disclosures-for-value-chain_73854.html",
+          "https://www.sebi.gov.in/"
+        ],
+        "regulator": "Securities and Exchange Board of India (SEBI)",
+        "tags": [
+          "ESG",
+          "sustainability",
+          "BRSR",
+          "SEBI",
+          "climate disclosure",
+          "value chain",
+          "listed companies"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Privacy & Data Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Personal Data (Privacy) Ordinance",
+        "fullName": "Personal Data (Privacy) Ordinance (Cap 486)",
+        "summary": "Hong Kong's primary data protection law governing collection, use, storage, and transfer of personal data. Based on six Data Protection Principles. 2021 amendments criminalized doxxing with extraterritorial reach. Proposed amendments to introduce mandatory data breach notification and administrative fines are under consideration.",
+        "whyItMatters": "Governs DocuSign's handling of personal data in Hong Kong e-signature transactions. The six Data Protection Principles require purpose limitation, data minimization, security, and transparency \u2014 all directly applicable to how DocuSign collects and processes signer data.",
+        "complianceImplications": "Comply with six Data Protection Principles. Implement purpose limitation for data collection. Provide privacy notices (PICS). Enable data access and correction rights. Prepare for potential mandatory breach notification and fines regime.",
+        "penalties": "Currently: fines up to HK$1 million and imprisonment up to 5 years for doxxing. PCPD enforcement notices \u2014 non-compliance is a criminal offence (HK$50,000 and 2 years imprisonment). Proposed amendments would introduce administrative fines.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "1996-12-20",
+            "label": "PDPO commenced"
+          },
+          {
+            "date": "2021-10-08",
+            "label": "Doxxing amendments commenced"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.pcpd.org.hk/english/data_privacy_law/ordinance_at_a_Glance/ordinance.html"
+        ],
+        "regulator": "Office of the Privacy Commissioner for Personal Data (PCPD)",
+        "tags": [
+          "privacy",
+          "data-protection",
+          "PDPO",
+          "doxxing",
+          "DPPs"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Electronic Signatures & Transactions",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Electronic Transactions Ordinance",
+        "fullName": "Electronic Transactions Ordinance (Cap 553)",
+        "summary": "Provides legal recognition for electronic records and electronic signatures in Hong Kong. Establishes a tiered system: standard electronic signatures have general legal validity, while digital signatures issued by recognized certification authorities carry a presumption of reliability. Excludes certain transactions (wills, powers of attorney, land conveyances).",
+        "whyItMatters": "Core enabling legislation for DocuSign's business in Hong Kong. The ETO validates electronic signatures for most commercial contracts. The tiered system (electronic vs. digital) is important for product positioning \u2014 some government and regulated transactions require certified digital signatures.",
+        "complianceImplications": "Ensure e-signature workflows meet ETO requirements for reliability and signer identification. Educate customers about document exclusions under the Ordinance. For government procurement and regulated sectors, may need to support recognized CA digital signatures.",
+        "penalties": "N/A \u2014 enabling legislation. But electronically signed documents may be challenged in court if ETO requirements are not met.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2000-04-07",
+            "label": "ETO commenced"
+          },
+          {
+            "date": "2004-07-01",
+            "label": "Major amendments \u2014 Part IIIA recognized CAs"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap553"
+        ],
+        "regulator": "Office of the Government Chief Information Officer (OGCIO)",
+        "tags": [
+          "electronic-signatures",
+          "digital-signatures",
+          "ETO",
+          "certification-authorities"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Companies Ordinance",
+        "fullName": "Companies Ordinance (Cap 622)",
+        "summary": "Primary legislation governing company formation, management, governance, and winding up in Hong Kong. Modernized corporate governance requirements when it replaced the old Companies Ordinance in 2014. Allows electronic communication and filing with the Companies Registry.",
+        "whyItMatters": "Governs how Hong Kong companies execute documents and maintain records. The Companies Registry accepts electronic filings, supporting DocuSign's enterprise market for corporate governance documents.",
+        "complianceImplications": "Ensure e-signature workflows support HK company document execution requirements. Leverage electronic filing provisions in enterprise sales.",
+        "penalties": "Various \u2014 directors' duties breaches: fines up to HK$300,000 and/or imprisonment",
+        "maxPenaltyValue": 300000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2014-03-03",
+            "label": "New Companies Ordinance commenced"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap622"
+        ],
+        "regulator": "Companies Registry",
+        "tags": [
+          "corporate-governance",
+          "companies-registry",
+          "electronic-filing"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Prevention of Bribery Ordinance",
+        "fullName": "Prevention of Bribery Ordinance (Cap 201)",
+        "summary": "Criminalizes bribery in both public and private sectors. Section 9 prohibits corrupt transactions with agents (private sector bribery). ICAC enforcement is vigorous with a strong track record of prosecutions.",
+        "whyItMatters": "Applies to all DocuSign business dealings in Hong Kong. Private sector bribery provisions (Section 9) are particularly relevant \u2014 any advantage offered to an agent without the principal's permission is a criminal offence.",
+        "complianceImplications": "Maintain robust anti-bribery policies. Train all HK-based staff. Particular care with entertainment, gifts, and third-party intermediaries. ICAC takes an aggressive enforcement posture.",
+        "penalties": "Up to HK$500,000 fine and 7 years imprisonment (public sector bribery). Private sector: up to HK$500,000 and 7 years imprisonment.",
+        "maxPenaltyValue": 500000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap201"
+        ],
+        "regulator": "Independent Commission Against Corruption (ICAC)",
+        "tags": [
+          "anti-corruption",
+          "bribery",
+          "ICAC",
+          "private-sector-bribery"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Data Security & Breach Notification",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Protection of Critical Infrastructure (Computer Systems) Bill",
+        "fullName": "Protection of Critical Infrastructure (Computer Systems) Ordinance 2025",
+        "summary": "New cybersecurity legislation enacted in March 2025 protecting critical infrastructure computer systems across 8 essential service sectors. Requires designated critical infrastructure operators to implement security management programs, conduct regular audits, and report serious computer system security incidents within specified timeframes.",
+        "whyItMatters": "If DocuSign's infrastructure supports critical infrastructure operators in Hong Kong (banking, communications, energy, etc.), it may need to comply with security management and incident reporting requirements imposed on those operators. DocuSign's cloud services may be in scope as a third-party provider to CII operators.",
+        "complianceImplications": "Assess whether DocuSign is a designated CII operator or provider to designated operators. If so, implement security management programs and incident reporting procedures. Security audits may be required.",
+        "penalties": "Fines up to HK$5 million for non-compliance with security management requirements. Up to HK$500,000 for failure to report incidents.",
+        "maxPenaltyValue": 5000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2025-03-26",
+            "label": "Ordinance enacted"
+          },
+          {
+            "date": "2026-01-01",
+            "label": "Expected commencement date"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.legco.gov.hk/en/legco-business/council/bills.html"
+        ],
+        "regulator": "Commissioner's Office (under Security Bureau)",
+        "tags": [
+          "cybersecurity",
+          "critical-infrastructure",
+          "CII",
+          "incident-reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Employment Ordinance",
+        "fullName": "Employment Ordinance (Cap 57)",
+        "summary": "Primary employment legislation covering employment contracts, wages, rest days, statutory holidays, annual leave, maternity/paternity leave, severance, and termination protections. Recent amendments increased paternity leave and statutory holidays.",
+        "whyItMatters": "Governs DocuSign's employment relationships in Hong Kong. Relevant for customers using DocuSign for employment contracts.",
+        "complianceImplications": "Ensure HK employment contracts comply with mandatory provisions. Relevant for DocuSign HR and customers managing employment documentation.",
+        "penalties": "Up to HK$350,000 fine and 3 years imprisonment for willful non-payment of wages",
+        "maxPenaltyValue": 350000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap57"
+        ],
+        "regulator": "Labour Department",
+        "tags": [
+          "employment",
+          "workplace",
+          "labour-law"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "HK Trade Descriptions Ordinance",
+        "fullName": "Trade Descriptions Ordinance (Cap 362)",
+        "summary": "Prohibits unfair trade practices including false trade descriptions, misleading omissions, aggressive commercial practices, bait advertising, and bait-and-switch tactics. 2012 amendments extended coverage from goods to services.",
+        "whyItMatters": "Applies to DocuSign's marketing and sales of services in Hong Kong. Claims about e-signature legal validity must be accurate and not misleading.",
+        "complianceImplications": "Ensure marketing materials and sales representations about e-signature legality are accurate. Avoid misleading omissions about service limitations.",
+        "penalties": "Up to HK$500,000 fine and 5 years imprisonment for false trade descriptions",
+        "maxPenaltyValue": 500000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2013-07-19",
+            "label": "2012 amendments commenced (services coverage)"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap362"
+        ],
+        "regulator": "Customs and Excise Department",
+        "tags": [
+          "consumer-protection",
+          "trade-descriptions",
+          "misleading-conduct"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "HK HKEX ESG Reporting",
+        "fullName": "HKEX Environmental, Social and Governance Reporting Guide (Appendix C2)",
+        "summary": "HKEX-listed companies must publish annual ESG reports on a 'comply or explain' basis. Enhanced climate-related disclosures aligned with IFRS S2 mandatory from January 2025 for Main Board listed issuers. Scope 1 and 2 GHG emissions disclosure is mandatory.",
+        "whyItMatters": "Relevant to DocuSign's HKEX-listed customers who need ESG reporting workflows. Market opportunity for agreement management in sustainability disclosure.",
+        "complianceImplications": "Not directly applicable. Market opportunity \u2014 HK-listed customers need document management for ESG compliance.",
+        "penalties": "HKEX listing rules enforcement. Non-compliance can result in suspension or delisting.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2025-01-01",
+            "label": "Enhanced climate disclosures mandatory (large issuers)"
+          },
+          {
+            "date": "2026-01-01",
+            "label": "All Main Board issuers"
+          }
+        ],
+        "impactScore": 1,
+        "sourceUrls": [
+          "https://www.hkex.com.hk/Listing/Rules-and-Guidance/Environmental-Social-and-Governance"
+        ],
+        "regulator": "Hong Kong Exchanges and Clearing (HKEX)",
+        "tags": [
+          "ESG",
+          "sustainability-reporting",
+          "climate-disclosure",
+          "HKEX"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "AI & Emerging Technology",
+        "type": "guidance",
+        "status": "in_force",
+        "shortName": "HK Ethical AI Framework",
+        "fullName": "Ethical Artificial Intelligence Framework (HKMA)",
+        "summary": "Non-binding guidance from the Hong Kong Monetary Authority on responsible AI use in banking and finance. Establishes GOVERN principles (Governance, Oversight, Verification, Ethics, Responsibility, Novelty). PCPD also issued guidance on ethical development and use of AI with data protection focus.",
+        "whyItMatters": "Relevant if DocuSign's AI features are used by HK financial services customers. The PCPD guidance applies more broadly \u2014 any AI processing personal data must comply.",
+        "complianceImplications": "Align AI features with PCPD guidance when processing HK personal data. For financial services customers, ensure AI features meet HKMA expectations.",
+        "penalties": "Non-binding guidance \u2014 no direct penalties. But HKMA supervisory expectations apply to regulated institutions.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2019-11-01",
+            "label": "HKMA Ethical AI Framework issued"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.hkma.gov.hk/eng/key-functions/banking/banking-regulatory-and-supervisory-regime/"
+        ],
+        "regulator": "HKMA / PCPD",
+        "tags": [
+          "AI-governance",
+          "ethical-AI",
+          "HKMA",
+          "financial-services"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Privacy & Data Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Privacy Act 2020",
+        "fullName": "Privacy Act 2020",
+        "summary": "New Zealand's primary privacy legislation replacing the 1993 Act. Introduces mandatory privacy breach notification to the Privacy Commissioner and affected individuals, establishes 13 Information Privacy Principles, creates a compliance notice regime, and imposes restrictions on cross-border data disclosure.",
+        "whyItMatters": "Governs DocuSign's handling of personal information in New Zealand. Mandatory breach notification (within 72 hours of becoming aware of a notifiable breach) directly affects incident response procedures. Cross-border disclosure restrictions affect data flows.",
+        "complianceImplications": "Implement mandatory breach notification procedures. Comply with 13 Information Privacy Principles. Ensure cross-border data transfers are lawful. Appoint a privacy officer for NZ operations.",
+        "penalties": "Up to NZ$10,000 for individual offences (e.g., misleading the Commissioner). Compliance notices are enforceable \u2014 breach is a criminal offence. No administrative fines currently, but penalties review underway.",
+        "maxPenaltyValue": 10000,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2020-12-01",
+            "label": "Privacy Act 2020 commenced"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.privacy.org.nz/privacy-act-2020/"
+        ],
+        "regulator": "Office of the Privacy Commissioner",
+        "tags": [
+          "privacy",
+          "data-protection",
+          "breach-notification",
+          "IPPs"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Electronic Signatures & Transactions",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Electronic Transactions Act 2002",
+        "fullName": "Electronic Transactions Act 2002",
+        "summary": "Provides legal recognition for electronic signatures and electronic records in New Zealand. Technology-neutral approach \u2014 any form of electronic signature is valid unless specific legislation requires otherwise. Aligns with UNCITRAL Model Law on Electronic Commerce.",
+        "whyItMatters": "Core enabling legislation for DocuSign in New Zealand. The technology-neutral approach is favorable \u2014 no requirement for specific signature technology. Most commercial contracts can be validly signed electronically.",
+        "complianceImplications": "Leverage technology-neutral provisions in NZ market. Educate customers about exclusions (wills, certain real property transactions, statutory declarations, powers of attorney).",
+        "penalties": "N/A \u2014 enabling legislation",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2003-03-15",
+            "label": "ETA 2002 commenced"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/2002/0035/latest/whole.html"
+        ],
+        "regulator": "Ministry of Business, Innovation and Employment (MBIE)",
+        "tags": [
+          "electronic-signatures",
+          "electronic-transactions",
+          "UNCITRAL"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Consumer Guarantees Act 1993",
+        "fullName": "Consumer Guarantees Act 1993",
+        "summary": "Provides statutory guarantees for goods and services supplied to consumers. Services must be carried out with reasonable care and skill, be fit for purpose, and be completed within a reasonable time. Cannot be contracted out of in consumer transactions.",
+        "whyItMatters": "Applies to DocuSign's consumer-facing services in New Zealand. Guarantees cannot be excluded by contract terms \u2014 standard form terms must comply.",
+        "complianceImplications": "Ensure service quality meets statutory guarantees. Terms of service cannot contract out of consumer guarantees. Customers using DocuSign for consumer contracts should be aware.",
+        "penalties": "Civil remedies \u2014 consumers can seek compensation, repair, or refund through the Disputes Tribunal or courts",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/1993/0091/latest/whole.html"
+        ],
+        "regulator": "Commerce Commission / Ministry of Business, Innovation and Employment",
+        "tags": [
+          "consumer-protection",
+          "consumer-guarantees",
+          "services"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Fair Trading Act 1986",
+        "fullName": "Fair Trading Act 1986",
+        "summary": "Prohibits misleading and deceptive conduct, false representations, and unfair contract terms in trade. 2022 amendments introduced unfair contract terms provisions for standard-form consumer and small trade contracts with significant penalties.",
+        "whyItMatters": "Applies to DocuSign's marketing and terms of service in New Zealand. The 2022 unfair contract terms provisions affect standard-form contracts \u2014 directly relevant to DocuSign's core business.",
+        "complianceImplications": "Review standard-form contracts for unfair terms. Ensure marketing claims about e-signature validity are accurate. The Commerce Commission can take enforcement action.",
+        "penalties": "Unfair contract terms: up to NZ$600,000 per contravention for body corporates. Misleading conduct: up to NZ$600,000.",
+        "maxPenaltyValue": 600000,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2023-03-16",
+            "label": "Unfair contract terms provisions commenced"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/1986/0121/latest/whole.html"
+        ],
+        "regulator": "Commerce Commission",
+        "tags": [
+          "consumer-protection",
+          "fair-trading",
+          "unfair-contract-terms",
+          "misleading-conduct"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Commercial & Contract Law",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Contract and Commercial Law Act 2017",
+        "fullName": "Contract and Commercial Law Act 2017",
+        "summary": "Consolidates New Zealand's commercial and contract legislation into a single statute, covering contract formation, privity, assignment, sale of goods, and carriage of goods. Modernized and replaced the Contractual Remedies Act, Sale of Goods Act, and other commercial statutes.",
+        "whyItMatters": "Governs the formation and enforcement of contracts in New Zealand, including those signed electronically via DocuSign. Relevant for understanding contract validity requirements in the NZ market.",
+        "complianceImplications": "Ensure e-signature workflows satisfy NZ contract formation requirements. Understand privity and assignment rules for multi-party agreements on the platform.",
+        "penalties": "Civil remedies for breach of contract \u2014 damages, cancellation, specific performance",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2017-09-01",
+            "label": "Act commenced"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/2017/0005/latest/whole.html"
+        ],
+        "regulator": "Ministry of Justice",
+        "tags": [
+          "contract-law",
+          "commercial-law",
+          "sale-of-goods"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Companies Act 1993",
+        "fullName": "Companies Act 1993",
+        "summary": "Primary legislation governing company incorporation, governance, directors' duties, and administration in New Zealand. Allows electronic filing with the Companies Office and supports electronic execution of documents. Companies can keep records electronically.",
+        "whyItMatters": "Governs how NZ companies execute documents. Electronic record-keeping and filing provisions support DocuSign adoption for corporate governance.",
+        "complianceImplications": "Ensure e-signature workflows support NZ company document execution. Leverage electronic filing and record-keeping provisions.",
+        "penalties": "Directors' duties breaches: various fines and potential disqualification. False statements: up to 5 years imprisonment.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/1993/0105/latest/whole.html"
+        ],
+        "regulator": "Companies Office (MBIE)",
+        "tags": [
+          "corporate-governance",
+          "companies-office",
+          "electronic-filing"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "NZ Employment Relations Act 2000",
+        "fullName": "Employment Relations Act 2000",
+        "summary": "Primary employment legislation governing employment relationships, collective bargaining, personal grievances, and minimum employment standards. Emphasizes good faith in employment relationships. Recent amendments strengthened protections for contractors and gig workers.",
+        "whyItMatters": "Governs DocuSign's employment relationships in New Zealand. Good faith obligations and strong dismissal protections require robust documentation \u2014 a use case for DocuSign.",
+        "complianceImplications": "Ensure NZ employment agreements comply with mandatory provisions. Maintain good faith in all employment dealings. Written employment agreements are mandatory.",
+        "penalties": "Penalties up to NZ$20,000 for individuals and NZ$40,000 for companies for certain breaches. Employment Relations Authority can award remedies including reinstatement and compensation.",
+        "maxPenaltyValue": 40000,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/2000/0024/latest/whole.html"
+        ],
+        "regulator": "Employment Relations Authority / Employment Court",
+        "tags": [
+          "employment",
+          "good-faith",
+          "personal-grievance"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "NZ Climate-Related Disclosures (NZX)",
+        "fullName": "Financial Sector (Climate-related Disclosures and Other Matters) Amendment Act 2021",
+        "summary": "New Zealand was the first country to mandate climate-related financial disclosures. Requires large listed issuers, banks, insurers, and fund managers to make annual disclosures aligned with the TCFD framework (now ISSB). Reporting began for periods starting on or after 1 January 2023.",
+        "whyItMatters": "Relevant to DocuSign's NZX-listed customers. New Zealand's pioneering approach creates early demand for disclosure workflow management tools.",
+        "complianceImplications": "Market opportunity \u2014 NZ entities need document management for mandatory climate disclosures. Understand customer compliance needs.",
+        "penalties": "External Reporting Board (XRB) sets standards. FMA enforcement \u2014 civil pecuniary penalties for non-compliance.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2023-01-01",
+            "label": "First reporting period began"
+          },
+          {
+            "date": "2024-04-30",
+            "label": "First disclosures due"
+          }
+        ],
+        "impactScore": 1,
+        "sourceUrls": [
+          "https://www.legislation.govt.nz/act/public/2021/0039/latest/whole.html"
+        ],
+        "regulator": "External Reporting Board (XRB) / Financial Markets Authority (FMA)",
+        "tags": [
+          "ESG",
+          "climate-disclosure",
+          "TCFD",
+          "NZX"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Data Security & Breach Notification",
+        "type": "legislation",
+        "status": "proposed",
+        "shortName": "NZ Cyber Security Act (Proposed)",
+        "fullName": "Cyber Security Act (Proposed)",
+        "summary": "Proposed legislation to establish a dedicated cybersecurity regulatory framework for New Zealand. Expected to introduce mandatory cybersecurity standards for critical infrastructure, incident reporting requirements, and powers for CERT NZ/NCSC. Bill anticipated in 2026.",
+        "whyItMatters": "If enacted, could impose new cybersecurity obligations on cloud service providers including DocuSign. Monitor development closely.",
+        "complianceImplications": "Monitor legislative developments. Prepare for potential mandatory incident reporting and security standards requirements.",
+        "penalties": "TBD \u2014 legislation not yet introduced",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2026-12-31",
+            "label": "Bill expected to be introduced"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.dpmc.govt.nz/our-programmes/national-security/cyber-security-strategy"
+        ],
+        "regulator": "CERT NZ / National Cyber Security Centre (NCSC)",
+        "tags": [
+          "cybersecurity",
+          "critical-infrastructure",
+          "incident-reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Privacy & Data Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Data Privacy Act of 2012",
+        "fullName": "Data Privacy Act of 2012 (Republic Act No. 10173)",
+        "summary": "Comprehensive data protection law modeled on EU standards, establishing the National Privacy Commission (NPC) as enforcement authority. Governs collection, processing, and storage of personal information with requirements for consent, purpose limitation, data subject rights, breach notification, and registration of data processing systems.",
+        "whyItMatters": "Governs DocuSign's processing of Filipino personal data. NPC actively enforces with compliance orders and has investigated tech companies. Mandatory breach notification within 72 hours. Data processing system registration may be required.",
+        "complianceImplications": "Register data processing systems with NPC if processing Filipino personal data. Implement breach notification procedures (72 hours to NPC, within reasonable time to affected individuals). Appoint a DPO. Comply with data subject rights (access, correction, erasure). Conduct privacy impact assessments for high-risk processing.",
+        "penalties": "Imprisonment of 1 to 6 years and fines from PHP 500,000 to PHP 5,000,000 depending on offence. Unauthorized processing: 1-3 years and PHP 500K-2M. Malicious disclosure: 1.5-5 years and PHP 500K-1M. Unauthorized access: 1-3 years and PHP 500K-2M.",
+        "maxPenaltyValue": 5000000,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2012-08-15",
+            "label": "Data Privacy Act signed"
+          },
+          {
+            "date": "2016-09-09",
+            "label": "Implementing Rules and Regulations effective"
+          },
+          {
+            "date": "2022-12-01",
+            "label": "NPC Circular 2022-04 mandatory registration"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.privacy.gov.ph/data-privacy-act/"
+        ],
+        "regulator": "National Privacy Commission (NPC)",
+        "tags": [
+          "privacy",
+          "data-protection",
+          "NPC",
+          "breach-notification",
+          "registration"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Electronic Signatures & Transactions",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH E-Commerce Act",
+        "fullName": "Electronic Commerce Act of 2000 (Republic Act No. 8792)",
+        "summary": "Provides legal recognition to electronic signatures, electronic documents, and electronic commercial transactions in the Philippines. Establishes that electronic signatures have the same legal effect as handwritten signatures. Recognizes electronic documents as admissible evidence in court.",
+        "whyItMatters": "Core enabling legislation for DocuSign in the Philippines. Validates electronic signatures and documents for commercial transactions. The Supreme Court has affirmed electronic evidence admissibility under the Rules on Electronic Evidence.",
+        "complianceImplications": "Leverage the Act's provisions for electronic signature validity. Ensure audit trails comply with Rules on Electronic Evidence for court admissibility. Educate customers about document exclusions.",
+        "penalties": "Hacking and piracy offences: minimum fine of PHP 100,000 and/or imprisonment of 6 months to 3 years",
+        "maxPenaltyValue": 100000,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2000-06-14",
+            "label": "E-Commerce Act signed into law"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.officialgazette.gov.ph/2000/06/14/republic-act-no-8792/"
+        ],
+        "regulator": "Department of Information and Communications Technology (DICT)",
+        "tags": [
+          "e-commerce",
+          "electronic-signatures",
+          "electronic-documents",
+          "evidence"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Data Security & Breach Notification",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Cybercrime Prevention Act",
+        "fullName": "Cybercrime Prevention Act of 2012 (Republic Act No. 10175)",
+        "summary": "Criminalizes various cyber offences including illegal access, data interference, system interference, misuse of devices, cyber fraud, identity theft, and cyberlibel. Grants law enforcement powers to collect real-time data and preserve computer data. Imposes obligations on service providers for data preservation orders.",
+        "whyItMatters": "As a cloud service provider, DocuSign may receive data preservation orders and must cooperate with law enforcement. The Act's broad definitions of 'service provider' and 'computer data' cover e-signature platforms.",
+        "complianceImplications": "Establish procedures for responding to law enforcement preservation and disclosure orders. Maintain system logs for potential data preservation requirements. Ensure robust security to prevent unauthorized access to customer data.",
+        "penalties": "Imprisonment of 6 to 12 years and/or fines up to PHP 1,000,000 for major offences. Computer-related fraud: 6-12 years. Identity theft: 6-12 years. Illegal access: 6-12 years.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2012-09-12",
+            "label": "Cybercrime Prevention Act signed"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.officialgazette.gov.ph/2012/09/12/republic-act-no-10175/"
+        ],
+        "regulator": "Department of Justice - Office of Cybercrime / DICT",
+        "tags": [
+          "cybercrime",
+          "data-preservation",
+          "law-enforcement",
+          "identity-theft"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Consumer Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Consumer Act",
+        "fullName": "Consumer Act of the Philippines (Republic Act No. 7394)",
+        "summary": "Comprehensive consumer protection legislation covering product and service standards, deceptive sales practices, misleading advertising, and consumer product safety. The Department of Trade and Industry (DTI) enforces consumer protection and can issue cease and desist orders.",
+        "whyItMatters": "Applies to DocuSign's consumer-facing services in the Philippines. DTI can investigate deceptive practices and misleading representations about service capabilities.",
+        "complianceImplications": "Ensure marketing materials and representations are accurate. Comply with consumer protection standards for digital services. DTI may investigate complaints from Filipino consumers.",
+        "penalties": "Fines from PHP 5,000 to PHP 300,000 and/or imprisonment from 1 month to 1 year. DTI administrative penalties for unfair trade practices.",
+        "maxPenaltyValue": 300000,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.dti.gov.ph/"
+        ],
+        "regulator": "Department of Trade and Industry (DTI)",
+        "tags": [
+          "consumer-protection",
+          "deceptive-practices",
+          "DTI"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Anti-Graft and Corrupt Practices Act",
+        "fullName": "Anti-Graft and Corrupt Practices Act (Republic Act No. 3019)",
+        "summary": "Criminalizes corrupt practices by public officers and private individuals who conspire with them. Prohibits receiving or giving bribes, having financial interest in government transactions, and taking advantage of official position. The Sandiganbayan (special anti-graft court) has jurisdiction over cases involving high-ranking officials.",
+        "whyItMatters": "Applies to DocuSign's dealings with Philippine government agencies and public officials. Prohibits giving advantages to government officials in connection with procurement or contracts.",
+        "complianceImplications": "Maintain anti-bribery policies for Philippines government dealings. Vet third-party agents involved in government sales. Document all government procurement interactions.",
+        "penalties": "Imprisonment of 6 to 15 years, perpetual disqualification from public office, and forfeiture of unexplained wealth",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.officialgazette.gov.ph/1960/08/17/republic-act-no-3019/"
+        ],
+        "regulator": "Office of the Ombudsman / Sandiganbayan",
+        "tags": [
+          "anti-corruption",
+          "anti-graft",
+          "government-procurement"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Revised Corporation Code",
+        "fullName": "Revised Corporation Code of the Philippines (Republic Act No. 11232)",
+        "summary": "Modernized the 38-year-old Corporation Code, allowing one-person corporations, perpetual corporate existence, and electronic filing. The Securities and Exchange Commission (SEC) accepts electronic submissions and supports digital transformation of corporate governance processes.",
+        "whyItMatters": "The SEC's push for electronic filing and digital corporate governance creates demand for DocuSign. One-person corporations (OPC) are a growing segment that benefits from simplified digital document execution.",
+        "complianceImplications": "Leverage SEC electronic filing provisions. Position DocuSign for OPC and SME market. Ensure compatibility with SEC filing requirements.",
+        "penalties": "Various \u2014 SEC can impose fines, revoke registration, and impose sanctions for governance violations",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2019-02-20",
+            "label": "Revised Corporation Code signed"
+          },
+          {
+            "date": "2019-02-23",
+            "label": "Effective date"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.sec.gov.ph/"
+        ],
+        "regulator": "Securities and Exchange Commission (SEC)",
+        "tags": [
+          "corporate-governance",
+          "SEC",
+          "one-person-corporation",
+          "electronic-filing"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PH Labor Code",
+        "fullName": "Labor Code of the Philippines (Presidential Decree No. 442)",
+        "summary": "Comprehensive labor legislation governing employment conditions, wages, working hours, benefits, termination, and labor relations. Recent amendments addressed telecommuting (RA 11165) and freelance worker protections. DOLE actively enforces through labor inspections.",
+        "whyItMatters": "Governs DocuSign's employment relationships in the Philippines. Relevant for customers managing employment agreements. Telecommuting Act (2018) is increasingly relevant for remote work arrangements.",
+        "complianceImplications": "Ensure PH employment contracts comply with Labor Code mandatory provisions. Comply with Telecommuting Act for remote workers. Relevant for DocuSign HR and customers.",
+        "penalties": "Various \u2014 DOLE can impose fines and order reinstatement for illegal dismissal. Criminal penalties for anti-labor violations.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2018-12-20",
+            "label": "Telecommuting Act (RA 11165) signed"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.dole.gov.ph/"
+        ],
+        "regulator": "Department of Labor and Employment (DOLE)",
+        "tags": [
+          "employment",
+          "labor-code",
+          "telecommuting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "AI & Emerging Technology",
+        "type": "bill",
+        "status": "proposed",
+        "shortName": "PH AI Development and Regulation Act (Proposed)",
+        "fullName": "Artificial Intelligence Development and Regulation Act (Senate Bill / House Bill)",
+        "summary": "Multiple AI governance bills have been filed in the Philippine Congress proposing a regulatory framework for AI development and use. Key proposals include establishing an AI Development Authority, mandatory AI impact assessments, transparency requirements, and sector-specific regulations. No single bill has yet been enacted.",
+        "whyItMatters": "If enacted, could impose compliance obligations on AI features in DocuSign's products serving Philippine users. Monitor which bill advances and its scope.",
+        "complianceImplications": "Monitor legislative developments. Prepare for potential AI transparency and impact assessment requirements.",
+        "penalties": "TBD \u2014 legislation not yet enacted",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.senate.gov.ph/",
+          "https://www.congress.gov.ph/"
+        ],
+        "regulator": "TBD \u2014 proposed AI Development Authority",
+        "tags": [
+          "AI-governance",
+          "artificial-intelligence",
+          "proposed-legislation"
+        ]
+      }
+    }
+  ],
+  "run_metadata": {
+    "sources_checked": [
+      "Official government legislation databases (AU, NZ, SG, JP, HK, IN, PH)",
+      "Regulatory body websites",
+      "ICLG practice guides",
+      "Chambers practice guides",
+      "Stock exchange listing rules",
+      "DocuSign legality guides"
+    ],
+    "model_used": "claude-opus-4-6",
+    "cost_estimate": 0
+  }
+}

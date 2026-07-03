@@ -1,0 +1,732 @@
+{
+  "entries": [
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "AI & Emerging Technology",
+        "type": "consultation",
+        "status": "consultation",
+        "shortName": "AU Mandatory Guardrails for AI - Consultation",
+        "fullName": "Mandatory Guardrails for AI in High-Risk Settings \u2014 Proposals Paper",
+        "summary": "Government consultation on mandatory guardrails for AI used in high-risk settings (health, employment, credit, law enforcement). Proposes a risk-based framework requiring testing, transparency, human oversight, and accountability for AI systems that significantly affect individuals' rights. Builds on the Voluntary AI Safety Standard.",
+        "whyItMatters": "If DocuSign uses AI for document processing, identity verification, or risk assessment in these high-risk domains, mandatory guardrails would apply directly. Even if not high-risk, the framework signals where AU AI regulation is heading.",
+        "complianceImplications": "Review AI features against proposed high-risk definitions. Prepare AI risk assessments and documentation. Consider participating in the consultation to influence scope.",
+        "penalties": "TBD \u2014 consultation stage. Expected to include administrative penalties.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2025-09-30",
+            "label": "Consultation closed"
+          },
+          {
+            "date": "2026-06-30",
+            "label": "Expected legislation introduction"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.industry.gov.au/publications/proposals-paper-introducing-mandatory-guardrails-ai-high-risk-settings"
+        ],
+        "regulator": "Department of Industry, Science and Resources",
+        "tags": [
+          "AI",
+          "mandatory-guardrails",
+          "consultation",
+          "high-risk-AI"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Privacy & Data Protection",
+        "type": "consultation",
+        "status": "consultation",
+        "shortName": "AU Privacy Act - Children's Online Privacy Code Development",
+        "fullName": "Privacy Act \u2014 Children's Online Privacy Code Development Consultation",
+        "summary": "The OAIC is developing the Children's Online Privacy Code under the Tranche 1 reforms. Consultation on the scope, design principles, and obligations for services likely accessed by children. Expected to impose age-appropriate design requirements on digital services.",
+        "whyItMatters": "Even B2B platforms may be captured if they're 'likely to be accessed by children.' The Code's scope is still being defined and could be broad. Early engagement is important.",
+        "complianceImplications": "Monitor scope definition. If captured, would need to implement age-appropriate privacy protections, data minimization for minors, and potentially age assurance mechanisms.",
+        "penalties": "OAIC enforcement powers under Privacy Act \u2014 civil penalty provisions",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2025-12-31",
+            "label": "Expected draft Code release"
+          },
+          {
+            "date": "2026-12-10",
+            "label": "Statutory deadline for Code completion"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.oaic.gov.au/privacy/the-privacy-act/children-s-online-privacy-code"
+        ],
+        "regulator": "Office of the Australian Information Commissioner (OAIC)",
+        "tags": [
+          "children",
+          "privacy-code",
+          "age-appropriate-design",
+          "consultation"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Data Security & Breach Notification",
+        "type": "bill",
+        "status": "bill_introduced",
+        "shortName": "AU Cyber Security Act 2024",
+        "fullName": "Cyber Security Act 2024",
+        "summary": "Australia's first standalone cybersecurity legislation, passed November 2024. Introduces mandatory ransomware payment reporting for businesses with A$3M+ turnover (within 72 hours), security standards for smart devices, a Cyber Incident Review Board, and a limited-use framework for information shared with the Australian Signals Directorate during incidents.",
+        "whyItMatters": "DocuSign would need to report any ransomware payment to the Australian Signals Directorate within 72 hours. The limited-use framework encourages sharing incident information with government without fear of regulatory action based on that information.",
+        "complianceImplications": "Implement ransomware payment reporting procedures. Assess smart device security standards if applicable. Leverage the limited-use safe harbor for incident information sharing with ASD.",
+        "penalties": "Failure to report ransomware payments: civil penalties up to 60 penalty units (A$18,780). Smart device security: TBD in standards.",
+        "maxPenaltyValue": 18780,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2024-11-29",
+            "label": "Act received Royal Assent"
+          },
+          {
+            "date": "2025-05-29",
+            "label": "Ransomware reporting obligation commences"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.homeaffairs.gov.au/about-us/our-portfolios/cyber-security/legislation"
+        ],
+        "regulator": "Department of Home Affairs / Australian Signals Directorate",
+        "tags": [
+          "cybersecurity",
+          "ransomware-reporting",
+          "smart-devices",
+          "incident-response"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "AU",
+        "category": "Commercial & Contract Law",
+        "type": "bill",
+        "status": "proposed",
+        "shortName": "AU Digital ID Act Expansion",
+        "fullName": "Digital ID Act 2024 \u2014 Expansion to Private Sector",
+        "summary": "The Digital ID Act 2024 established the Australian Government Digital ID System with an accreditation framework. The government is consulting on expanding the scheme to allow private sector organizations to become accredited identity providers and relying parties. Would enable standardized digital identity verification across government and private sector.",
+        "whyItMatters": "Direct opportunity for DocuSign's identity verification and Identify product. If the digital ID framework expands to private sector, DocuSign could integrate with accredited digital IDs for high-assurance signer verification in Australia.",
+        "complianceImplications": "Monitor expansion to private sector. Consider accreditation as a relying party. Integrate with Australian digital ID standards for identity verification features.",
+        "penalties": "Accreditation framework \u2014 non-compliance with accreditation rules, not criminal penalties",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "AUD",
+        "keyDates": [
+          {
+            "date": "2024-12-01",
+            "label": "Digital ID Act commenced"
+          },
+          {
+            "date": "2026-06-30",
+            "label": "Expected private sector expansion consultation"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.digitalidentity.gov.au/"
+        ],
+        "regulator": "Digital Transformation Agency (DTA)",
+        "tags": [
+          "digital-identity",
+          "identity-verification",
+          "accreditation"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "AI & Emerging Technology",
+        "type": "guidance",
+        "status": "proposed",
+        "shortName": "SG Generative AI Model Governance Framework",
+        "fullName": "Proposed Model AI Governance Framework for Generative AI",
+        "summary": "IMDA and AI Verify Foundation are developing a governance framework specifically for generative AI, building on the existing Model AI Governance Framework. Addresses hallucination risks, content provenance, copyright concerns, and responsible deployment. Discussion paper released for industry consultation.",
+        "whyItMatters": "If DocuSign deploys generative AI features (contract drafting, clause generation, document summarization) in Singapore, this framework will set expectations. Singapore's frameworks often become de facto regional standards.",
+        "complianceImplications": "Align any generative AI features with the framework's principles. Implement content provenance and transparency measures. Address hallucination risks in AI-generated legal content.",
+        "penalties": "Non-binding \u2014 but voluntary compliance expected. May inform future regulation.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [
+          {
+            "date": "2025-06-30",
+            "label": "Expected framework publication"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://aiverifyfoundation.sg/"
+        ],
+        "regulator": "IMDA / AI Verify Foundation",
+        "tags": [
+          "generative-AI",
+          "governance-framework",
+          "content-provenance",
+          "LLMs"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Privacy & Data Protection",
+        "type": "regulation",
+        "status": "proposed",
+        "shortName": "SG PDPA Advisory Guidelines on AI",
+        "fullName": "PDPC Advisory Guidelines on Use of Personal Data in AI Recommendation and Decision Systems",
+        "summary": "Updated advisory guidelines from the PDPC addressing how the PDPA applies to AI systems that use personal data for recommendations and decisions. Covers consent for AI training data, notification requirements, data protection impact assessments for AI, and accountability for automated decisions.",
+        "whyItMatters": "Directly applicable if DocuSign uses AI/ML to process personal data of Singapore individuals \u2014 whether for document recommendations, risk scoring, or identity verification.",
+        "complianceImplications": "Review AI data processing against updated guidelines. Ensure consent covers AI/ML use of personal data. Conduct DPIAs for AI features processing Singapore personal data.",
+        "penalties": "PDPA penalties apply \u2014 up to S$1 million or 10% of annual turnover",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [
+          {
+            "date": "2026-03-31",
+            "label": "Expected updated guidelines publication"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.pdpc.gov.sg/guidelines-and-consultation"
+        ],
+        "regulator": "Personal Data Protection Commission (PDPC)",
+        "tags": [
+          "PDPA",
+          "AI",
+          "personal-data",
+          "advisory-guidelines"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "SG",
+        "category": "Electronic Signatures & Transactions",
+        "type": "guidance",
+        "status": "monitoring",
+        "shortName": "SG MLETR Implementation \u2014 Trade Documents",
+        "fullName": "UNCITRAL MLETR Implementation \u2014 Electronic Transferable Records for Trade",
+        "summary": "Singapore adopted MLETR through the 2021 ETA amendments, enabling electronic bills of lading, promissory notes, and other transferable records. IMDA is working with industry to develop standards and use cases for electronic transferable records in trade finance.",
+        "whyItMatters": "Major growth opportunity for DocuSign. Electronic bills of lading and trade documents represent a significant TAM. Singapore is positioning as a global hub for digital trade documents.",
+        "complianceImplications": "Monitor standards development. Position DocuSign's platform for electronic transferable record use cases. Engage with IMDA's industry working groups.",
+        "penalties": "N/A \u2014 enabling framework",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "SGD",
+        "keyDates": [
+          {
+            "date": "2026-12-31",
+            "label": "Expected industry standards finalization"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.imda.gov.sg/"
+        ],
+        "regulator": "Infocomm Media Development Authority (IMDA)",
+        "tags": [
+          "MLETR",
+          "electronic-transferable-records",
+          "trade-finance",
+          "bills-of-lading"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Privacy & Data Protection",
+        "type": "bill",
+        "status": "bill_introduced",
+        "shortName": "JP APPI Amendment Bill 2026",
+        "fullName": "Act on Protection of Personal Information \u2014 Amendment Bill 2026",
+        "summary": "Major amendment bill submitted to the Diet introducing GDPR-style administrative fines (kacho-kin), streamlined breach reporting requirements, potential reclassification of biometric data as sensitive personal information, strengthened protections for minors, and new rules on automated decision-making. The most significant reform since the 2020 amendment.",
+        "whyItMatters": "Administrative fines would dramatically increase DocuSign's compliance risk in Japan. Biometric data reclassification could affect identity verification features. Automated decision-making rules may apply to AI-powered contract analysis.",
+        "complianceImplications": "Budget for significant compliance uplift. Review identity verification features for biometric data handling. Prepare for administrative fine regime. Assess automated decision-making features against new rules.",
+        "penalties": "Proposed administrative fines \u2014 quantum under deliberation but expected to be proportional to revenue, similar to GDPR",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2026-03-01",
+            "label": "Amendment bill submitted to Diet"
+          },
+          {
+            "date": "2026-06-30",
+            "label": "Expected Diet passage"
+          },
+          {
+            "date": "2027-04-01",
+            "label": "Expected enforcement date"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.ppc.go.jp/en/"
+        ],
+        "regulator": "Personal Information Protection Commission (PPC)",
+        "tags": [
+          "APPI",
+          "administrative-fines",
+          "biometric-data",
+          "automated-decision-making",
+          "amendment"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Electronic Signatures & Transactions",
+        "type": "guidance",
+        "status": "monitoring",
+        "shortName": "JP Digital Agency \u2014 Hanko Reform Roadmap",
+        "fullName": "Digital Agency Roadmap for Administrative Procedure Digitization (Hanko Reform)",
+        "summary": "The Digital Agency continues to drive elimination of hanko (seal) requirements across government and private sector procedures. The roadmap targets removing stamp requirements from all national government procedures by 2025, with ongoing work to encourage private sector adoption of electronic signatures.",
+        "whyItMatters": "Each hanko requirement that gets removed is a new use case for DocuSign. The Digital Agency's push is the single biggest market tailwind for e-signatures in Japan. Private sector adoption is accelerating.",
+        "complianceImplications": "Track hanko removal progress across government agencies and industries. Align product features and marketing with newly digitized procedures. Partner with Digital Agency initiatives where possible.",
+        "penalties": "N/A \u2014 policy initiative",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2025-12-31",
+            "label": "Target: all national government hanko requirements removed"
+          },
+          {
+            "date": "2026-12-31",
+            "label": "Target: local government digitization milestones"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.digital.go.jp/en/"
+        ],
+        "regulator": "Digital Agency",
+        "tags": [
+          "hanko-reform",
+          "digital-transformation",
+          "administrative-procedures",
+          "e-signatures"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "JP",
+        "category": "Data Security & Breach Notification",
+        "type": "regulation",
+        "status": "proposed",
+        "shortName": "JP Economic Security \u2014 Critical Infrastructure Cybersecurity",
+        "fullName": "Economic Security Promotion Act \u2014 Critical Infrastructure Cybersecurity Regulations",
+        "summary": "Regulations under the Economic Security Promotion Act requiring advance screening of critical software and equipment used in essential infrastructure. Cloud services used by designated critical infrastructure operators may require government pre-approval. Supply chain security requirements being phased in.",
+        "whyItMatters": "If DocuSign's platform is classified as critical software used by Japanese essential infrastructure operators (finance, telecommunications, etc.), it could be subject to government screening. Supply chain requirements may affect how DocuSign procures and deploys infrastructure in Japan.",
+        "complianceImplications": "Monitor designated critical infrastructure definitions. Assess whether DocuSign's services are used by designated operators. Prepare for potential government screening of cloud platforms.",
+        "penalties": "Non-compliance with screening requirements could result in usage prohibition for designated infrastructure",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "JPY",
+        "keyDates": [
+          {
+            "date": "2024-05-17",
+            "label": "Advance screening system commenced"
+          },
+          {
+            "date": "2026-04-01",
+            "label": "Expanded scope of designated industries"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.cao.go.jp/keizai_anzen_hosho/"
+        ],
+        "regulator": "Cabinet Office / National Security Secretariat",
+        "tags": [
+          "economic-security",
+          "critical-infrastructure",
+          "supply-chain",
+          "screening"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Electronic Signatures & Transactions",
+        "type": "regulation",
+        "status": "proposed",
+        "shortName": "IN Digital India Act (Proposed)",
+        "fullName": "Digital India Act (Proposed)",
+        "summary": "Proposed comprehensive digital legislation to replace the Information Technology Act 2000. Expected to modernize the legal framework for online platforms, intermediary liability, digital competition, user safety, and emerging technologies. Multiple rounds of consultation completed. Would overhaul the e-signature and electronic records framework.",
+        "whyItMatters": "Would fundamentally reshape the legal basis for electronic signatures and digital transactions in India. The current IT Act 2000 is DocuSign's primary enabling legislation \u2014 its replacement could change compliance requirements significantly.",
+        "complianceImplications": "Monitor closely \u2014 this would replace the IT Act that underpins DocuSign's legal validity in India. Engage with consultations to ensure e-signature provisions remain favorable. Prepare for potential new intermediary obligations.",
+        "penalties": "TBD \u2014 expected to introduce graduated penalty framework",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2026-12-31",
+            "label": "Bill expected to be introduced in Parliament"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.meity.gov.in/digital-india-act"
+        ],
+        "regulator": "Ministry of Electronics and Information Technology (MeitY)",
+        "tags": [
+          "digital-india-act",
+          "IT-Act-replacement",
+          "intermediary-liability",
+          "e-signatures"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Privacy & Data Protection",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "IN DPDP Rules 2025",
+        "fullName": "Digital Personal Data Protection Rules, 2025",
+        "summary": "Implementing rules for the DPDP Act 2023, notified on 13 November 2025 with phased commencement. Specify detailed requirements for consent mechanisms, notice formats, data principal rights procedures, breach notification timelines, Significant Data Fiduciary obligations, Data Protection Board procedures, and consent manager registration.",
+        "whyItMatters": "The Rules make the DPDP Act operational. They specify exactly what DocuSign must do \u2014 consent notice format, breach notification timelines (72 hours to Board), verification procedures for data principal rights, and how to handle cross-border transfers.",
+        "complianceImplications": "Implement consent notices in prescribed format. Build data principal rights request workflows with prescribed timelines. Establish 72-hour breach notification to DPBI. Assess if Significant Data Fiduciary designation applies. Register as consent manager if applicable.",
+        "penalties": "Same as DPDP Act \u2014 up to INR 250 crore. Rules specify procedural compliance that triggers Act penalties.",
+        "maxPenaltyValue": 2500000000,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2025-11-13",
+            "label": "Phase 1: Board setup and basic provisions"
+          },
+          {
+            "date": "2026-11-13",
+            "label": "Phase 2: Consent managers and Board inquiry powers"
+          },
+          {
+            "date": "2027-05-13",
+            "label": "Phase 3: All substantive obligations enforceable"
+          }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.meity.gov.in/data-protection-framework"
+        ],
+        "regulator": "Data Protection Board of India (DPBI)",
+        "tags": [
+          "DPDP-Rules",
+          "consent",
+          "breach-notification",
+          "data-principal-rights",
+          "phased-implementation"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "IN",
+        "category": "Commercial & Contract Law",
+        "type": "bill",
+        "status": "bill_introduced",
+        "shortName": "IN Corporate Laws Amendment Bill 2026",
+        "fullName": "Corporate Laws (Amendment) Bill, 2026",
+        "summary": "Proposes amendments to the Companies Act 2013 including fully virtual AGMs/EGMs, mandatory company websites, simplified cross-border mergers, and enhanced digital governance requirements. Referred to Joint Parliamentary Committee for examination in April 2026.",
+        "whyItMatters": "Virtual AGMs and mandatory digital governance create direct demand for DocuSign's platform. If enacted, every Indian company above a certain size would need digital infrastructure for corporate governance \u2014 a significant market opportunity.",
+        "complianceImplications": "Position DocuSign for virtual AGM/EGM market. Ensure platform supports Indian corporate governance requirements for digital meetings and electronic voting.",
+        "penalties": "Companies Act penalty framework applies",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "INR",
+        "keyDates": [
+          {
+            "date": "2026-02-01",
+            "label": "Bill introduced in Parliament"
+          },
+          {
+            "date": "2026-04-01",
+            "label": "Referred to Joint Parliamentary Committee"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.mca.gov.in/"
+        ],
+        "regulator": "Ministry of Corporate Affairs (MCA)",
+        "tags": [
+          "virtual-AGM",
+          "corporate-governance",
+          "digital-meetings",
+          "bill"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Privacy & Data Protection",
+        "type": "consultation",
+        "status": "consultation",
+        "shortName": "HK PDPO Reform \u2014 Mandatory Breach Notification",
+        "fullName": "Personal Data (Privacy) Ordinance Reform \u2014 Mandatory Data Breach Notification and Administrative Fines",
+        "summary": "The PCPD has been advocating for mandatory data breach notification and the introduction of administrative fines under the PDPO. Currently Hong Kong has no mandatory breach reporting and the PCPD lacks power to impose fines directly. Amendments are under active consideration by the government.",
+        "whyItMatters": "If enacted, would require DocuSign to report data breaches involving Hong Kong personal data to PCPD. Administrative fines would increase enforcement risk significantly \u2014 the current regime relies on criminal prosecution which is rarely used.",
+        "complianceImplications": "Prepare breach notification procedures for HK. Budget for potential administrative fine regime. Current voluntary breach notification to PCPD would become mandatory.",
+        "penalties": "Proposed \u2014 administrative fines expected to be modeled on GDPR-style proportional penalties",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          {
+            "date": "2026-12-31",
+            "label": "Expected legislative amendment introduction"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.pcpd.org.hk/"
+        ],
+        "regulator": "Office of the Privacy Commissioner for Personal Data (PCPD)",
+        "tags": [
+          "PDPO",
+          "breach-notification",
+          "administrative-fines",
+          "reform"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "AI & Emerging Technology",
+        "type": "policy",
+        "status": "monitoring",
+        "shortName": "HK AI Governance Policy Statement",
+        "fullName": "Hong Kong SAR Government Policy Statement on Responsible AI",
+        "summary": "The government published a policy statement on responsible development and use of AI, emphasizing a pro-innovation, risk-based approach. HKMA issued specific guidance for AI in banking. The government is monitoring international developments and considering whether sector-specific regulations are needed.",
+        "whyItMatters": "Hong Kong's approach is currently light-touch and pro-innovation, but sector-specific regulations (particularly for financial services) may affect DocuSign's AI features used by HK financial institutions.",
+        "complianceImplications": "Monitor sector-specific AI guidance, particularly from HKMA and SFC. Align AI features with responsible AI principles for financial services use cases.",
+        "penalties": "No direct penalties \u2014 policy guidance. Sectoral regulators may impose requirements on regulated entities.",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.ogcio.gov.hk/"
+        ],
+        "regulator": "OGCIO / Innovation, Technology and Industry Bureau",
+        "tags": [
+          "AI-policy",
+          "responsible-AI",
+          "pro-innovation"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Modern Slavery & Supply Chain",
+        "type": "bill",
+        "status": "proposed",
+        "shortName": "NZ Modern Slavery Act (Proposed)",
+        "fullName": "Modern Slavery and Worker Exploitation \u2014 Proposed Legislation",
+        "summary": "New Zealand is considering modern slavery legislation following Australia and the UK. Proposed measures include mandatory supply chain transparency reporting for large entities, due diligence obligations, and a public register. Multiple advocacy groups and parliamentary inquiries have recommended legislation.",
+        "whyItMatters": "If enacted, would create supply chain reporting obligations similar to Australia's Modern Slavery Act. DocuSign would likely be in scope as a large company operating in NZ.",
+        "complianceImplications": "Monitor legislative developments. If enacted, prepare supply chain due diligence and annual reporting similar to AU Modern Slavery Act compliance.",
+        "penalties": "TBD \u2014 expected to include financial penalties unlike Australia's current regime",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2026-12-31",
+            "label": "Expected bill introduction"
+          }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.parliament.nz/"
+        ],
+        "regulator": "Ministry of Business, Innovation and Employment (MBIE)",
+        "tags": [
+          "modern-slavery",
+          "supply-chain",
+          "transparency-reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "NZ",
+        "category": "Privacy & Data Protection",
+        "type": "consultation",
+        "status": "consultation",
+        "shortName": "NZ Privacy Act Review \u2014 Enforcement Powers",
+        "fullName": "Privacy Act 2020 \u2014 Review of Enforcement and Penalties Regime",
+        "summary": "The Privacy Commissioner has called for strengthened enforcement powers including the ability to impose administrative fines and issue binding orders. Currently the Privacy Commissioner's enforcement tools are limited to compliance notices and naming. The government is reviewing whether GDPR-style administrative fines should be introduced.",
+        "whyItMatters": "If administrative fines are introduced, NZ privacy compliance risk increases substantially. The current regime is relatively low-penalty compared to AU and SG \u2014 this would change the calculus.",
+        "complianceImplications": "Monitor review progress. If fines are introduced, uplift NZ privacy compliance to match the increased enforcement risk.",
+        "penalties": "Proposed \u2014 administrative fines under consideration",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "NZD",
+        "keyDates": [
+          {
+            "date": "2026-06-30",
+            "label": "Expected review report"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.privacy.org.nz/"
+        ],
+        "regulator": "Office of the Privacy Commissioner",
+        "tags": [
+          "privacy",
+          "enforcement",
+          "administrative-fines",
+          "review"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Electronic Signatures & Transactions",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "PH BSP Digital Banking Framework",
+        "fullName": "BSP Circular 1105 \u2014 Digital Banking Framework and E-KYC",
+        "summary": "Bangko Sentral ng Pilipinas framework for digital banking, including electronic know-your-customer (e-KYC) and electronic signature acceptance for financial transactions. Enables banks to onboard customers digitally and accept electronic signatures for account opening and loan agreements.",
+        "whyItMatters": "Opens the Philippine banking sector to electronic signatures for customer onboarding and financial agreements. Direct market opportunity for DocuSign in financial services \u2014 one of the largest industries in the Philippines.",
+        "complianceImplications": "Ensure e-signature workflows meet BSP requirements for financial transactions. Position DocuSign for banking e-KYC and digital onboarding use cases.",
+        "penalties": "BSP supervisory enforcement for regulated financial institutions",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2021-04-23",
+            "label": "Digital Banking Framework issued"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.bsp.gov.ph/"
+        ],
+        "regulator": "Bangko Sentral ng Pilipinas (BSP)",
+        "tags": [
+          "digital-banking",
+          "e-KYC",
+          "financial-services",
+          "electronic-signatures"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Data Security & Breach Notification",
+        "type": "bill",
+        "status": "bill_introduced",
+        "shortName": "PH Critical Information Infrastructure Protection Act (Proposed)",
+        "fullName": "Critical Information Infrastructure Protection Act \u2014 Senate/House Bills",
+        "summary": "Multiple bills filed to establish a legal framework for protecting critical information infrastructure in the Philippines. Would designate critical sectors, require cybersecurity standards, mandatory incident reporting, and regular security audits for CII operators and their service providers.",
+        "whyItMatters": "If DocuSign provides services to designated critical infrastructure sectors in the Philippines (banking, government, telecommunications), it may face new cybersecurity compliance obligations as a service provider.",
+        "complianceImplications": "Monitor bill progress. If enacted, assess whether DocuSign is a service provider to designated CII sectors. Prepare for potential incident reporting and security audit requirements.",
+        "penalties": "TBD \u2014 bills propose imprisonment and fines for non-compliance with security standards",
+        "maxPenaltyValue": null,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2026-06-30",
+            "label": "Expected committee report"
+          }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.senate.gov.ph/"
+        ],
+        "regulator": "Department of Information and Communications Technology (DICT)",
+        "tags": [
+          "critical-infrastructure",
+          "cybersecurity",
+          "CII",
+          "incident-reporting"
+        ]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "PH",
+        "category": "Privacy & Data Protection",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "PH NPC Circular 2023-06 \u2014 Cross-Border Data Transfer",
+        "fullName": "NPC Circular 2023-06 \u2014 Rules on Cross-Border Transfer of Personal Data",
+        "summary": "National Privacy Commission circular establishing rules for cross-border transfers of Filipino personal data. Requires data controllers to conduct assessments before transferring personal data outside the Philippines, ensure adequate protection in receiving countries, and implement contractual safeguards.",
+        "whyItMatters": "DocuSign processes Filipino personal data on infrastructure likely outside the Philippines. Cross-border transfer rules require documented assessments and safeguards for every transfer \u2014 directly affects DocuSign's data architecture.",
+        "complianceImplications": "Conduct cross-border transfer assessments. Implement contractual safeguards (standard contractual clauses or equivalent). Document adequacy of protection in receiving jurisdictions. Maintain records of all cross-border transfers.",
+        "penalties": "Data Privacy Act penalties apply \u2014 up to PHP 5 million and 6 years imprisonment",
+        "maxPenaltyValue": 5000000,
+        "maxPenaltyCurrency": "PHP",
+        "keyDates": [
+          {
+            "date": "2023-10-01",
+            "label": "Circular effective"
+          }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.privacy.gov.ph/memorandum-circulars/"
+        ],
+        "regulator": "National Privacy Commission (NPC)",
+        "tags": [
+          "cross-border-transfer",
+          "personal-data",
+          "NPC",
+          "data-protection"
+        ]
+      }
+    }
+  ],
+  "run_metadata": {
+    "sources_checked": [
+      "Government consultation portals",
+      "Parliamentary tracking",
+      "Regulator announcements",
+      "Industry analysis"
+    ],
+    "model_used": "claude-opus-4-6",
+    "cost_estimate": 0
+  }
+}

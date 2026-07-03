@@ -1,0 +1,350 @@
+{
+  "entries": [
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Privacy & Data Protection",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PDPO",
+        "fullName": "Personal Data (Privacy) Ordinance (Cap. 486)",
+        "summary": "Hong Kong's principal data protection legislation, in force since December 1996. Establishes six Data Protection Principles governing the collection, use, retention, security, transparency and access to personal data. Enforced by the Privacy Commissioner for Personal Data (PCPD). Amended in 2021 to add anti-doxxing provisions with enhanced criminal penalties.",
+        "whyItMatters": "DocuSign processes personal data (names, emails, signatures, IP addresses) of Hong Kong users as part of e-signature workflows. The PDPO governs how DocuSign collects, stores, transfers and uses this data. Cross-border data transfers are permitted but subject to data protection principle requirements, directly affecting DocuSign's cloud infrastructure model.",
+        "complianceImplications": "DocuSign must comply with all six Data Protection Principles including purpose limitation, data minimization, retention limits and security safeguards. A Personal Information Collection Statement (PICS) must be provided to Hong Kong data subjects. Consent is required for direct marketing use. Cross-border transfers must ensure equivalent protection. The PCPD is actively studying mandatory breach notification and AI-related amendments which could impose additional obligations.",
+        "penalties": "Breach of an enforcement notice: fine up to HK$50,000 and 2 years imprisonment, plus HK$1,000 daily penalty for continuing offences. Direct marketing violations: fine up to HK$500,000 and 3 years imprisonment. Selling personal data for direct marketing gain: fine up to HK$1,000,000 and 5 years imprisonment. Doxxing offences: fine up to HK$1,000,000 and 5 years imprisonment.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "1996-12-20", "label": "Ordinance effective date" },
+          { "date": "2021-10-08", "label": "Anti-doxxing amendments effective" },
+          { "date": "2025-07-01", "label": "LegCo debate on AI-era PDPO amendments" },
+          { "date": "2026-12-31", "label": "Expected timeline for proposed mandatory breach notification amendments" }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap486",
+          "https://www.pcpd.org.hk/english/data_privacy_law/ordinance_at_a_Glance/ordinance.html",
+          "https://cms.law/en/int/expert-guides/cms-expert-guide-to-data-protection-and-cyber-security-laws/hong-kong"
+        ],
+        "regulator": "Office of the Privacy Commissioner for Personal Data (PCPD)",
+        "tags": ["data-protection", "privacy", "personal-data", "cross-border-transfer", "consent", "breach-notification", "anti-doxxing", "direct-marketing"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Electronic Signatures & Transactions",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "ETO",
+        "fullName": "Electronic Transactions Ordinance (Cap. 553)",
+        "summary": "Enacted in January 2000, the ETO provides the legal framework for electronic signatures and electronic records in Hong Kong. It accords electronic records and electronic signatures the same legal status as paper-based counterparts. The Ordinance recognizes both simple electronic signatures and certificate-based digital signatures, with the latter enjoying a statutory presumption of authenticity. Amended in January 2024 to expand the scope of electronic service of documents.",
+        "whyItMatters": "This is the single most critical Hong Kong law for DocuSign's core business. The ETO directly validates the legal enforceability of DocuSign's electronic signatures in Hong Kong. DocuSign's standard e-signatures qualify under the broad ETO definition, and its digital signature products can meet the higher certificate-based standard for transactions requiring stronger assurance.",
+        "complianceImplications": "DocuSign must ensure its e-signature products satisfy the ETO's functional equivalence test: reliable identification of signatory and clear intent to sign. For certificate-based digital signatures, DocuSign must use certificates from recognized certification authorities to benefit from statutory presumptions. Key exclusions apply: wills, powers of attorney, land conveyances, and floating charges cannot use e-signatures. DocuSign should clearly communicate these limitations to Hong Kong customers.",
+        "penalties": "The ETO itself does not impose direct criminal penalties for the use of electronic signatures. However, documents signed electronically that do not meet ETO requirements may be deemed legally invalid, exposing parties to contractual disputes and unenforceability.",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2000-01-07", "label": "ETO effective date" },
+          { "date": "2004-07-01", "label": "Major amendments effective" },
+          { "date": "2024-01-01", "label": "Electronic Transactions (Amendment) Ordinance 2024 effective" }
+        ],
+        "impactScore": 5,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap553",
+          "https://www.digitalpolicy.gov.hk/en/our_work/digital_infrastructure/legal_framework/regulation/eto/",
+          "https://www.docusign.com/products/electronic-signature/legality/hong-kong"
+        ],
+        "regulator": "Digital Policy Office (DPO)",
+        "tags": ["e-signature", "electronic-records", "digital-signature", "certification-authority", "contract-validity", "legal-framework"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "SFO",
+        "fullName": "Securities and Futures Ordinance (Cap. 571)",
+        "summary": "The principal legislation regulating Hong Kong's securities and futures industry. Governs financial products, market conduct, licensing of intermediaries, and investor protection. The SFC enforces corporate governance requirements for listed companies and has confirmed that digital signatures from recognized certification authorities are acceptable for client verification and account opening.",
+        "whyItMatters": "DocuSign serves financial institutions in Hong Kong that are regulated under the SFO. The SFC's acceptance of digital signatures for client onboarding and account opening directly validates DocuSign's use in the securities industry. Corporate governance reforms effective July 2025 may increase demand for auditable, digitally-signed board and compliance documentation.",
+        "complianceImplications": "DocuSign must ensure its products meet the SFC's requirements for digital signatures used in regulated financial services (client verification, account opening, compliance documentation). Licensed corporations using DocuSign must maintain records that satisfy SFC record-keeping requirements. The July 2025 corporate governance code reforms emphasize board effectiveness and may drive adoption of digital workflow tools.",
+        "penalties": "Market misconduct: civil fines up to HK$10,000,000 or 3x profit gained. Criminal penalties for insider dealing and market manipulation: up to HK$10,000,000 and 10 years imprisonment. Licensing breaches: fines up to HK$1,000,000 and 2 years imprisonment.",
+        "maxPenaltyValue": 10000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2003-04-01", "label": "SFO effective date" },
+          { "date": "2025-07-01", "label": "Corporate Governance Code amendments effective" }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap571",
+          "https://www.sfc.hk",
+          "https://www.skadden.com/insights/publications/2024/12/hkex-implements-corporate-governance-reforms"
+        ],
+        "regulator": "Securities and Futures Commission (SFC)",
+        "tags": ["securities", "financial-services", "corporate-governance", "digital-signature", "client-onboarding", "listed-companies"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Commercial & Contract Law",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Competition Ordinance",
+        "fullName": "Competition Ordinance (Cap. 619)",
+        "summary": "Hong Kong's principal competition law, fully effective since December 2015. Prohibits anti-competitive agreements (First Conduct Rule), abuse of substantial market power (Second Conduct Rule), and anti-competitive mergers in the telecommunications sector (Merger Rule). Enforced by the Competition Commission with proceedings before the Competition Tribunal.",
+        "whyItMatters": "As a dominant player in the e-signature and digital agreement market, DocuSign must be aware of Hong Kong competition law when structuring exclusive partnerships, bundling services, or engaging in pricing strategies that could be seen as leveraging market power. Any cooperation agreements with competitors in the digital transaction management space could trigger First Conduct Rule scrutiny.",
+        "complianceImplications": "DocuSign should ensure its commercial agreements, distribution partnerships, and pricing practices in Hong Kong do not constitute anti-competitive conduct. Exclusive dealing arrangements and tying/bundling of products require competition law review. The Competition Commission is increasing enforcement activity and an uptick in Tribunal cases is expected in 2026.",
+        "penalties": "Pecuniary penalties of up to 10% of Hong Kong turnover for each year of infringement, up to a maximum of three years. Director disqualification orders up to 5 years. Destroying or falsifying documents: fine up to HK$1,000,000 and 2 years imprisonment.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2015-12-14", "label": "Competition Ordinance fully effective" },
+          { "date": "2026-08-31", "label": "Review of block exemption order for vessel sharing agreements" }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap619",
+          "https://www.compcomm.hk/en/legislation_guidance/legislation/legislation/comp_ordinance_cap619.html",
+          "https://www.nortonrosefulbright.com/en-hk/knowledge/publications/3cd04062/competition-law-fact-sheet-hong-kong"
+        ],
+        "regulator": "Competition Commission",
+        "tags": ["competition", "antitrust", "market-power", "anti-competitive-agreements", "merger-control"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "AMLO",
+        "fullName": "Anti-Money Laundering and Counter-Terrorist Financing Ordinance (Cap. 615)",
+        "summary": "Hong Kong's principal AML/CFT legislation, effective since April 2012. Mandates customer due diligence (CDD), record-keeping, and suspicious transaction reporting for financial institutions and designated non-financial businesses and professions. Adopts a risk-based supervisory approach. Amended to cover virtual asset service providers and expand CDD requirements including acceptance of iAM Smart digital identity verification.",
+        "whyItMatters": "DocuSign's identity verification and e-signature products are used by Hong Kong financial institutions and DNFBPs to support AML/KYC onboarding workflows. The AMLO's acceptance of electronic identity verification (including iAM Smart) creates opportunities for DocuSign's identity verification solutions. Financial institution customers require DocuSign workflows to maintain compliant audit trails for CDD records.",
+        "complianceImplications": "DocuSign must ensure its identity verification and e-signature products can support customers' AMLO compliance obligations, including robust audit trails, tamper-evident records, and retention of CDD documentation. DocuSign's products used in financial services onboarding must be capable of integrating with Hong Kong's iAM Smart digital identity system. Record retention requirements under AMLO are typically 6 years.",
+        "penalties": "Knowing breach of CDD/record-keeping: fine up to HK$1,000,000 and 2 years imprisonment. Breach with intent to defraud: fine up to HK$1,000,000 and 7 years imprisonment. Administrative pecuniary penalty: up to HK$10,000,000 or 3x profit gained/costs avoided. Failure to file suspicious transaction report: fine up to HK$50,000 and 3 months imprisonment.",
+        "maxPenaltyValue": 10000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2012-04-01", "label": "AMLO effective date" },
+          { "date": "2023-06-01", "label": "VASP licensing regime effective" }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap615",
+          "https://www.hkma.gov.hk/eng/key-functions/banking/anti-money-laundering-and-counter-financing-of-terrorism/ordinances-statutory-guidelines/",
+          "https://www.sfc.hk/en/faqs/intermediaries/supervision/Anti-Money-Laundering-and-Counter-Financing-of-Terrorism/Anti-Money-Laundering-and-Counter-Financing-of-Terrorism"
+        ],
+        "regulator": "Hong Kong Monetary Authority (HKMA) / Securities and Futures Commission (SFC)",
+        "tags": ["aml", "cft", "kyc", "customer-due-diligence", "identity-verification", "financial-services", "record-keeping"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Anti-Corruption & Bribery",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "POBO",
+        "fullName": "Prevention of Bribery Ordinance (Cap. 201)",
+        "summary": "Hong Kong's primary anti-bribery legislation, enacted in 1971 and enforced by the Independent Commission Against Corruption (ICAC). Covers both public and private sector corruption, prohibiting the offering, soliciting and acceptance of bribes of any value or kind. Amended in June 2025 to expand the list of public bodies covered. Penalizes both supply and demand sides of corruption.",
+        "whyItMatters": "DocuSign must ensure its sales practices, channel partnerships, and government contracting activities in Hong Kong comply with anti-bribery requirements. The POBO's broad scope covering private sector corruption means that any improper inducements in commercial dealings, including technology procurement, are criminal offences. DocuSign's contract management platform can also help customers maintain auditable records demonstrating anti-corruption compliance.",
+        "complianceImplications": "DocuSign must maintain robust anti-bribery policies for its Hong Kong operations, covering sales teams, channel partners, and any government-facing activities. Gifts, hospitality, and facilitation payments to both public officials and private sector counterparts must be carefully controlled. The POBO applies to any agent who solicits or accepts an advantage, making it relevant to DocuSign's partner and reseller relationships.",
+        "penalties": "Section 3 offences (public sector): fine up to HK$100,000 and 1 year imprisonment. Sections 4-8 offences (corruption of public servants, Crown servants): fine up to HK$500,000 and 7-10 years imprisonment. Section 9 (private sector corruption): fine up to HK$500,000 and 7 years imprisonment. Section 10 (possession of unexplained property): fine up to HK$1,000,000 and 10 years imprisonment.",
+        "maxPenaltyValue": 1000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "1971-05-14", "label": "POBO enacted" },
+          { "date": "2025-06-20", "label": "Amendment Order expanding public bodies list effective" }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap201",
+          "https://www.icac.org.hk/en/intl-persp/control/anti-corruption-laws/index.html",
+          "https://practiceguides.chambers.com/practice-guides/anti-corruption-2026/hong-kong/trends-and-developments"
+        ],
+        "regulator": "Independent Commission Against Corruption (ICAC)",
+        "tags": ["anti-bribery", "corruption", "icac", "public-sector", "private-sector", "compliance"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Employment & Workplace",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Employment Ordinance",
+        "fullName": "Employment Ordinance (Cap. 57)",
+        "summary": "Hong Kong's principal employment legislation, enacted in 1968. Prescribes basic employee rights and protections including wages, rest days, holidays, severance, and termination. Employment contracts need not be in writing. Amended effective January 2026 to lower the continuous employment threshold to 4 weeks of 68 aggregate hours (or 17 hours per week), expanding the coverage of statutory employment protections.",
+        "whyItMatters": "DocuSign's e-signature platform is used for employment contracts, offer letters, HR policy acknowledgments, and termination documentation. While the Employment Ordinance does not require written contracts, best practice is to document employment terms, creating demand for efficient digital signing workflows. The 2026 amendment expanding continuous employment coverage increases the population of employees requiring formal documentation.",
+        "complianceImplications": "DocuSign should ensure its platform can support Hong Kong employment document workflows including bilingual (English/Chinese) contracts. While e-signatures are generally valid for employment documents under the ETO, DocuSign should advise customers on best practices for evidencing employee consent. DocuSign's own Hong Kong employees are protected under this Ordinance, requiring compliance with wage payment, leave, and termination provisions.",
+        "penalties": "Failure to pay wages: fine up to HK$350,000 and 3 years imprisonment. Willful failure to comply with Labour Tribunal award: fine up to HK$350,000 and 3 years imprisonment. Various other offences carry fines of HK$100,000 to HK$350,000.",
+        "maxPenaltyValue": 350000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "1968-01-01", "label": "Employment Ordinance enacted" },
+          { "date": "2026-01-18", "label": "Amended continuous employment threshold effective" }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap57",
+          "https://www.labour.gov.hk/eng/legislat/content2.htm",
+          "https://iclg.com/practice-areas/employment-and-labour-laws-and-regulations/hong-kong"
+        ],
+        "regulator": "Labour Department",
+        "tags": ["employment", "labour", "contracts", "wages", "continuous-employment", "hr-documents"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Corporations & Governance",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "Companies Ordinance",
+        "fullName": "Companies Ordinance (Cap. 622)",
+        "summary": "The principal legislation governing company formation, administration, and dissolution in Hong Kong, effective since March 2014. Provides for execution of documents with or without a company's common seal. Documents can be sufficiently authenticated in any manner the Ordinance provides, including electronic means. Governs directors' duties, shareholder rights, accounts, and corporate record-keeping.",
+        "whyItMatters": "The Companies Ordinance directly affects how Hong Kong companies execute corporate documents, including contracts, deeds, board resolutions, and shareholder agreements. DocuSign's platform is used for these corporate transactions. The Ordinance's acceptance of document execution without a common seal and its flexible authentication provisions support electronic execution via DocuSign.",
+        "complianceImplications": "DocuSign must ensure its platform supports the Companies Ordinance requirements for corporate document execution, including proper authorization chains (two directors, or one director plus company secretary). For deeds, specific execution formalities must be met. DocuSign should support customers in maintaining corporate records in compliance with statutory retention requirements. Board minutes and written resolutions signed via DocuSign should meet authentication standards.",
+        "penalties": "Failure to maintain proper company records: fine up to HK$150,000 and daily default fine of HK$700. Filing false or misleading information: fine up to HK$150,000 and 2 years imprisonment. Various director duty breaches: fines ranging from HK$10,000 to HK$300,000 and imprisonment up to 2 years.",
+        "maxPenaltyValue": 300000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2014-03-03", "label": "Companies Ordinance (Cap. 622) effective date" }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.elegislation.gov.hk/hk/cap622",
+          "https://www.cr.gov.hk/en/legislation/companies-ordinance/cap622/companies-ordinance.htm",
+          "https://www.kwm.com/hk/en/insights/latest-thinking/execution-of-documents-under-Hong-Kong-Law.html"
+        ],
+        "regulator": "Companies Registry",
+        "tags": ["corporate-governance", "company-law", "document-execution", "common-seal", "board-resolutions", "deeds", "authentication"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Data Security & Breach Notification",
+        "type": "legislation",
+        "status": "in_force",
+        "shortName": "PCIO",
+        "fullName": "Protection of Critical Infrastructures (Computer Systems) Ordinance",
+        "summary": "Hong Kong's first dedicated cybersecurity law, passed on 19 March 2025 and effective 1 January 2026. Requires operators of critical infrastructure in eight designated sectors (energy, IT, banking/financial services, air transport, land transport, maritime transport, healthcare, and telecommunications) to implement computer system security management plans, conduct risk assessments, perform penetration tests, and report cybersecurity incidents. A Commissioner's Office will oversee enforcement.",
+        "whyItMatters": "DocuSign may be designated as a supplier to critical infrastructure operators in Hong Kong, particularly in the banking/financial services and telecommunications sectors. Even if not directly designated, DocuSign's platform processes sensitive documents for CI operators, meaning its cybersecurity practices will face indirect scrutiny. DocuSign's customers in designated sectors will require their technology vendors to meet heightened security standards.",
+        "complianceImplications": "DocuSign should prepare for increased cybersecurity due diligence requirements from Hong Kong CI operator customers, including security assessments, penetration test reports, and incident notification capabilities. If DocuSign's infrastructure is classified as part of a Critical Computer System, it would be directly subject to security management plan requirements, mandatory audits, and incident reporting obligations. Phased designation of CI and CCS expected from mid-2026.",
+        "penalties": "Fines ranging from HK$500,000 to HK$5,000,000 depending on offence severity. Daily penalties of HK$50,000 to HK$100,000 for continuing breaches. Penalties apply at organizational level, not to individuals.",
+        "maxPenaltyValue": 5000000,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2025-03-19", "label": "Ordinance passed by Legislative Council" },
+          { "date": "2026-01-01", "label": "Ordinance effective date" },
+          { "date": "2026-03-31", "label": "Expected establishment of Commissioner's Office" },
+          { "date": "2026-06-30", "label": "Expected commencement of CI/CCS designation (phased)" }
+        ],
+        "impactScore": 4,
+        "sourceUrls": [
+          "https://www.ashurst.com/en/insights/hong-kong-passes-new-cybersecurity-law-what-you-need-to-know/",
+          "https://www.mayerbrown.com/en/insights/publications/2025/07/hong-kong-passes-first-cybersecurity-legislation-for-regulating-critical-infrastructures",
+          "https://connectontech.bakermckenzie.com/hong-kongs-new-cyber-law-protection-of-critical-infrastructures-computer-systems-ordinance/"
+        ],
+        "regulator": "Commissioner's Office (to be established under the Security Bureau)",
+        "tags": ["cybersecurity", "critical-infrastructure", "incident-reporting", "security-management", "penetration-testing", "risk-assessment"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "AI & Emerging Technology",
+        "type": "guidance",
+        "status": "in_force",
+        "shortName": "Ethical AI Framework & GenAI Guidelines",
+        "fullName": "Ethical Artificial Intelligence Framework and Generative AI Technical and Application Guidelines",
+        "summary": "Hong Kong does not yet have standalone AI legislation. Instead, the Digital Policy Office has issued voluntary frameworks: the Ethical AI Framework (July 2024) outlining governance principles, lifecycle guidance, and impact assessment templates; and the Generative AI Technical and Application Guidelines (April 2025) proposing five key principles including legal compliance, security, transparency, accuracy, and reliability. Sector-specific guidance has been issued by the HKMA for consumer-facing GenAI in banking.",
+        "whyItMatters": "DocuSign increasingly incorporates AI features into its products (e.g., AI-assisted contract analysis, intelligent document processing). While these guidelines are currently voluntary, they signal Hong Kong's regulatory direction. The PCPD is actively studying mandatory AI-related amendments to the PDPO, which could impose binding requirements on AI-powered features in DocuSign's products. Financial sector customers are subject to HKMA guidance on GenAI use.",
+        "complianceImplications": "DocuSign should align its AI features with the Ethical AI Framework's principles as a matter of best practice and market readiness. Key areas include algorithmic transparency, data traceability, and explainability of AI-driven recommendations. DocuSign should monitor the PCPD's proposed PDPO amendments regarding mandatory AI audits and algorithmic explainability. Insurance Authority guidelines expected in 2026 may affect DocuSign's insurance industry customers.",
+        "penalties": "No direct penalties as guidelines are voluntary. However, failure to follow sector-specific guidance (e.g., HKMA circulars) may lead to regulatory action by the relevant sector regulator. Non-compliance with eventual mandatory PDPO AI amendments could attract PDPO penalties.",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2024-07-01", "label": "Ethical AI Framework issued by Digital Policy Office" },
+          { "date": "2025-04-01", "label": "Generative AI Technical and Application Guidelines issued" },
+          { "date": "2025-07-01", "label": "LegCo debate on AI-era PDPO amendments" },
+          { "date": "2026-12-31", "label": "Insurance Authority updated AI guidelines expected" }
+        ],
+        "impactScore": 3,
+        "sourceUrls": [
+          "https://www.digitalpolicy.gov.hk/en/our_work/data_governance/policies_standards/ethical_ai_framework/",
+          "https://cms.law/en/int/expert-guides/ai-regulation-scanner/hong-kong",
+          "https://www.whitecase.com/insight-our-thinking/ai-watch-global-regulatory-tracker-hong-kong"
+        ],
+        "regulator": "Digital Policy Office (DPO) / Office of the Privacy Commissioner for Personal Data (PCPD)",
+        "tags": ["artificial-intelligence", "generative-ai", "ethical-ai", "algorithmic-transparency", "voluntary-guidelines", "sector-specific"]
+      }
+    },
+    {
+      "action": "create",
+      "data": {
+        "jurisdiction": "HK",
+        "category": "Sustainability & ESG",
+        "type": "regulation",
+        "status": "in_force",
+        "shortName": "HKEX ESG Reporting Code",
+        "fullName": "HKEX Environmental, Social and Governance Reporting Code (Appendix C2) and Enhanced Climate Disclosure Requirements",
+        "summary": "Mandatory ESG reporting requirements for companies listed on the Hong Kong Stock Exchange, aligned with IFRS S2 Climate-related Disclosures standard. Effective from January 2025 with phased implementation: all Main Board issuers must disclose Scope 1 and 2 GHG emissions; Large Cap issuers must comply with full enhanced climate requirements (governance, strategy, risk management, metrics/targets) on a mandatory basis for financial years commencing on or after 1 January 2026. Reasonable Information Relief available.",
+        "whyItMatters": "DocuSign's listed company customers in Hong Kong will need to prepare, review, sign, and file ESG reports and climate disclosures. This creates demand for DocuSign's agreement management and workflow solutions in the ESG reporting lifecycle. DocuSign may also face ESG reporting expectations from enterprise customers conducting vendor due diligence on sustainability practices.",
+        "complianceImplications": "DocuSign is not directly subject to HKEX ESG reporting (unless it lists in Hong Kong), but its enterprise customers will increasingly require ESG-related documentation workflows. DocuSign should ensure its platform can support climate disclosure document preparation, board sign-off on ESG reports, and audit trail maintenance. DocuSign should also be prepared to respond to ESG questionnaires from Hong Kong listed company customers regarding its own sustainability practices.",
+        "penalties": "Non-compliance with Listing Rules may result in HKEX disciplinary action including public censure, suspension of trading, or delisting. No specific monetary fine for ESG non-compliance but general Listing Rule breach penalties apply.",
+        "maxPenaltyValue": 0,
+        "maxPenaltyCurrency": "HKD",
+        "keyDates": [
+          { "date": "2025-01-01", "label": "Enhanced climate disclosure requirements effective (comply or explain)" },
+          { "date": "2026-01-01", "label": "Mandatory enhanced climate disclosure for Large Cap issuers" },
+          { "date": "2027-01-01", "label": "Expected extension of mandatory requirements to all Main Board issuers" }
+        ],
+        "impactScore": 2,
+        "sourceUrls": [
+          "https://www.hkex.com.hk/News/Regulatory-Announcements/2024/240419news?sc_lang=en",
+          "https://en-rules.hkex.com.hk/rulebook/appendix-c2-environmental-social-and-governance-reporting-code-0",
+          "https://www.seyfarth.com/news-insights/hkexs-enhanced-climate-disclosure-requirements.html"
+        ],
+        "regulator": "Hong Kong Exchanges and Clearing Limited (HKEX)",
+        "tags": ["esg", "climate-disclosure", "sustainability", "ghg-emissions", "ifrs-s2", "listed-companies", "reporting"]
+      }
+    }
+  ],
+  "run_metadata": {
+    "sources_checked": [
+      "https://www.elegislation.gov.hk",
+      "https://www.pcpd.org.hk",
+      "https://www.digitalpolicy.gov.hk",
+      "https://www.sfc.hk",
+      "https://www.compcomm.hk",
+      "https://www.hkma.gov.hk",
+      "https://www.icac.org.hk",
+      "https://www.labour.gov.hk",
+      "https://www.cr.gov.hk",
+      "https://www.hkex.com.hk",
+      "https://cms.law",
+      "https://www.ashurst.com",
+      "https://www.mayerbrown.com",
+      "https://www.docusign.com"
+    ],
+    "model_used": "claude-opus-4-6 with web search",
+    "cost_estimate": 0
+  }
+}
