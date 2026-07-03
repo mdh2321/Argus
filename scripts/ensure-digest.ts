@@ -4,7 +4,10 @@
 //
 // Usage: npm run digest:ensure [-- --force] [-- --redeliver]
 //   --force      re-run the pipeline even if this week's issue exists
-//   --redeliver  re-send email/telegram even if already marked delivered
+//   --redeliver  re-send telegram even if already marked delivered
+//
+// Must run with --conditions=react-server (the npm script does) so that
+// `server-only` imports in src/lib resolve to the empty stub.
 
 // Load env from .env.local before importing anything that needs it.
 import fs from "fs";
@@ -85,25 +88,42 @@ if (fs.existsSync(envPath)) {
   }
 
   const delivery = await deliverDigest(issue.id);
-  console.log(`[ensure] delivery: email=${delivery.email} telegram=${delivery.telegram}`);
+  console.log(`[ensure] delivery: telegram=${delivery.telegram}`);
   for (const e of delivery.errors) console.error(`[ensure] delivery error: ${e}`);
 
-  if (delivery.email === "sent" || delivery.telegram === "sent") {
+  if (delivery.telegram === "sent") {
     db.update(digestIssues)
       .set({ deliveredAt: new Date().toISOString() })
       .where(eq(digestIssues.id, issue.id))
       .run();
+
+    // 3. Refresh dashboard signals off the fresh week's data. Runs only on a
+    // successful first delivery, so cadence (and cost — one Sonnet call) is
+    // weekly. Non-fatal: the digest is already out.
+    try {
+      const { generateSignals } = await import("../src/lib/signals-ai");
+      const { logAgentRun } = await import("../src/lib/agent-runs");
+      const created = await generateSignals();
+      await logAgentRun({
+        workflow: "signals",
+        modelUsed: "claude-sonnet-4-6",
+        entriesCreated: created.length,
+      });
+      console.log(`[ensure] signals refreshed: ${created.length} active`);
+    } catch (err) {
+      console.error("[ensure] signals refresh FAILED (non-fatal):", err instanceof Error ? err.message : String(err));
+    }
     process.exit(0);
   }
 
-  if (delivery.email === "failed" || delivery.telegram === "failed") {
+  if (delivery.telegram === "failed") {
     await sendFailureAlert(
       `Digest for week of ${weekStart} generated but delivery failed:\n${delivery.errors.join("\n")}`
     );
     process.exit(1);
   }
 
-  // Both skipped (channels unconfigured) — leave undelivered so tomorrow retries.
-  console.warn("[ensure] no delivery channel configured — set RESEND_API_KEY/DIGEST_EMAIL_TO and/or DIGEST_TELEGRAM_CHAT_ID");
+  // Skipped (channel unconfigured) — leave undelivered so tomorrow retries.
+  console.warn("[ensure] telegram not configured — set TELEGRAM_BOT_TOKEN and DIGEST_TELEGRAM_CHAT_ID");
   process.exit(0);
 })();

@@ -142,8 +142,12 @@ Only reference IDs that actually appear in the data above. If data is sparse, ge
     messages: [{ role: "user", content: prompt }],
   });
 
-  const text =
-    response.content[0].type === "text" ? response.content[0].text : "";
+  const text = (
+    response.content[0].type === "text" ? response.content[0].text : ""
+  )
+    .replace(/^```(?:json)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
   const parsed = JSON.parse(text) as {
     signals: Array<{
       title: string;
