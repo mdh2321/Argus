@@ -108,6 +108,37 @@ export function getJurisdictionConfig(code: string): JurisdictionConfig | undefi
   return JURISDICTION_CONFIGS.find((j) => j.code === code);
 }
 
+// Regulator RSS/RDF feeds per jurisdiction (B1 pre-seed layer). RSS is ground
+// truth where Exa's date filter drops regulator pages with missing published
+// metadata. Every URL here was verified live when added; rss.ts treats each
+// feed as best-effort, so a dead feed degrades to a log line, not a failure.
+export const RSS_FEEDS: Record<string, string[]> = {
+  AU: [
+    "https://www.oaic.gov.au/rss",
+    "https://www.accc.gov.au/rss/media_releases.xml",
+    "https://www.apra.gov.au/rss.xml",
+  ],
+  JP: [
+    "https://www.fsa.go.jp/fsaNewsListAll_rss2.xml",
+    "https://www.soumu.go.jp/news.rdf",
+  ],
+  // SG/NZ/HK/IN/PH regulators surveyed 2026-07 — no stable public feeds found
+  // (PDPC/MAS/IMDA/PCPD/MeitY serve HTML at their old feed paths). Add here
+  // as they appear.
+};
+
+// Key regulators per jurisdiction, by common short name — used in topical
+// search queries (B5) so the semantic match lands on regulator output.
+export const KEY_REGULATORS: Record<string, string[]> = {
+  AU: ["OAIC", "ACCC", "ASIC", "APRA"],
+  SG: ["PDPC", "MAS", "IMDA", "CSA"],
+  JP: ["PPC", "FSA", "METI"],
+  NZ: ["Privacy Commissioner", "Commerce Commission"],
+  HK: ["PCPD", "HKMA", "SFC"],
+  IN: ["MeitY", "RBI", "CERT-In", "SEBI"],
+  PH: ["NPC", "BSP", "DICT"],
+};
+
 export const TIER_1_CODES = JURISDICTION_CONFIGS.filter((j) => j.tier === "T1").map((j) => j.code);
 
 // Topic taxonomy — used in the extraction prompt so Haiku knows the categories
@@ -131,45 +162,61 @@ export const SEARCH_TOPICS = [
 export type SearchTopic = (typeof SEARCH_TOPICS)[number];
 
 // Search profile = a single Exa call for a jurisdiction.
-// Multiple profiles per jurisdiction give layered coverage:
-// - regulatory_canonical: regulator + court domains, broad regulatory query
-// - judicial_canonical:   court domains only, judgment-focused query
-// - broad_recent:         no domain restriction — catches law firms, legal publications, news
-// - native_language:      per-jurisdiction non-English pass (currently JP only)
+// Multiple profiles per jurisdiction give layered topical coverage (B5).
+// Queries are date-free — Exa already filters by startPublishedDate/
+// endPublishedDate, so dates in the query text were pure noise diluting the
+// semantic match. Instead each query is topical and names key regulators.
+// - topical_privacy_ai:      privacy / data protection / AI enforcement, official domains
+// - topical_esign_commerce:  e-signature / digital trust / contract law, unrestricted
+// - topical_cyber_platform:  cyber / platform regulation, unrestricted
+// - judicial_canonical:      court domains only, judgment-focused query
+// - native_language:         per-jurisdiction non-English pass (currently JP only)
 export type SearchProfileKind =
-  | "regulatory_canonical"
+  | "topical_privacy_ai"
+  | "topical_esign_commerce"
+  | "topical_cyber_platform"
   | "judicial_canonical"
-  | "broad_recent"
   | "native_language";
 
 export interface SearchProfile {
   kind: SearchProfileKind;
-  buildQuery: (jurisdictionName: string, weekStart: string, weekEnd: string) => string;
+  buildQuery: (jurisdictionName: string, jurisdictionCode: string) => string;
   includeDomainsOf: (j: JurisdictionConfig) => string[] | undefined;
   numResults: number;
 }
 
+function regulators(code: string): string {
+  return (KEY_REGULATORS[code] ?? []).join(" ");
+}
+
 export const SEARCH_PROFILES: SearchProfile[] = [
   {
-    kind: "regulatory_canonical",
-    buildQuery: (name, ws, we) =>
-      `${name} legal regulatory developments published ${ws} to ${we}`,
+    kind: "topical_privacy_ai",
+    buildQuery: (name, code) =>
+      `${name} privacy data protection AI governance regulation enforcement ${regulators(code)}`,
     includeDomainsOf: (j) => [...j.regulatorDomains, ...j.courtDomains],
     numResults: 8,
   },
   {
-    kind: "judicial_canonical",
-    buildQuery: (name, ws, we) =>
-      `${name} court decision ruling judgment ${ws} to ${we}`,
-    includeDomainsOf: (j) => j.courtDomains,
-    numResults: 5,
+    kind: "topical_esign_commerce",
+    buildQuery: (name) =>
+      `${name} electronic signatures electronic transactions digital identity contract law reform`,
+    includeDomainsOf: () => undefined, // unrestricted — catches law firms, legal publications, broader news
+    numResults: 6,
   },
   {
-    kind: "broad_recent",
-    buildQuery: (name, ws, we) =>
-      `${name} technology law regulation enforcement week of ${ws} (through ${we})`,
-    includeDomainsOf: () => undefined, // unrestricted — catches law firms, legal publications, broader news
-    numResults: 10,
+    kind: "topical_cyber_platform",
+    buildQuery: (name, code) =>
+      `${name} cybersecurity incident reporting online safety platform regulation ${regulators(code)}`,
+    includeDomainsOf: () => undefined,
+    numResults: 6,
+  },
+  {
+    kind: "judicial_canonical",
+    buildQuery: (name) =>
+      `${name} court decision ruling judgment technology privacy data`,
+    includeDomainsOf: (j) => j.courtDomains,
+    numResults: 5,
   },
 ];
 
@@ -178,8 +225,8 @@ export const JURISDICTION_EXTRA_PROFILES: Record<string, SearchProfile[]> = {
   JP: [
     {
       kind: "native_language",
-      buildQuery: (_name, ws, we) =>
-        `日本 法律 規制 個人情報保護 金融庁 経済産業省 ${ws} ${we}`,
+      buildQuery: () =>
+        `日本 法律 規制 個人情報保護 人工知能 電子署名 個人情報保護委員会 金融庁 経済産業省 総務省`,
       includeDomainsOf: (j) => [...j.regulatorDomains, ...j.courtDomains],
       numResults: 8,
     },

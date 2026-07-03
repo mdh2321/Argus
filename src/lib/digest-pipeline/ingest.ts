@@ -18,6 +18,7 @@ import { jurisdictionExtractionPrompt, synthesisPrompt, trackerContextString } f
 import { CostGuard } from "./cost-guard";
 import { readCached, writeCached } from "./cache";
 import { extractReferencesForStory } from "./extract-references";
+import { pullFeeds, formatPreSeededStories } from "./rss";
 
 const anthropic = new Anthropic();
 
@@ -270,7 +271,20 @@ async function extractForJurisdiction(
   for (const h of hits) if (!byUrl.has(h.url)) byUrl.set(h.url, h);
   const uniqueHits = Array.from(byUrl.values());
 
-  const stories = await extractStories(j, uniqueHits, ctx);
+  // B1: regulator RSS items inside the week window, injected as pre-seeded
+  // stories. Zero cost; catches regulator pages Exa mis-dates or misses.
+  let preSeeded = "";
+  try {
+    const rssItems = await pullFeeds(j.code, ctx.weekStart, ctx.weekEnd);
+    if (rssItems.length > 0) {
+      console.log(`[digest][${j.code}][rss] ${rssItems.length} pre-seeded item(s) in week window`);
+      preSeeded = formatPreSeededStories(rssItems);
+    }
+  } catch (err) {
+    console.warn(`[digest][${j.code}][rss] pre-seed failed:`, err);
+  }
+
+  const stories = await extractStories(j, uniqueHits, ctx, preSeeded);
   console.log(`[digest][${j.code}] extracted ${stories.length} stories`);
   return stories;
 }
@@ -281,7 +295,7 @@ async function searchAllTopics(j: JurisdictionConfig, ctx: ExtractionContext): P
 
   // Sequential, not parallel — so we don't blow Exa rate limits.
   for (const profile of profiles) {
-    const query = profile.buildQuery(j.name, ctx.weekStart, ctx.weekEnd);
+    const query = profile.buildQuery(j.name, j.code);
     const includeDomains = profile.includeDomainsOf(j);
     try {
       const hits = await exaSearch(
@@ -309,9 +323,10 @@ async function searchAllTopics(j: JurisdictionConfig, ctx: ExtractionContext): P
 async function extractStories(
   j: JurisdictionConfig,
   hits: SearchHit[],
-  ctx: ExtractionContext
+  ctx: ExtractionContext,
+  preSeededStories = ""
 ): Promise<ExtractedStory[]> {
-  if (hits.length === 0) return [];
+  if (hits.length === 0 && !preSeededStories) return [];
 
   const searchHitsBlock = hits
     .map((h, i) => {
@@ -332,7 +347,7 @@ Text: ${text}`;
     endDate: ctx.weekEnd,
     regulatorDomains: j.regulatorDomains,
     courtDomains: j.courtDomains,
-    preSeededStories: "",
+    preSeededStories,
     searchHits: searchHitsBlock,
   });
 
