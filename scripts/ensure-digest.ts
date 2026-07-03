@@ -113,6 +113,35 @@ if (fs.existsSync(envPath)) {
     } catch (err) {
       console.error("[ensure] signals refresh FAILED (non-fatal):", err instanceof Error ? err.message : String(err));
     }
+
+    // 4. Bounded source-freshness pass: re-fetch the sources of the 5
+    // high-impact entries whose docs were checked longest ago (round-robin
+    // via lastUrlCheck, which every refresh bumps). Weekly cadence, no AI
+    // cost — just fetches. Non-fatal.
+    try {
+      const { entries, sourceDocuments } = await import("../src/db/schema");
+      const { refreshSourcesForEntry } = await import("../src/lib/source-refresher");
+      const { gte, and: andOp, sql } = await import("drizzle-orm");
+      const candidates = db
+        .select({
+          entryId: sourceDocuments.entryId,
+          oldestCheck: sql<string>`min(coalesce(${sourceDocuments.lastUrlCheck}, ''))`,
+        })
+        .from(sourceDocuments)
+        .innerJoin(entries, eq(sourceDocuments.entryId, entries.id))
+        .where(andOp(eq(entries.archived, false), gte(entries.impactScore, 4)))
+        .groupBy(sourceDocuments.entryId)
+        .orderBy(sql`min(coalesce(${sourceDocuments.lastUrlCheck}, ''))`)
+        .limit(5)
+        .all();
+      for (const c of candidates) {
+        const outcomes = await refreshSourcesForEntry(c.entryId);
+        const changed = outcomes.filter((o) => o.status === "changed").length;
+        console.log(`[ensure] source refresh ${c.entryId}: ${outcomes.length} docs, ${changed} changed`);
+      }
+    } catch (err) {
+      console.error("[ensure] source refresh FAILED (non-fatal):", err instanceof Error ? err.message : String(err));
+    }
     process.exit(0);
   }
 
