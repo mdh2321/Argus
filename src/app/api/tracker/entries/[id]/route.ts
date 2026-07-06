@@ -18,10 +18,19 @@ export async function GET(
     return NextResponse.json({ error: "Entry not found" }, { status: 404 });
   }
 
+  // Applied change history — excludes AI proposals (status='proposed') and
+  // dismissed ones so the timeline shows only changes that actually happened.
   const changes = await db
     .select()
     .from(entryChanges)
-    .where(eq(entryChanges.entryId, id))
+    .where(and(eq(entryChanges.entryId, id), eq(entryChanges.status, "applied")))
+    .orderBy(desc(entryChanges.changedAt));
+
+  // Pending AI-proposed changes (A1) awaiting approve/dismiss on this entry.
+  const proposedChanges = await db
+    .select()
+    .from(entryChanges)
+    .where(and(eq(entryChanges.entryId, id), eq(entryChanges.status, "proposed")))
     .orderBy(desc(entryChanges.changedAt));
 
   // Fetch parent entry if this is a child (legacy parent_entry_id field).
@@ -165,6 +174,7 @@ export async function GET(
   return NextResponse.json({
     entry: serializeEntry(entry),
     changes,
+    proposedChanges,
     parentEntry,
     childEntries,
     relatedSubordinates,

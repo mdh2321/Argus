@@ -54,6 +54,7 @@ import { EntryTOC } from "@/components/tracker/entry-toc";
 import { LegislativeTimeline } from "@/components/tracker/legislative-timeline";
 import { QuickFacts } from "@/components/tracker/quick-facts";
 import { SourceSuggestionPanel } from "@/components/tracker/source-suggestion-panel";
+import { ProposedChangesPanel } from "@/components/tracker/proposed-changes-panel";
 import { toast } from "sonner";
 import { computeTrustBadges } from "@/lib/trust-badges";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
@@ -287,6 +288,7 @@ export default function EntryDetailPage() {
 
   const entry = data.entry;
   const changes = data.changes;
+  const proposedChanges = data.proposedChanges ?? [];
   const parentEntry: EntryRelated | null = data.parentEntry ?? null;
   // Typed relationship groups, computed by the API from entry_relationships.
   const relatedSubordinates: RelatedEntryWithKind[] = data.relatedSubordinates ?? [];
@@ -587,6 +589,11 @@ export default function EntryDetailPage() {
             onRegenerate={triggerSummary}
             regenerating={generating}
           />
+        )}
+
+        {/* Proposed changes (A1) — digest-sourced updates awaiting approval. */}
+        {!editing && proposedChanges.length > 0 && (
+          <ProposedChangesPanel proposals={proposedChanges} onResolved={() => mutate()} />
         )}
 
         {(editing || hasContent("summary")) && (

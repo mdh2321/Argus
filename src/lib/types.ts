@@ -191,6 +191,7 @@ export interface EntryChange {
   sectionRef: string | null;
   sourceSnapshotId: string | null;
   changedAt: string;
+  status: "proposed" | "applied" | "dismissed";
 }
 
 export interface Deadline {
@@ -444,6 +445,8 @@ export interface RelatedEntryWithKind extends EntryRelated {
 export interface EntryDetailResponse {
   entry: Entry;
   changes: EntryChange[];
+  // AI-proposed changes (A1) awaiting approve/dismiss on this entry.
+  proposedChanges: EntryChange[];
   parentEntry: EntryRelated | null;
   childEntries: EntryRelated[];
   // Typed relationships, grouped by the section they render in.

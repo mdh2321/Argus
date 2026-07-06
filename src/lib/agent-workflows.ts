@@ -4,6 +4,7 @@ export type Workflow =
   | "briefing"
   | "knowledge"
   | "gap"
+  | "reconcile"
   | "scan"
   | "ask"
   | "compare"
@@ -19,6 +20,7 @@ const LABELS: Record<Workflow, string> = {
   briefing: "Briefing",
   knowledge: "Library",
   gap: "Gap suggestion",
+  reconcile: "Reconciliation",
   scan: "Landscape scan",
   ask: "Ask",
   compare: "Comparator",

@@ -31,6 +31,7 @@ import {
 import { CostGuard } from "./cost-guard";
 import { readCached, writeCached } from "./cache";
 import { extractReferencesForStory } from "./extract-references";
+import { reconcileDigestStories } from "@/lib/reconcile-ai";
 import { pullFeeds, formatPreSeededStories } from "./rss";
 import {
   findMilestoneEntries,
@@ -275,6 +276,20 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
   console.log(
     `[digest] Reference extraction complete. ${refTotal} references across ${storyIds.length} stories in ${((Date.now() - refStart) / 1000).toFixed(1)}s.`
   );
+
+  // Reconcile matched references into proposed entry changes (A1). One Haiku
+  // call per matched (story, entry) pair; proposals mutate nothing until a
+  // human approves them from the review queue. Never fail the digest over it.
+  try {
+    const rec = await reconcileDigestStories(storyIds);
+    if (rec.proposals > 0) {
+      console.log(
+        `[digest] Reconciliation proposed ${rec.proposals} entry change(s) ≈ $${rec.costUsd.toFixed(4)}.`
+      );
+    }
+  } catch (err) {
+    console.warn(`[digest] reconciliation pass failed:`, err);
+  }
 
   return {
     issueId,

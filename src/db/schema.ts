@@ -58,6 +58,11 @@ export const entries = sqliteTable("entries", {
   // analysis" banner so readers don't mistake AI-knowledge claims for cited
   // legal analysis.
   summaryDepth: text("summary_depth"),
+  // Set when the current analysis is known to predate a material change — most
+  // commonly an amending instrument taking force (A2). Nullable; presence means
+  // "regenerate for an up-to-date grounded analysis". Human-readable so it can
+  // be shown verbatim in the staleness banner.
+  analysisStaleReason: text("analysis_stale_reason"),
   // Formal citation in the lawyer's preferred format, e.g. "Privacy Act 1988
   // (Cth)", "Pub. L. 116-283", "Regulation (EU) 2016/679". Free-form because
   // citation conventions vary by jurisdiction and instrument type — better
@@ -206,11 +211,16 @@ export const entryChanges = sqliteTable("entry_changes", {
   oldValue: text("old_value"),
   newValue: text("new_value"),
   changeSummary: text("change_summary"),
-  changedBy: text("changed_by").notNull(), // "ai" or "manual"
+  changedBy: text("changed_by").notNull(), // "ai" | "manual" | "system"
   sourceUrl: text("source_url"),
   sectionRef: text("section_ref"), // e.g. "Section 26(1)" — anchor inside the source
   sourceSnapshotId: text("source_snapshot_id"), // FK (logical) to source_documents.id
   changedAt: text("changed_at").notNull(),
+  // Lifecycle of an AI-proposed change. Manual/system edits are written
+  // straight as 'applied' (the historical default). Digest→entry reconciliation
+  // (A1) writes 'proposed' rows that mutate nothing until approved, at which
+  // point they flip to 'applied'; dismissing marks them 'dismissed'.
+  status: text("status").notNull().default("applied"), // proposed | applied | dismissed
 });
 
 export const deadlines = sqliteTable("deadlines", {
