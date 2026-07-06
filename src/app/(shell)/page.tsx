@@ -14,6 +14,7 @@ import { AgentBadge } from "@/components/ui/agent-badge";
 import { JURISDICTIONS } from "@/lib/constants";
 import { computeTrustBadges } from "@/lib/trust-badges";
 import { relativeTime } from "@/lib/utils";
+import { ReviewQueue } from "@/components/dashboard/review-queue";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -109,6 +110,9 @@ export default function DashboardPage() {
           Ask Sentinel anything…
         </span>
       </Link>
+
+      {/* Review queue — every pending decision in one place (B1) */}
+      <ReviewQueue />
 
       {/* Top Stories */}
       {topStories.length > 0 && (
