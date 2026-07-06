@@ -158,6 +158,9 @@ export interface Entry {
   // Depth of the most recent summary generation. Drives the "preliminary"
   // banner. null = no summary has been generated.
   summaryDepth: SummaryDepth | null;
+  // Set when the current analysis is known to predate a material change (most
+  // commonly an amending instrument taking force — A2). null = current.
+  analysisStaleReason: string | null;
   aiGenerated: boolean;
   archived: boolean;
   lastReviewed: string | null;

@@ -252,15 +252,52 @@ export async function PATCH(
     await syncDeadlines(id, updates.keyDates as string);
   }
 
+  const finalType = (updates.type ?? existing.type) as string;
+  const finalStatus = (updates.status ?? existing.status) as string;
+  const wasInForce = existing.status === "in_force";
+  const isAmendingAct = finalType === "amending-act";
+  const amendingShortName = (updates.shortName ?? existing.shortName) as string;
+
+  // ── A2: amendment staleness propagation ─────────────────────────────────
+  // When an amending instrument transitions to `passed` or `in_force`, the
+  // principals it amends now have analysis that predates it. Flag each
+  // principal that has an analysis so the reader knows to regenerate.
+  const becameActive =
+    (finalStatus === "passed" || finalStatus === "in_force") &&
+    existing.status !== finalStatus;
+  if (becameActive) {
+    const amendsTargets = await db
+      .select({ toEntryId: entryRelationships.toEntryId })
+      .from(entryRelationships)
+      .where(
+        and(eq(entryRelationships.fromEntryId, id), eq(entryRelationships.kind, "amends"))
+      );
+    if (amendsTargets.length > 0) {
+      const staleReason = `Analysis predates ${amendingShortName}, which ${
+        finalStatus === "in_force" ? "is now in force" : "has passed"
+      }. Regenerate for an up-to-date grounded analysis.`;
+      const staleTs = now();
+      for (const t of amendsTargets) {
+        // Only stale a principal that actually has an analysis to invalidate.
+        const [principal] = await db
+          .select({ summaryDepth: entries.summaryDepth })
+          .from(entries)
+          .where(eq(entries.id, t.toEntryId));
+        if (principal?.summaryDepth) {
+          await db
+            .update(entries)
+            .set({ analysisStaleReason: staleReason, updatedAt: staleTs })
+            .where(eq(entries.id, t.toEntryId));
+        }
+      }
+    }
+  }
+
   // ── Lifecycle: amending-act commencement ────────────────────────────────
   // When an amending act flips to `in_force`, its operative effect is folded
   // into the parent. We auto-archive it (so it disappears from the active
   // tracker list) and write an EntryChange on each `amends` target so the
   // parent's amendment-history timeline records the commencement.
-  const finalType = (updates.type ?? existing.type) as string;
-  const finalStatus = (updates.status ?? existing.status) as string;
-  const wasInForce = existing.status === "in_force";
-  const isAmendingAct = finalType === "amending-act";
   if (isAmendingAct && finalStatus === "in_force" && !wasInForce && !existing.archived) {
     const archiveTimestamp = now();
     await db
@@ -278,7 +315,6 @@ export async function PATCH(
         )
       );
 
-    const amendingShortName = (updates.shortName ?? existing.shortName) as string;
     for (const rel of amendsRels) {
       await db.insert(entryChanges).values({
         id: generateId(),

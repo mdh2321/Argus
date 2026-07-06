@@ -1,8 +1,8 @@
 import "server-only";
 
 import { db } from "@/db";
-import { entries, sourceDocuments, definedTerms } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { entries, sourceDocuments, definedTerms, entryRelationships } from "@/db/schema";
+import { and, eq, inArray } from "drizzle-orm";
 import { logChanges } from "@/lib/entry-helpers";
 import { now, toJsonString } from "@/lib/utils";
 import { generateEntrySummary, generatePreliminarySummary } from "@/lib/summary-ai";
@@ -106,6 +106,40 @@ export async function runSummaryPipeline(id: string) {
         fullText: d.fullText as string,
         sourceAuthority: d.sourceAuthority,
       }));
+
+    // A2 — amendment context. When this instrument has its own grounded text,
+    // also feed in source documents from entries that amend it, labelled so the
+    // model treats them as amending instruments rather than the principal. Only
+    // augments a genuine full analysis (skip when the principal is ungrounded —
+    // an amendment alone shouldn't masquerade as grounding the principal).
+    if (groundedDocs.length > 0) {
+      const amendingRels = await db
+        .select({ fromEntryId: entryRelationships.fromEntryId })
+        .from(entryRelationships)
+        .where(and(eq(entryRelationships.toEntryId, id), eq(entryRelationships.kind, "amends")));
+      const amendingIds = amendingRels.map((r) => r.fromEntryId);
+      if (amendingIds.length > 0) {
+        const amendingEntries = await db
+          .select({ id: entries.id, shortName: entries.shortName })
+          .from(entries)
+          .where(inArray(entries.id, amendingIds));
+        const nameById = new Map(amendingEntries.map((e) => [e.id, e.shortName]));
+        const amendingDocs = await db
+          .select()
+          .from(sourceDocuments)
+          .where(inArray(sourceDocuments.entryId, amendingIds));
+        for (const d of amendingDocs) {
+          if (!d.fullText) continue;
+          groundedDocs.push({
+            id: d.id,
+            name: `[Amending instrument — ${nameById.get(d.entryId) ?? "amendment"}] ${d.name}`,
+            sourceUrl: d.sourceUrl,
+            fullText: d.fullText as string,
+            sourceAuthority: d.sourceAuthority,
+          });
+        }
+      }
+    }
 
     // If the entry has docs attached but every fetch attempt produced no
     // text, fail loudly instead of silently degrading to preliminary. The
@@ -252,6 +286,13 @@ export async function runSummaryPipeline(id: string) {
       summaryStatus: "idle",
       summaryError: null,
     };
+
+    // A full, source-grounded regeneration incorporates any amendment context
+    // gathered above, so it clears the "analysis predates amendment" flag. A
+    // preliminary regen doesn't (it saw no source text), so leave it set.
+    if (summaryDepth === "full") {
+      updates.analysisStaleReason = null;
+    }
 
     // Only overwrite formalCitation when the model produced one — preserves
     // any analyst-edited citation across regenerations.

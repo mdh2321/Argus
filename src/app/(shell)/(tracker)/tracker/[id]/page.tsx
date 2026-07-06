@@ -596,6 +596,16 @@ export default function EntryDetailPage() {
           <ProposedChangesPanel proposals={proposedChanges} onResolved={() => mutate()} />
         )}
 
+        {/* Stale-analysis banner (A2) — the current analysis predates a
+            material change (e.g. an amendment taking force). */}
+        {!editing && entry.analysisStaleReason && (
+          <StaleAnalysisBanner
+            reason={entry.analysisStaleReason}
+            onRegenerate={triggerSummary}
+            regenerating={generating}
+          />
+        )}
+
         {(editing || hasContent("summary")) && (
           <Section id="summary" variant="primary" title="Summary" editing={editing} confidence={entry.sectionConfidence?.summary}
             editEl={<TA value={editData.summary || ""} onChange={(v) => setEditData({ ...editData, summary: v })} rows={6} />}
@@ -2361,6 +2371,39 @@ function PreliminaryBanner({
                 </button>
               </>
             )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaleAnalysisBanner({
+  reason,
+  onRegenerate,
+  regenerating,
+}: {
+  reason: string;
+  onRegenerate: () => void;
+  regenerating: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-[color:var(--amber)]/30 bg-[var(--amber-bg)] px-4 py-3">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-4 w-4 text-[var(--amber)] mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-medium text-fg">Analysis may be out of date</div>
+          <p className="mt-0.5 text-[12px] text-fg-2 leading-relaxed">{reason}</p>
+          <div className="mt-2">
+            <button
+              type="button"
+              disabled={regenerating}
+              onClick={onRegenerate}
+              className="inline-flex items-center gap-1.5 rounded-md bg-accent text-white px-2.5 py-1 text-[11px] font-mono font-medium hover:bg-accent-2 transition-colors disabled:opacity-50"
+            >
+              <Sparkles className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />
+              {regenerating ? "Generating…" : "Regenerate analysis"}
+            </button>
           </div>
         </div>
       </div>
