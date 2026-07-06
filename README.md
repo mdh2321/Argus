@@ -59,11 +59,13 @@ Delivery is **Telegram-only** by decision (July 2026); there is no email path.
 
 ## Env vars
 
-See `.env.example`: `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `TELEGRAM_BOT_TOKEN`, `DIGEST_TELEGRAM_CHAT_ID`, `SENTINEL_BASE_URL`.
+See `.env.example`: `ANTHROPIC_API_KEY`, `EXA_API_KEY`, `TELEGRAM_BOT_TOKEN`, `DIGEST_TELEGRAM_CHAT_ID`, `SENTINEL_BASE_URL`. Optional: `TELEGRAM_WEBHOOK_SECRET` — verifies inbound Telegram `track <n>` replies (D3); set it and register the webhook with the same secret via Telegram's `setWebhook`.
 
 ## Known tech debt
 
 - `src/app/(shell)/(tracker)/tracker/[id]/page.tsx` is ~2,400 lines. Deliberately not refactored (works, heavily used); split only when a change forces it.
+- **Gap vs. miss detection (G1, decision Jul 2026 — keep both).** Two "did we miss anything" mechanisms are retained deliberately: `gap-ai.ts` / `scan-ai.ts` write `gap_suggestions` proposing *untracked instruments to add* (digest- and scan-sourced), while `digest-pipeline/miss-detection.ts` finds *tracked milestones the digest didn't cover* (milestone-grounded, surfaced via the digest result + Telegram alert). They overlap in intent but not output, so they are not merged. The speculative digest-driven gap path (`generateGapSuggestions()`) is manual-only (the "generate" button), so it does not auto-duplicate miss-detection. Revisit retiring `gap_suggestions`' digest path after a few digest cycles once miss-detection recall is trusted; do not delete `gap_suggestions` blind — `scan-button.tsx` and `use-gap-suggestions.ts` depend on it.
+- **Library claims layer is frozen (G2, decision Jul 2026).** `knowledgeClaims` / grounding-ratio / per-claim dispute bookkeeping is kept but not extended — for a single operator, per-claim dispute flags are meta-work. Briefings and topic dossiers (the parts actually used) stay. No new work on the claims layer.
 
 ## Planning docs
 

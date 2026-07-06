@@ -11,9 +11,9 @@ import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { AgentBadge } from "@/components/ui/agent-badge";
-import { JURISDICTIONS } from "@/lib/constants";
+import { JURISDICTIONS, URGENCY } from "@/lib/constants";
 import { computeTrustBadges } from "@/lib/trust-badges";
-import { relativeTime } from "@/lib/utils";
+import { relativeTime, calculateUrgency } from "@/lib/utils";
 import { ReviewQueue } from "@/components/dashboard/review-queue";
 import Link from "next/link";
 import {
@@ -255,9 +255,7 @@ export default function DashboardPage() {
                 >
                   <span
                     className="font-mono text-[12px] tabular-nums font-medium w-10 text-left flex-shrink-0"
-                    style={{
-                      color: days <= 7 ? "var(--amber)" : days <= 30 ? "var(--cyan)" : "var(--fg-3)",
-                    }}
+                    style={{ color: URGENCY[calculateUrgency(d.date)].color }}
                   >
                     {days}d
                   </span>

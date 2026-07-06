@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useHorizon } from "@/hooks/use-horizon";
-import { JURISDICTIONS, CATEGORIES } from "@/lib/constants";
+import { JURISDICTIONS, CATEGORIES, URGENCY } from "@/lib/constants";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
-import { formatDate } from "@/lib/utils";
+import { formatDate, calculateUrgency } from "@/lib/utils";
 import type { HorizonItem } from "@/lib/types";
 import { Telescope, ChevronRight, Filter } from "lucide-react";
 
@@ -170,7 +170,10 @@ function HorizonRow({ item }: { item: HorizonItem }) {
         <span className="font-mono text-[15px] font-bold leading-tight text-accent">
           {shortDate(item.date)}
         </span>
-        <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.06em] text-fg-3">
+        <span
+          className="mt-1 font-mono text-[10px] uppercase tracking-[0.06em]"
+          style={{ color: URGENCY[calculateUrgency(item.date)].color }}
+        >
           {days === 0 ? "today" : `in ${days}d`}
         </span>
       </div>
