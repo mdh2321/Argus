@@ -187,9 +187,13 @@ export default function AskPage() {
   const [pinningConversation, setPinningConversation] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Seed the working set from `?scopeKind=&scopeId=&scopeLabel=` when arriving
-  // via an "Ask about this" entry point. Read from the URL directly
-  // (client-only) to avoid a prerender Suspense boundary.
+  // A question seeded from the URL (`?q=`), e.g. a scope-aware chip on an entry
+  // page (F2). Fired once the scope has been applied.
+  const [seededQuestion, setSeededQuestion] = useState<string | null>(null);
+
+  // Seed the working set from `?scopeKind=&scopeId=&scopeLabel=` (and optionally
+  // `?q=`) when arriving via an "Ask about this" entry point. Read from the URL
+  // directly (client-only) to avoid a prerender Suspense boundary.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const kind = params.get("scopeKind");
@@ -198,10 +202,23 @@ export default function AskPage() {
     if ((kind === "entry" || kind === "story" || kind === "knowledge" || kind === "signal") && id) {
       setScopes([{ kind, id, label: label || undefined }]);
     }
+    const q = params.get("q");
+    if (q && q.trim()) setSeededQuestion(q.trim());
     const sessionParam = params.get("session");
     if (sessionParam) void loadSession(sessionParam);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fire the seeded question once — after the scope from the same URL has been
+  // applied, so the answer is grounded against the intended entry's corpus.
+  useEffect(() => {
+    if (seededQuestion && !busy && turns.length === 0) {
+      const q = seededQuestion;
+      setSeededQuestion(null);
+      void submit(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seededQuestion, scopes]);
 
   // News scope (story-only working set) is a conversational chat: no quick/deep
   // toggle, web-grounded answers, text-message tone.

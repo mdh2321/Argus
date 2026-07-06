@@ -55,6 +55,7 @@ import { EntryTimeline } from "@/components/tracker/entry-timeline";
 import { QuickFacts } from "@/components/tracker/quick-facts";
 import { SourceSuggestionPanel } from "@/components/tracker/source-suggestion-panel";
 import { ProposedChangesPanel } from "@/components/tracker/proposed-changes-panel";
+import { EntryQuestionChips } from "@/components/tracker/entry-question-chips";
 import { toast } from "sonner";
 import { computeTrustBadges } from "@/lib/trust-badges";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
@@ -646,6 +647,12 @@ export default function EntryDetailPage() {
             onRegenerate={triggerSummary}
             regenerating={generating}
           />
+        )}
+
+        {/* Scope-aware question chips (F2) — one tap into a cited, entry-scoped
+            Ask answer. Shown once the entry has analytical content to ask about. */}
+        {!editing && hasAnyContent && (
+          <EntryQuestionChips entryId={entry.id} entryName={entry.shortName} />
         )}
 
         {(editing || hasContent("summary")) && (
