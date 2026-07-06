@@ -7,7 +7,10 @@ import { and, eq } from "drizzle-orm";
 import { generateId, now } from "@/lib/utils";
 
 const client = new Anthropic();
-const MODEL = "claude-sonnet-4-6";
+// Verbatim definition extraction is mechanical work — Haiku handles it without
+// the legal-reasoning tier (H1). Keep Sonnet only for tasks that reason about
+// the law (summaries, Ask, artifacts, capture, comparator).
+const MODEL = "claude-haiku-4-5-20251001";
 
 // Cap per-doc input. Definitions usually live in early sections of an Act, so
 // even a 200K char Act will have its definitions fit comfortably.
