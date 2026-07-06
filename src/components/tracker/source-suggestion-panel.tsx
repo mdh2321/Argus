@@ -35,8 +35,10 @@ export function SourceSuggestionPanel({ entryId, onClose, onApproved }: Props) {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  // Which submit is in flight — drives per-button spinners. null when idle.
+  const [submitAction, setSubmitAction] = useState<"add" | "analyze" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const submitting = submitAction !== null;
 
   useEffect(() => {
     let cancelled = false;
@@ -83,35 +85,42 @@ export function SourceSuggestionPanel({ entryId, onClose, onApproved }: Props) {
     });
   }
 
-  async function handleApprove() {
+  async function handleApprove(thenAnalyze: boolean) {
     if (selected.size === 0) return;
-    setSubmitting(true);
+    setSubmitAction(thenAnalyze ? "analyze" : "add");
     try {
       const res = await fetch(`/api/tracker/entries/${entryId}/approve-sources`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: Array.from(selected) }),
+        body: JSON.stringify({ urls: Array.from(selected), thenAnalyze }),
       });
-      const json = (await res.json()) as { ok?: boolean; results?: ApprovedResult[]; error?: string };
+      const json = (await res.json()) as {
+        ok?: boolean;
+        results?: ApprovedResult[];
+        analyzing?: boolean;
+        error?: string;
+      };
       if (!res.ok || !json.ok) throw new Error(json.error || "Approve failed");
 
       const results = json.results ?? [];
       const okCount = results.filter((r) => r.documentId !== null).length;
       const partialCount = results.filter((r) => r.documentId !== null && !r.extracted).length;
 
-      if (partialCount > 0) {
-        toast.success(
-          `Added ${okCount} source${okCount === 1 ? "" : "s"} (${partialCount} URL-only — text extraction failed)`
-        );
+      const added =
+        partialCount > 0
+          ? `Added ${okCount} source${okCount === 1 ? "" : "s"} (${partialCount} URL-only — text extraction failed)`
+          : `Added ${okCount} source${okCount === 1 ? "" : "s"}`;
+      if (json.analyzing) {
+        toast.success(`${added} — full analysis started`);
       } else {
-        toast.success(`Added ${okCount} source${okCount === 1 ? "" : "s"}`);
+        toast.success(added);
       }
       onApproved();
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add sources");
     } finally {
-      setSubmitting(false);
+      setSubmitAction(null);
     }
   }
 
@@ -217,26 +226,43 @@ export function SourceSuggestionPanel({ entryId, onClose, onApproved }: Props) {
             })}
           </ul>
 
-          <div className="mt-3 flex items-center justify-end gap-2">
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-border bg-bg px-3 py-1.5 font-mono text-[11px] text-fg-2 transition-colors hover:bg-bg-hover"
+              disabled={submitting}
+              className="rounded-md border border-border bg-bg px-3 py-1.5 font-mono text-[11px] text-fg-2 transition-colors hover:bg-bg-hover disabled:opacity-50"
             >
               Cancel
             </button>
+            {/* Plain add — for when the user wants to attach more sources
+                before running the (expensive) analysis. */}
             <button
-              onClick={handleApprove}
+              onClick={() => handleApprove(false)}
               disabled={selected.size === 0 || submitting}
-              className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 font-mono text-[11px] font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg px-3 py-1.5 font-mono text-[11px] font-medium text-fg-2 transition-colors hover:bg-bg-hover disabled:opacity-50"
             >
-              {submitting ? (
+              {submitAction === "add" ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
                 <Check className="h-3 w-3" />
               )}
-              {submitting
+              {submitAction === "add"
                 ? "Fetching…"
                 : `Add ${selected.size} source${selected.size === 1 ? "" : "s"}`}
+            </button>
+            {/* A3 — the happy path: verify sources and run full analysis in one
+                action. The deliberate step is judging sources, not clicking twice. */}
+            <button
+              onClick={() => handleApprove(true)}
+              disabled={selected.size === 0 || submitting}
+              className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 font-mono text-[11px] font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {submitAction === "analyze" ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Check className="h-3 w-3" />
+              )}
+              {submitAction === "analyze" ? "Starting…" : "Add & analyze"}
             </button>
           </div>
         </>
