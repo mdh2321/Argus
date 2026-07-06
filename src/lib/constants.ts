@@ -96,6 +96,20 @@ export const STATUSES = [
   { value: "enforcement", label: "Enforcement", color: "#ef4444" },
 ] as const;
 
+// Canonical deadline-urgency tokens (G3). Urgency is the most safety-critical
+// signal and renders across the deadlines API, horizon, dashboard, entry page
+// and timeline — every surface must map an urgency to the SAME colour/label so
+// "imminent" is never amber in one place and red in another. Buckets match
+// calculateUrgency() in utils.ts.
+export const URGENCY = {
+  overdue: { label: "Overdue", color: "var(--red)" },
+  imminent: { label: "Imminent", color: "var(--amber)" },
+  upcoming: { label: "Upcoming", color: "var(--accent)" },
+  future: { label: "Future", color: "var(--fg-3)" },
+} as const;
+
+export type Urgency = keyof typeof URGENCY;
+
 export const IMPACT_LABELS: Record<number, string> = {
   1: "Minimal",
   2: "Low",

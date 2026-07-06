@@ -51,7 +51,7 @@ import type {
 import { useDocuments, addDocument, deleteDocument, refetchDocument } from "@/hooks/use-documents";
 import useSWR from "swr";
 import { EntryTOC } from "@/components/tracker/entry-toc";
-import { LegislativeTimeline } from "@/components/tracker/legislative-timeline";
+import { EntryTimeline } from "@/components/tracker/entry-timeline";
 import { QuickFacts } from "@/components/tracker/quick-facts";
 import { SourceSuggestionPanel } from "@/components/tracker/source-suggestion-panel";
 import { ProposedChangesPanel } from "@/components/tracker/proposed-changes-panel";
@@ -73,6 +73,44 @@ interface EntryNewsStory {
   impact: string | null;
   issueSlug: string | null;
   issueTitle: string | null;
+}
+
+// C3 — click-through claims. A grounded claim's footnote dispatches this event
+// so the cited source document expands and scrolls to (or near) the referenced
+// section. Decoupled via a window event because the claim marker and the source
+// panel are far apart in this large tree.
+const REVEAL_SOURCE_EVENT = "sentinel:reveal-source";
+interface RevealSourceDetail {
+  docId: string;
+  sectionRef: string | null;
+}
+function revealClaimSource(docId: string, sectionRef: string | null) {
+  window.dispatchEvent(
+    new CustomEvent<RevealSourceDetail>(REVEAL_SOURCE_EVENT, { detail: { docId, sectionRef } })
+  );
+}
+
+// Best-effort locate a section reference (e.g. "s 26(1)", "Section 26(1)",
+// "Part 3") inside a document's full text. Returns the character index of the
+// earliest plausible match, or -1. Tries the raw ref, then a normalized
+// "<number>(<sub>)" form, then just the leading number token.
+function findSectionOffset(fullText: string, sectionRef: string): number {
+  const haystack = fullText.toLowerCase();
+  const candidates: string[] = [];
+  const raw = sectionRef.trim().toLowerCase();
+  if (raw) candidates.push(raw);
+  // Extract a "26(1)" / "26" style token from the ref.
+  const numMatch = raw.match(/\d+[a-z]?(\s*\([^)]*\))?/);
+  if (numMatch) {
+    const tok = numMatch[0].replace(/\s+/g, "");
+    candidates.push(`section ${tok}`, `s ${tok}`, `s${tok}`, tok);
+  }
+  for (const c of candidates) {
+    if (c.length < 2) continue;
+    const idx = haystack.indexOf(c);
+    if (idx >= 0) return idx;
+  }
+  return -1;
 }
 
 const ARTIFACT_LABEL: Record<ArtifactKind, string> = {
@@ -352,7 +390,11 @@ export default function EntryDetailPage() {
   if (editing || hasContent("penalties")) tocSections.push({ id: "penalties", label: "Penalties" });
   if (editing || hasContent("openQuestions") || hasArtifact("escalationTriggers") || entry.notes)
     tocSections.push({ id: "notes-watch", label: "Notes & watch items" });
-  if (entry.keyDates && entry.keyDates.length > 0)
+  if (
+    (entry.keyDates && entry.keyDates.length > 0) ||
+    (changes && changes.length > 0) ||
+    newsStories.length > 0
+  )
     tocSections.push({ id: "timeline", label: "Timeline" });
   if (newsStories.length > 0)
     tocSections.push({ id: "in-the-news", label: "In the news" });
@@ -809,12 +851,18 @@ export default function EntryDetailPage() {
           </Section>
         )}
 
-        {/* Timeline — vertical legislative-journey view of keyDates. Past
-            milestones are checked, the next upcoming one is highlighted as
-            "next", and future ones are hollow dots. */}
-        {entry.keyDates && entry.keyDates.length > 0 && (
+        {/* Timeline (C2) — merged chronological "story of this instrument":
+            key dates, applied changes (incl. amendment commencements), and
+            linked digest stories on one axis, soonest/most-recent first. */}
+        {((entry.keyDates && entry.keyDates.length > 0) ||
+          (changes && changes.length > 0) ||
+          newsStories.length > 0) && (
           <Section id="timeline" title="Timeline" icon={<Calendar className="w-3.5 h-3.5 text-fg-3" />}>
-            <LegislativeTimeline keyDates={entry.keyDates} />
+            <EntryTimeline
+              keyDates={entry.keyDates ?? []}
+              changes={changes ?? []}
+              stories={newsStories}
+            />
           </Section>
         )}
 
@@ -1018,65 +1066,7 @@ export default function EntryDetailPage() {
           {docsData?.documents && docsData.documents.length > 0 ? (
             <div className="space-y-1">
               {docsData.documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  id={`doc-${doc.id}`}
-                  className="flex items-start gap-3 py-2.5 border-b border-border/60 last:border-0 group"
-                >
-                  <FileText className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-medium text-fg truncate block">
-                      {doc.name}
-                    </span>
-                    <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                      {doc.charCount && (
-                        <span className="text-[11px] text-fg-3 font-mono">
-                          {doc.charCount.toLocaleString()} chars
-                        </span>
-                      )}
-                      {doc.sourceAuthority && (
-                        <AuthorityBadge authority={doc.sourceAuthority} />
-                      )}
-                      <FetchStatusBadge doc={doc} />
-                      {doc.lastUrlCheck && (
-                        <span className="text-[11px] text-fg-3">
-                          Checked {relativeTime(doc.lastUrlCheck)}
-                        </span>
-                      )}
-                      {doc.retrievedAt && (
-                        <span className="text-[11px] text-fg-3">
-                          Retrieved {formatDate(doc.retrievedAt)}
-                        </span>
-                      )}
-                      {doc.sourceUrl && (
-                        <a
-                          href={doc.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[11px] text-accent hover:text-accent-2 transition-colors"
-                        >
-                          <Link2 className="w-2.5 h-2.5" />
-                          {(() => {
-                            try { return new URL(doc.sourceUrl).hostname.replace("www.", ""); }
-                            catch { return "source"; }
-                          })()}
-                        </a>
-                      )}
-                      <span className="text-[11px] text-fg-3 font-mono">{doc.addedBy}</span>
-                    </div>
-                    <FetchFailureRow doc={doc} entryId={id} onChange={mutateDocs} />
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (!confirm("Remove this source document?")) return;
-                      await deleteDocument(id, doc.id);
-                      mutateDocs();
-                    }}
-                    className="p-1.5 rounded-lg text-fg-3 opacity-0 group-hover:opacity-100 hover:text-[var(--red)] hover:bg-[var(--red-bg)] transition-all"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
+                <SourceDocRow key={doc.id} doc={doc} entryId={id} onChange={mutateDocs} />
               ))}
             </div>
           ) : (
@@ -1894,7 +1884,17 @@ function CitationFootnote({ claim, index }: { claim: EntryClaim; index: number }
   return (
     <span className="relative inline-block group/cite">
       {targetId ? (
-        <a href={`#${targetId}`} className="no-underline">
+        <a
+          href={`#${targetId}`}
+          className="no-underline"
+          onClick={() => {
+            // Scroll-into-view of the doc row happens via the hash anchor;
+            // additionally reveal the doc's text at the cited section (C3).
+            if (cite.sourceDocumentId) {
+              revealClaimSource(cite.sourceDocumentId, cite.sectionRef ?? null);
+            }
+          }}
+        >
           {Marker}
         </a>
       ) : externalUrl ? (
@@ -2207,6 +2207,132 @@ function ArtifactStatusIcon({ running, failed, present }: {
   if (failed) return <AlertCircle className="w-3.5 h-3.5 text-[var(--red)]" />;
   if (present) return <Check className="w-3.5 h-3.5 text-[var(--green)]" />;
   return <Sparkles className="w-3.5 h-3.5 text-fg-3" />;
+}
+
+// One source-document row: metadata + an expandable full-text viewer. Listens
+// for the C3 reveal event so a clicked claim can open this doc's text scrolled
+// to (or near) the cited section, with a brief highlight.
+function SourceDocRow({
+  doc,
+  entryId,
+  onChange,
+}: {
+  doc: import("@/lib/types").SourceDocument;
+  entryId: string;
+  onChange: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [highlight, setHighlight] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const hasText = !!doc.fullText;
+
+  useEffect(() => {
+    function onReveal(e: Event) {
+      const detail = (e as CustomEvent<RevealSourceDetail>).detail;
+      if (!detail || detail.docId !== doc.id) return;
+      if (!hasText) return;
+      setExpanded(true);
+      // Wait for the text container to render, then scroll to the section.
+      setTimeout(() => {
+        const container = textRef.current;
+        const full = doc.fullText ?? "";
+        if (container && detail.sectionRef && full) {
+          const offset = findSectionOffset(full, detail.sectionRef);
+          if (offset >= 0 && full.length > 0) {
+            container.scrollTop = Math.max(
+              0,
+              (offset / full.length) * container.scrollHeight - 40
+            );
+          }
+        }
+        setHighlight(true);
+        setTimeout(() => setHighlight(false), 1600);
+      }, 60);
+    }
+    window.addEventListener(REVEAL_SOURCE_EVENT, onReveal);
+    return () => window.removeEventListener(REVEAL_SOURCE_EVENT, onReveal);
+  }, [doc.id, doc.fullText, hasText]);
+
+  return (
+    <div
+      id={`doc-${doc.id}`}
+      className="border-b border-border/60 last:border-0 group"
+    >
+      <div className="flex items-start gap-3 py-2.5">
+        <FileText className="w-3.5 h-3.5 text-accent flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <span className="text-[13px] font-medium text-fg truncate block">{doc.name}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            {doc.charCount && (
+              <span className="text-[11px] text-fg-3 font-mono">
+                {doc.charCount.toLocaleString()} chars
+              </span>
+            )}
+            {doc.sourceAuthority && <AuthorityBadge authority={doc.sourceAuthority} />}
+            <FetchStatusBadge doc={doc} />
+            {doc.lastUrlCheck && (
+              <span className="text-[11px] text-fg-3">Checked {relativeTime(doc.lastUrlCheck)}</span>
+            )}
+            {doc.retrievedAt && (
+              <span className="text-[11px] text-fg-3">Retrieved {formatDate(doc.retrievedAt)}</span>
+            )}
+            {doc.sourceUrl && (
+              <a
+                href={doc.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-accent hover:text-accent-2 transition-colors"
+              >
+                <Link2 className="w-2.5 h-2.5" />
+                {(() => {
+                  try {
+                    return new URL(doc.sourceUrl).hostname.replace("www.", "");
+                  } catch {
+                    return "source";
+                  }
+                })()}
+              </a>
+            )}
+            <span className="text-[11px] text-fg-3 font-mono">{doc.addedBy}</span>
+            {hasText && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="inline-flex items-center gap-0.5 text-[11px] text-fg-3 hover:text-accent transition-colors"
+              >
+                <ChevronRight
+                  className={`w-2.5 h-2.5 transition-transform ${expanded ? "rotate-90" : ""}`}
+                />
+                {expanded ? "Hide text" : "Show text"}
+              </button>
+            )}
+          </div>
+          <FetchFailureRow doc={doc} entryId={entryId} onChange={onChange} />
+        </div>
+        <button
+          onClick={async () => {
+            if (!confirm("Remove this source document?")) return;
+            await deleteDocument(entryId, doc.id);
+            onChange();
+          }}
+          className="p-1.5 rounded-lg text-fg-3 opacity-0 group-hover:opacity-100 hover:text-[var(--red)] hover:bg-[var(--red-bg)] transition-all"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+
+      {expanded && hasText && (
+        <div
+          ref={textRef}
+          className={`mb-3 max-h-96 overflow-y-auto rounded-lg border bg-bg px-3 py-2 text-[12px] leading-relaxed text-fg-2 whitespace-pre-wrap break-words transition-colors ${
+            highlight ? "border-accent ring-1 ring-accent" : "border-border"
+          }`}
+        >
+          {doc.fullText}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Compact pill summarizing the source-doc fetch outcome. Shown next to the
