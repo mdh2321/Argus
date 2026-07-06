@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "./theme-provider";
-import { Sun, Moon, Search } from "lucide-react";
+import { Sun, Moon, Search, Plus } from "lucide-react";
 import { SentinelLogo } from "@/components/ui/sentinel-logo";
 import { useProfile } from "@/hooks/use-profile";
+import { openCaptureModal } from "@/components/shared/capture-modal";
 
 const links = [
   { href: "/", label: "Dashboard" },
@@ -59,6 +60,14 @@ export function TopNav() {
         {/* Right: profile chip + search + theme toggle */}
         <div className="flex items-center gap-1.5">
           <ProfileChip />
+          <button
+            onClick={openCaptureModal}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
+            aria-label="Capture to tracker"
+            title="Capture a URL or text to the tracker"
+          >
+            <Plus className="w-[15px] h-[15px]" strokeWidth={1.5} />
+          </button>
           <button
             onClick={() => {
               const event = new KeyboardEvent("keydown", { key: "k", metaKey: true });

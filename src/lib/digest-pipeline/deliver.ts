@@ -7,8 +7,12 @@ import os from "os";
 import path from "path";
 import { db } from "@/db";
 import { digestIssues, digestStories } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq, isNotNull } from "drizzle-orm";
 import { getFlag } from "@/lib/digest-utils";
+
+// How many top stories are numbered in the Telegram digest and therefore
+// addressable via a `track <n>` reply (D3).
+const TRACKABLE_TOP_N = 5;
 
 const BASE_URL = process.env.SENTINEL_BASE_URL ?? "http://localhost:3000";
 
@@ -131,9 +135,13 @@ function telegramToken(): string | null {
 }
 
 async function sendTelegramDigest(issue: IssueRow, stories: StoryRow[]): Promise<ChannelStatus> {
+  // Number the top stories 1..N so a reply can address one with `track <n>`.
   const top = stories
-    .slice(0, 5)
-    .map((s) => `• ${getFlag(s.jurisdictionCode || "")} <a href="${storyUrl(issue.slug, s.id)}">${escapeHtml(s.title)}</a>${s.impact === "High" ? " 🔴" : ""}`)
+    .slice(0, TRACKABLE_TOP_N)
+    .map(
+      (s, i) =>
+        `${i + 1}. ${getFlag(s.jurisdictionCode || "")} <a href="${storyUrl(issue.slug, s.id)}">${escapeHtml(s.title)}</a>${s.impact === "High" ? " 🔴" : ""}`
+    )
     .join("\n");
   const synopsis = parseJsonArray(issue.synopsis)
     .map((s) => `– ${escapeHtml(s)}`)
@@ -147,9 +155,62 @@ ${synopsis}
 <b>Top stories</b>
 ${top}
 
-<a href="${issueUrl(issue.slug)}">Read the full issue in Sentinel</a>`;
+<a href="${issueUrl(issue.slug)}">Read the full issue in Sentinel</a>
+
+<i>Reply <code>track 3</code> to add story 3 to the tracker.</i>`;
 
   return sendTelegramMessage(text);
+}
+
+// ─── D3: two-way "track <n>" support ────────────────────────────────────────
+
+/**
+ * Resolve the nth numbered story (1-indexed) from the most recently delivered
+ * digest issue — the same ordering used in the Telegram message — so a
+ * `track <n>` reply maps deterministically to a story.
+ */
+export function getDeliveredDigestStory(n: number): { story: StoryRow; issue: IssueRow } | null {
+  if (!Number.isInteger(n) || n < 1 || n > TRACKABLE_TOP_N) return null;
+  const issue = db
+    .select()
+    .from(digestIssues)
+    .where(isNotNull(digestIssues.deliveredAt))
+    .orderBy(desc(digestIssues.deliveredAt))
+    .limit(1)
+    .all()[0];
+  if (!issue) return null;
+  const stories = sortStories(
+    db.select().from(digestStories).where(eq(digestStories.issueId, issue.id)).all()
+  );
+  const story = stories.slice(0, TRACKABLE_TOP_N)[n - 1];
+  if (!story) return null;
+  return { story, issue };
+}
+
+/** Send a Telegram reply to a specific chat (used by the inbound webhook). */
+export async function sendTelegramReply(
+  chatId: string | number,
+  html: string,
+  replyToMessageId?: number
+): Promise<ChannelStatus> {
+  const token = telegramToken();
+  if (!token) return "skipped";
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: html.slice(0, 4000),
+      parse_mode: "HTML",
+      link_preview_options: { is_disabled: true },
+      ...(replyToMessageId ? { reply_parameters: { message_id: replyToMessageId } } : {}),
+    }),
+  });
+  const body = (await res.json()) as { ok: boolean; description?: string };
+  if (!res.ok || !body.ok) {
+    throw new Error(`Telegram reply failed: ${body.description ?? res.status}`);
+  }
+  return "sent";
 }
 
 async function sendTelegramMessage(html: string): Promise<ChannelStatus> {

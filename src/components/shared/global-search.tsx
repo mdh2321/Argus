@@ -2,9 +2,11 @@
 
 import { Command } from "cmdk";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
+import { toast } from "sonner";
 import { getFlag } from "@/lib/digest-utils";
+import { openCaptureModal } from "@/components/shared/capture-modal";
 import {
   Database,
   BookOpen,
@@ -13,6 +15,9 @@ import {
   Landmark,
   Tag,
   ArrowRight,
+  Plus,
+  MessagesSquare,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +72,13 @@ export function GlobalSearch() {
   const [everOpened, setEverOpened] = useState(false);
   const [query, setQuery] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Scope-aware actions: when the current route is a specific tracker entry,
+  // the palette can act on it ("Ask about this", "Run full analysis").
+  const entryMatch = pathname.match(/^\/tracker\/([^/]+)$/);
+  const currentEntryId =
+    entryMatch && entryMatch[1] !== "horizon" && entryMatch[1] !== "new" ? entryMatch[1] : null;
 
   const { data, isLoading } = useSWR<SearchIndexResponse>(
     everOpened ? "/api/search" : null,
@@ -104,6 +116,36 @@ export function GlobalSearch() {
     },
     [router]
   );
+
+  const currentEntryTitle =
+    currentEntryId ? items.find((i) => i.kind === "entry" && i.id === currentEntryId)?.title : undefined;
+
+  const askAboutEntry = useCallback(() => {
+    if (!currentEntryId) return;
+    setOpen(false);
+    const params = new URLSearchParams({ scopeKind: "entry", scopeId: currentEntryId });
+    if (currentEntryTitle) params.set("scopeLabel", currentEntryTitle);
+    router.push(`/ask?${params.toString()}`);
+  }, [currentEntryId, currentEntryTitle, router]);
+
+  const runAnalysis = useCallback(async () => {
+    if (!currentEntryId) return;
+    setOpen(false);
+    try {
+      const res = await fetch(`/api/tracker/entries/${currentEntryId}/generate-summary`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      toast.success("Full analysis started");
+    } catch (err) {
+      toast.error("Couldn't start analysis", {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }, [currentEntryId]);
 
   if (!open) return null;
 
@@ -173,6 +215,43 @@ export function GlobalSearch() {
                 </Command.Group>
               );
             })}
+
+            <Command.Group
+              heading="Actions"
+              className="[&_[cmdk-group-heading]]:label-mono [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5"
+            >
+              <Command.Item
+                value="capture url text add to tracker new entry"
+                onSelect={() => {
+                  setOpen(false);
+                  openCaptureModal();
+                }}
+                className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-fg-2 data-[selected=true]:bg-hover data-[selected=true]:text-fg"
+              >
+                <Plus className="h-3.5 w-3.5 flex-shrink-0 text-fg-3" />
+                <span>Capture URL or text…</span>
+              </Command.Item>
+              {currentEntryId && (
+                <>
+                  <Command.Item
+                    value="ask about this entry current scoped question"
+                    onSelect={askAboutEntry}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-fg-2 data-[selected=true]:bg-hover data-[selected=true]:text-fg"
+                  >
+                    <MessagesSquare className="h-3.5 w-3.5 flex-shrink-0 text-fg-3" />
+                    <span>Ask about {currentEntryTitle ? `“${currentEntryTitle}”` : "this entry"}…</span>
+                  </Command.Item>
+                  <Command.Item
+                    value="run full analysis regenerate current entry"
+                    onSelect={runAnalysis}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-fg-2 data-[selected=true]:bg-hover data-[selected=true]:text-fg"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 flex-shrink-0 text-fg-3" />
+                    <span>Run full analysis</span>
+                  </Command.Item>
+                </>
+              )}
+            </Command.Group>
 
             <Command.Group
               heading="Navigate"
