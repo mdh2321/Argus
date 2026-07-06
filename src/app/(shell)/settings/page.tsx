@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useProfile, saveProfile } from "@/hooks/use-profile";
 import { JURISDICTIONS } from "@/lib/constants";
 import { CheckCircle, Save, Settings as SettingsIcon, Sparkles } from "lucide-react";
+import { CompanyContextEditor } from "@/components/settings/company-context-editor";
 
 type Tab = "profile" | "export";
 
@@ -106,6 +107,8 @@ function ProfileTab() {
 
   return (
     <div>
+      <CompanyContextEditor />
+
       {!isLoading && !isEmpty && profile && <ProfileSummary profile={profile} />}
 
       {!isLoading && isEmpty && (

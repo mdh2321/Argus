@@ -61,6 +61,13 @@ if (fs.existsSync(envPath)) {
     try {
       const result = await runDigestIngest({});
       console.log(`[ensure] pipeline done: ${result.storyCount} stories, $${result.costUsd.toFixed(2)}, ${(result.durationMs / 1000).toFixed(0)}s`);
+      // Known misses are worth a ping even on a successful run — a tracked
+      // milestone passed this week without a covering story.
+      if (result.missedMilestones.length > 0) {
+        await sendFailureAlert(
+          `⚠️ Digest for week of ${weekStart} published, but ${result.missedMilestones.length} tracked milestone(s) got no story:\n- ${result.missedMilestones.join("\n- ")}`
+        );
+      }
     } catch (err) {
       const msg = err instanceof Error ? (err.stack ?? err.message) : String(err);
       console.error("[ensure] pipeline FAILED:", msg);

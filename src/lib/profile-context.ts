@@ -4,8 +4,14 @@ import { db } from "@/db";
 import { userProfile } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { parseJsonField } from "@/lib/utils";
+import { getCompanyContext } from "@/lib/company-context";
 
 export async function getProfileContext(): Promise<string> {
+  // data/company-context.md is the canonical context; the user_profile row
+  // is the fallback for installs that haven't created the file.
+  const companyContext = getCompanyContext();
+  if (companyContext) return companyContext;
+
   const [row] = db
     .select()
     .from(userProfile)

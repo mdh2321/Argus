@@ -1,14 +1,31 @@
 import { SEARCH_TOPICS } from "./config";
 
+export interface CompanyBlockParams {
+  name: string;
+  descriptor: string;
+  /** Body of data/company-context.md; empty string when the file is absent. */
+  context: string;
+}
+
+// Canonical company framing for every model call in the pipeline. Lives in
+// data/company-context.md so triage criteria (impact rubric, priority topics,
+// exclusions, relevance feedback) are user-editable without touching prompts.
+export function companyContextBlock(p: CompanyBlockParams): string {
+  const fallback = `${p.name}${p.descriptor ? ` (${p.descriptor})` : ""}.`;
+  return `<company_context cache="true">
+${p.context || fallback}
+</company_context>`;
+}
+
 export interface TrackerContextBlocks {
   entriesBlock: string;
   priorDigestBlock: string;
   priorWeekOf: string | null;
 }
 
-export function trackerContextString(ctx: TrackerContextBlocks): string {
+export function trackerContextString(ctx: TrackerContextBlocks, companyName: string): string {
   return `<tracker_context cache="true">
-The user's Sentinel tracker currently monitors these items for Docusign (global technology company), sorted by most recently updated (max 100 shown):
+The user's Sentinel tracker currently monitors these items for ${companyName}, sorted by most recently updated (max 100 shown):
 ${ctx.entriesBlock}
 </tracker_context>
 
@@ -28,6 +45,9 @@ export interface JurisdictionPromptParams {
   courtDomains: string[];
   preSeededStories: string;
   searchHits: string;
+  companyName: string;
+  /** Tracked items with milestones (key dates) falling inside the digest week. */
+  milestoneWatch: string;
 }
 
 export function jurisdictionExtractionPrompt(p: JurisdictionPromptParams): string {
@@ -38,12 +58,15 @@ export function jurisdictionExtractionPrompt(p: JurisdictionPromptParams): strin
       : "Tier 2 jurisdictions (NZ, HK, IN, PH)";
   const budget = p.tier === "T1" ? 12 : 8;
 
-  return `You are an expert legal researcher specializing in Asia-Pacific technology law, briefing the in-house legal team at Docusign (a global technology company) via the Sentinel legal intelligence platform.
+  return `You are an expert legal researcher specializing in Asia-Pacific technology law, briefing the in-house legal team at ${p.companyName} via the Sentinel legal intelligence platform. The <company_context> block above defines the company, its products, priority topics, impact rubric, and exclusions — triage every candidate story against it.
 
 You are given pre-fetched web search results for **${p.jurisdictionName}** (${p.jurisdictionCode}) covering legal and regulatory developments published between **${p.startDate}** and **${p.endDate}**.
 
 **Pre-seeded stories already collected (RSS / forwarded):**
 ${p.preSeededStories || "(none)"}
+
+**Milestone watch — tracked items with key dates falling in this week. Actively look for coverage of these; a milestone passing without a story is a known miss:**
+${p.milestoneWatch || "(none)"}
 
 **Search results to extract from:**
 ${p.searchHits}
@@ -53,11 +76,7 @@ ${topics}
 
 This jurisdiction is in ${tierLabel} with a search budget of ${budget} searches. Aim for ${p.tier === "T1" ? "≥ 3" : "≥ 1"} stories where material content exists.
 
-**MANDATORY EXCLUSIONS — do NOT return stories about:**
-- Criminal law (unless directly tied to tech regulation, e.g. computer misuse as part of a cyber law)
-- Wills, trusts & estates
-- Family law
-- Purely domestic matters with no tech / commercial relevance
+**MANDATORY EXCLUSIONS — do NOT return stories matching the "Not relevant — exclude" section of <company_context>, and treat its "Relevance feedback" items as precedents: stories similar to those were explicitly rejected by the user.**
 
 **Source priority (strict, in order):**
 1. Regulator announcements (primary domains: ${p.regulatorDomains.join(", ")})
@@ -65,7 +84,7 @@ This jurisdiction is in ${tierLabel} with a search budget of ${budget} searches.
 3. Legal publications
 4. Law firm commentary
 
-Read the full article text — do NOT rely on titles alone. Prioritise Docusign-relevant angles: eSignature regulations, contract formation rules, digital trust services, cross-border data flows, platform liability.
+Read the full article text — do NOT rely on titles alone. Prioritise angles matching the "Priority topics" and "Products & services" sections of <company_context>.
 
 **Continuity awareness:** The <tracker_context> and <prior_digest> blocks tell you what is already tracked and what was covered last week. Material developments on already-tracked items are DEVELOPING (state what is NEW). Pure restatements — EXCLUDE.
 
@@ -85,7 +104,7 @@ Return your findings as a JSON array. Each element must have exactly these field
     "source_type": "regulator | court | publication | law_firm",
     "date": "YYYY-MM-DD",
     "summary": "3-4 sentences. Name the law/regulation/court, the regulator/court, what changed, who is affected. If DEVELOPING, state what is NEW since prior coverage.",
-    "takeaways": ["Specific, verb-led action for Docusign's legal team", "..."],
+    "takeaways": ["Specific, verb-led action for ${p.companyName}'s legal team", "..."],
     "urgency": "immediate_action | monitor_closely | awareness_only",
     "urgency_reason": "One sentence.",
     "categories": ["Privacy & Data Protection"],
@@ -102,29 +121,28 @@ Return your findings as a JSON array. Each element must have exactly these field
 ]
 
 **Rules:**
-- Return 3-7 stories, ranked by importance to Docusign's APAC legal team.
+- Return 3-7 stories, ranked by importance to ${p.companyName}'s APAC legal team.
 - Stories must come from at least 4 of the 11 topics if material content exists.
 - Every URL must be real and present in the search results above.
 - \`categories\` must be drawn ONLY from: Privacy & Data Protection | AI & Emerging Technology | Electronic Signatures & Transactions | Commercial & Contract Law | Consumer Protection | Corporations & Governance | Employment & Workplace | Anti-Corruption & Bribery | Modern Slavery & Supply Chain | Outsourcing & Procurement | Sustainability & ESG | Data Security & Breach Notification
 - \`entry_type_hint\` drawn ONLY from: legislation | bill | regulation | binding-guidance | interpretive-guidance | enforcement | court-decision | consultation | policy. Use \`binding-guidance\` for regulator instruments issued under statutory authority that carry enforcement weight (e.g. APRA prudential standards, SEC interpretive releases). Use \`interpretive-guidance\` for advisory material that explains how a regulator views existing law without binding force. When in doubt, prefer \`interpretive-guidance\`.
-- \`compliance_deadline\`: a date by which Docusign or its customers must take action to comply (e.g. effective date of a binding rule, last day of a consultation period, deadline for filing or registration). Court hearing dates, regulator review milestones, roadmap waypoints, and other "interesting future dates" do NOT belong here — leave null.
-- \`impact\` measures effects flowing to Docusign through TWO pathways:
-   (a) **Direct** — Docusign is itself legally obligated.
-   (b) **Customer pass-through** — a rule binding Docusign's customers (commonly financial services, healthcare, government, legal) materially alters how they must use Docusign. Examples: financial-services outsourcing rules requiring banks to renegotiate vendor contracts; sectoral data-residency mandates forcing new product configurations; third-party risk regimes forcing customer-driven audits, certifications, or contract terms on Docusign.
-   - **Low**: awareness only. Affects third parties or industry generally with no clear path of obligation to Docusign or its customers' use of Docusign.
-   - **Medium**: review warranted. Applicable guidance, proposed or upcoming rules with a defined path to in-force, or pass-through effects that are plausible but speculative.
-   - **High**: operational, product, commercial, or contractual changes required — a binding or imminent obligation through pathway (a) OR (b).
-   - Coherence: if \`urgency\` is \`awareness_only\` or \`monitor_closely\` AND there is no \`compliance_deadline\`, \`impact\` is generally not High. Global significance ≠ Docusign impact.
+- \`compliance_deadline\`: a date by which ${p.companyName} or its customers must take action to comply (e.g. effective date of a binding rule, last day of a consultation period, deadline for filing or registration). Court hearing dates, regulator review milestones, roadmap waypoints, and other "interesting future dates" do NOT belong here — leave null.
+- \`impact\` is rated by applying the **Impact rubric** in <company_context> — the direct pathway (a) and customer pass-through pathway (b), with the Low/Medium/High definitions given there.
+   - Coherence: if \`urgency\` is \`awareness_only\` or \`monitor_closely\` AND there is no \`compliance_deadline\`, \`impact\` is generally not High. Global significance ≠ ${p.companyName} impact.
 
 Return ONLY the JSON array — no other text.`;
 }
 
 export interface SynthesisPromptParams {
   storiesJson: string;
+  companyName: string;
+  companyBlock: string;
 }
 
 export function synthesisPrompt(p: SynthesisPromptParams): string {
-  return `You are a senior legal editor at a premium legal intelligence service, preparing a weekly digest for Docusign's in-house legal team via the Sentinel platform.
+  return `You are a senior legal editor at a premium legal intelligence service, preparing a weekly digest for ${p.companyName}'s in-house legal team via the Sentinel platform.
+
+${p.companyBlock}
 
 Stories collected this week:
 ${p.storiesJson}
@@ -133,9 +151,9 @@ Tasks:
 
 1. **Deduplicate**: Return URLs to remove (same event under multiple jurisdictions → keep most comprehensive).
 
-2. **Rank and cap**: Return the **top 10 stories** ranked by importance to Docusign's APAC legal work. Only exceed 10 (up to 15 max) if more than 10 stories independently meet BOTH \`impact:High\` AND \`urgency:immediate_action\`. If you exceed 10, set \`"exceptional_week": true\` and explain in the Executive Brief.
+2. **Rank and cap**: Return the **top 10 stories** ranked by importance to ${p.companyName}'s APAC legal work per the <company_context> impact rubric. Only exceed 10 (up to 15 max) if more than 10 stories independently meet BOTH \`impact:High\` AND \`urgency:immediate_action\`. If you exceed 10, set \`"exceptional_week": true\` and explain in the Executive Brief.
 
-3. **Executive Brief** (~300 words): Senior partner's memo, first-person editorial voice. Lead with the single most important development and why it matters for Docusign. Cover 2-3 other significant stories thematically. End with forward-looking paragraph.
+3. **Executive Brief** (~300 words): Senior partner's memo, first-person editorial voice. Lead with the single most important development and why it matters for ${p.companyName}. Cover 2-3 other significant stories thematically. End with forward-looking paragraph.
 
 4. **Synopsis** (3-5 short bullets, ≤ 15 words each): Punchy teasers.
 

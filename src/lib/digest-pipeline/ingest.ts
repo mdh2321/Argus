@@ -10,15 +10,36 @@ import {
   TIER_STORY_TARGETS,
   SEARCH_PROFILES,
   JURISDICTION_EXTRA_PROFILES,
+  SEARCH_TOPICS,
+  KEY_REGULATORS,
   type JurisdictionConfig,
 } from "./config";
 import { buildTrackerContext } from "./tracker-context";
-import { exaSearch, newAccountant, type SearchHit, type SearchAccountant } from "./search";
-import { jurisdictionExtractionPrompt, synthesisPrompt, trackerContextString } from "./prompts";
+import {
+  exaSearch,
+  anthropicWebSearchFallback,
+  newAccountant,
+  type SearchHit,
+  type SearchAccountant,
+} from "./search";
+import {
+  jurisdictionExtractionPrompt,
+  synthesisPrompt,
+  trackerContextString,
+  companyContextBlock,
+} from "./prompts";
 import { CostGuard } from "./cost-guard";
 import { readCached, writeCached } from "./cache";
 import { extractReferencesForStory } from "./extract-references";
 import { pullFeeds, formatPreSeededStories } from "./rss";
+import {
+  findMilestoneEntries,
+  findMissedMilestones,
+  formatMilestoneWatch,
+  milestoneSearchQuery,
+  type MilestoneEntry,
+} from "./miss-detection";
+import { getCompanyContext, getCompanyMeta } from "@/lib/company-context";
 
 const anthropic = new Anthropic();
 
@@ -37,6 +58,8 @@ export interface RunResult {
   weekStart: string;
   storyCount: number;
   coverageGaps: string[];
+  /** Tracked milestones inside the week that produced no story — known misses. */
+  missedMilestones: string[];
   costUsd: number;
   durationMs: number;
   dryRun: boolean;
@@ -108,8 +131,28 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
     throw new Error(`No matching jurisdictions for ${targetCodes.join(", ")}`);
   }
 
+  const companyMeta = getCompanyMeta();
+  const companyBlock = companyContextBlock({
+    name: companyMeta.name,
+    descriptor: companyMeta.descriptor,
+    context: getCompanyContext() ?? "",
+  });
+
   const trackerContext = await buildTrackerContext();
-  const trackerBlock = trackerContextString(trackerContext);
+  // Company context + tracker context share one cached block: stable across
+  // all extraction calls in a run, so it's written to the prompt cache once.
+  const trackerBlock = `${companyBlock}\n\n${trackerContextString(trackerContext, companyMeta.name)}`;
+
+  // Only milestones in jurisdictions this run actually covers — a Tier-2
+  // milestone can't be a miss of a Tier-1-only run.
+  const milestones = findMilestoneEntries(weekStart, weekEnd).filter((m) =>
+    targetCodes.includes(m.jurisdictionCode)
+  );
+  if (milestones.length > 0) {
+    console.log(
+      `[digest] ${milestones.length} tracked milestone(s) this week: ${milestones.map((m) => `${m.shortName} (${m.date})`).join("; ")}`
+    );
+  }
 
   const guard = new CostGuard(COST_BUDGET_USD);
   const accountant = newAccountant();
@@ -121,6 +164,8 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
         weekStart,
         weekEnd,
         trackerBlock,
+        companyName: companyMeta.name,
+        milestones,
         guard,
         accountant,
         cached: opts.cached === true,
@@ -163,8 +208,17 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
   let finalStories = allStories;
 
   if (!skipSynthesis) {
-    synthesis = await synthesizeIssue(allStories, guard);
+    synthesis = await synthesizeIssue(allStories, guard, companyMeta.name, companyBlock);
     finalStories = applySynthesis(allStories, synthesis);
+  }
+
+  // Known-miss check: tracked milestones this week with no covering story.
+  // Checked against ALL extracted stories (pre-ranking) — a story that was
+  // found but cut by the top-10 cap is a ranking decision, not a recall miss.
+  const missed = findMissedMilestones(milestones, allStories);
+  const missedMilestones = missed.map((m) => `${m.shortName} — ${m.label} (${m.date})`);
+  for (const m of missedMilestones) {
+    console.warn(`[digest] MISSED MILESTONE: ${m}`);
   }
 
   const totalUsd = guard.totalUsd();
@@ -179,6 +233,7 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
       weekStart,
       storyCount: finalStories.length,
       coverageGaps,
+      missedMilestones,
       costUsd: totalUsd,
       durationMs,
       dryRun: true,
@@ -226,6 +281,7 @@ export async function runDigestIngest(opts: RunOptions = {}): Promise<RunResult>
     weekStart,
     storyCount: finalStories.length,
     coverageGaps,
+    missedMilestones,
     costUsd: totalUsd,
     durationMs,
     dryRun: false,
@@ -238,10 +294,17 @@ interface ExtractionContext {
   weekStart: string;
   weekEnd: string;
   trackerBlock: string;
+  companyName: string;
+  milestones: MilestoneEntry[];
   guard: CostGuard;
   accountant: SearchAccountant;
   cached: boolean;
 }
+
+// Below this many unique hits, a jurisdiction's Exa pool is considered thin
+// and the Anthropic web-search fallback pass runs to backfill.
+const FALLBACK_HIT_THRESHOLD = 6;
+const MILESTONE_SEARCHES_PER_JURISDICTION = 3;
 
 async function extractForJurisdiction(
   j: JurisdictionConfig,
@@ -317,6 +380,58 @@ async function searchAllTopics(j: JurisdictionConfig, ctx: ExtractionContext): P
       console.warn(`[digest][${j.code}][${profile.kind}] search failed:`, err);
     }
   }
+
+  // Targeted searches for tracked milestones this week (miss prevention):
+  // the extractor is guaranteed material on events we know are happening.
+  const jurisdictionMilestones = ctx.milestones
+    .filter((m) => m.jurisdictionCode === j.code)
+    .slice(0, MILESTONE_SEARCHES_PER_JURISDICTION);
+  for (const m of jurisdictionMilestones) {
+    try {
+      const hits = await exaSearch(
+        {
+          query: milestoneSearchQuery(m),
+          startPublishedDate: ctx.weekStart,
+          endPublishedDate: ctx.weekEnd,
+          numResults: 4,
+        },
+        ctx.accountant
+      );
+      console.log(`[digest][${j.code}][milestone] ${hits.length} hits for "${m.shortName}"`);
+      for (const h of hits) h.profile = "milestone_watch";
+      allHits.push(...hits);
+    } catch (err) {
+      console.warn(`[digest][${j.code}][milestone] search failed for "${m.shortName}":`, err);
+    }
+  }
+
+  // B2: Anthropic web-search fallback when the pool is thin (Exa outage,
+  // index gap, sparse week). One call, merged into the same pool — and part
+  // of the cached hit set so --cached replays include it.
+  const uniqueUrls = new Set(allHits.map((h) => h.url));
+  if (uniqueUrls.size < FALLBACK_HIT_THRESHOLD) {
+    console.log(
+      `[digest][${j.code}] thin pool (${uniqueUrls.size} unique hits) — running web-search fallback`
+    );
+    try {
+      const fallbackHits = await anthropicWebSearchFallback(
+        {
+          jurisdictionName: j.name,
+          jurisdictionCode: j.code,
+          startDate: ctx.weekStart,
+          endDate: ctx.weekEnd,
+          topics: SEARCH_TOPICS,
+          keyRegulators: KEY_REGULATORS[j.code] ?? [],
+        },
+        ctx.guard
+      );
+      console.log(`[digest][${j.code}][web_search_fallback] ${fallbackHits.length} hits`);
+      allHits.push(...fallbackHits.filter((h) => !uniqueUrls.has(h.url)));
+    } catch (err) {
+      console.warn(`[digest][${j.code}][web_search_fallback] failed:`, err);
+    }
+  }
+
   return allHits;
 }
 
@@ -339,6 +454,8 @@ Text: ${text}`;
     })
     .join("\n\n");
 
+  const jurisdictionMilestones = ctx.milestones.filter((m) => m.jurisdictionCode === j.code);
+
   const prompt = jurisdictionExtractionPrompt({
     jurisdictionName: j.name,
     jurisdictionCode: j.code,
@@ -349,6 +466,8 @@ Text: ${text}`;
     courtDomains: j.courtDomains,
     preSeededStories,
     searchHits: searchHitsBlock,
+    companyName: ctx.companyName,
+    milestoneWatch: formatMilestoneWatch(jurisdictionMilestones),
   });
 
   const response = await anthropic.messages.create({
@@ -394,9 +513,15 @@ Text: ${text}`;
 
 async function synthesizeIssue(
   stories: ExtractedStory[],
-  guard: CostGuard
+  guard: CostGuard,
+  companyName: string,
+  companyBlock: string
 ): Promise<SynthesisOutput> {
-  const prompt = synthesisPrompt({ storiesJson: JSON.stringify(stories, null, 2) });
+  const prompt = synthesisPrompt({
+    storiesJson: JSON.stringify(stories, null, 2),
+    companyName,
+    companyBlock,
+  });
 
   const response = await anthropic.messages.create({
     model: MODELS.synthesis,

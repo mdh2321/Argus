@@ -6,8 +6,11 @@ import { setStorySaved, type DigestStory } from "@/hooks/use-digest";
 import { getFlag } from "@/lib/digest-utils";
 import { TagBadge } from "./tag-badge";
 import { StorySummary } from "./story-summary";
-import { Clock, ChevronDown, Database, Star, Bot } from "lucide-react";
+import { CopyButton } from "./copy-button";
+import { Clock, ChevronDown, Database, Star, Bot, Share2, Mail, EyeOff, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+
+type DraftFormat = "linkedin" | "email";
 
 
 function sourceTypeColor(type: string): string {
@@ -36,6 +39,56 @@ export function StoryBlock({
   const [expanded, setExpanded] = useState(false);
   // Optimistic star state — flipped immediately, rolled back on failure.
   const [saved, setSaved] = useState(!!story.saved);
+  // Voice-shifted share drafts (LinkedIn / email) — generated on demand.
+  const [draftFormat, setDraftFormat] = useState<DraftFormat | null>(null);
+  const [draftText, setDraftText] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  // "Not relevant" feedback — inline reason form, writes to company-context.md.
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackReason, setFeedbackReason] = useState("");
+  const [feedbackSending, setFeedbackSending] = useState(false);
+
+  async function generateDraft(format: DraftFormat) {
+    if (drafting) return;
+    setDraftFormat(format);
+    setDraftText("");
+    setDrafting(true);
+    try {
+      const res = await fetch(`/api/digest/stories/${story.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ format }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.draft) throw new Error(data.error || "failed");
+      setDraftText(data.draft);
+    } catch {
+      toast.error("Draft generation failed");
+      setDraftFormat(null);
+    } finally {
+      setDrafting(false);
+    }
+  }
+
+  async function submitFeedback() {
+    if (feedbackSending) return;
+    setFeedbackSending(true);
+    try {
+      const res = await fetch(`/api/digest/stories/${story.id}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: feedbackReason }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Noted — future digests will deprioritise similar stories");
+      setFeedbackOpen(false);
+      setFeedbackReason("");
+    } catch {
+      toast.error("Couldn't record feedback");
+    } finally {
+      setFeedbackSending(false);
+    }
+  }
 
   async function toggleSaved(e: React.MouseEvent) {
     e.stopPropagation();
@@ -181,6 +234,93 @@ export function StoryBlock({
                   Ask about this
                 </Link>
               </div>
+
+              {/* Share drafts + relevance feedback */}
+              <div className="mt-3 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => generateDraft("linkedin")}
+                  disabled={drafting}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:border-border-hover hover:text-fg disabled:opacity-50"
+                  title="Draft a LinkedIn post in your voice (copy-only, never auto-posted)"
+                >
+                  {drafting && draftFormat === "linkedin" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Share2 className="h-3 w-3" />}
+                  LinkedIn draft
+                </button>
+                <button
+                  onClick={() => generateDraft("email")}
+                  disabled={drafting}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:border-border-hover hover:text-fg disabled:opacity-50"
+                  title="Draft an internal stakeholder email"
+                >
+                  {drafting && draftFormat === "email" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />}
+                  Email draft
+                </button>
+                <button
+                  onClick={() => setFeedbackOpen(!feedbackOpen)}
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:border-red/30 hover:text-red"
+                  title="Mark not relevant — teaches future triage to skip similar stories"
+                >
+                  <EyeOff className="h-3 w-3" />
+                  Not relevant
+                </button>
+              </div>
+
+              {feedbackOpen && (
+                <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    value={feedbackReason}
+                    onChange={(e) => setFeedbackReason(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && submitFeedback()}
+                    placeholder="Why isn't this relevant? (optional — improves future triage)"
+                    className="flex-1 rounded-lg border border-border bg-bg px-3 py-1.5 text-[13px] text-fg placeholder:text-fg-3 focus:border-accent focus:outline-none"
+                    autoFocus
+                  />
+                  <button
+                    onClick={submitFeedback}
+                    disabled={feedbackSending}
+                    className="rounded-lg bg-red/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-red transition-colors hover:bg-red/20 disabled:opacity-50"
+                  >
+                    {feedbackSending ? "Saving…" : "Confirm"}
+                  </button>
+                </div>
+              )}
+
+              {draftFormat && (drafting || draftText) && (
+                <div className="mt-3 rounded-lg border border-border bg-bg p-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="label-mono">
+                      {draftFormat === "linkedin" ? "LinkedIn draft" : "Email draft"}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      {draftText && (
+                        <button
+                          onClick={() => generateDraft(draftFormat)}
+                          disabled={drafting}
+                          className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-2 disabled:opacity-50"
+                          title="Regenerate"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          Redo
+                        </button>
+                      )}
+                      {draftText && <CopyButton text={draftText} label="Copy" />}
+                    </div>
+                  </div>
+                  {drafting ? (
+                    <p className="flex items-center gap-2 text-[13px] text-fg-3">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Drafting…
+                    </p>
+                  ) : (
+                    <textarea
+                      value={draftText}
+                      onChange={(e) => setDraftText(e.target.value)}
+                      rows={Math.min(14, draftText.split("\n").length + 2)}
+                      className="w-full resize-y rounded-lg border border-border bg-surface p-3 text-[13px] leading-relaxed text-fg-2 focus:border-accent focus:outline-none"
+                      spellCheck={false}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
