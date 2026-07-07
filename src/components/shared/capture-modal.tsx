@@ -141,7 +141,7 @@ export function CaptureModal() {
                 )}
                 {submitting ? "Capturing…" : "Capture"}
                 {!submitting && (
-                  <kbd className="ml-1 rounded bg-black/20 px-1 py-0.5 text-[9px]">⌘↵</kbd>
+                  <kbd className="ml-1 rounded bg-black/20 px-1 py-0.5 text-[10px]">⌘↵</kbd>
                 )}
               </button>
             </div>

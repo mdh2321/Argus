@@ -1510,7 +1510,7 @@ function UrlLeadsBanner({
                 </a>
                 {tierConfig && (
                   <span
-                    className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono font-medium leading-none whitespace-nowrap"
+                    className="flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium leading-none whitespace-nowrap"
                     style={{ color: tierConfig.color, background: `${tierConfig.color}15`, border: `1px solid ${tierConfig.color}30` }}
                   >
                     {tierConfig.label}

@@ -958,7 +958,7 @@ function StarterCard({
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
           <span className="text-[12px] font-semibold text-fg">{starter.label}</span>
-          <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.04em] text-fg-3">
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
             <ModeIcon className="h-2.5 w-2.5" />
             {MODE_META[starter.mode].label}
           </span>
@@ -1067,7 +1067,7 @@ function SourceRow({ index, citation }: { index: number; citation: AskSentinelCi
   const external = citation.externalUrl;
   const inner = (
     <>
-      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-hover font-mono text-[9px] text-fg-3">
+      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-hover font-mono text-[10px] text-fg-3">
         {index}
       </span>
       <span className="min-w-0">
@@ -1329,12 +1329,12 @@ function ReportSection({ section }: { section: NonNullable<AskSentinelAnswer["re
                     <span className="text-[13px] text-fg-2">{claim.text}</span>
                     <div className="mt-0.5 flex items-center gap-2">
                       <span
-                        className="font-mono text-[9px] uppercase tracking-[0.04em]"
+                        className="font-mono text-[10px] uppercase tracking-[0.04em]"
                         style={{ color: groundingColors[claim.groundingType] || "var(--fg-3)" }}
                       >
                         {claim.groundingType.replace("_", " ")}
                       </span>
-                      <span className="font-mono text-[9px] text-fg-3">{claim.confidence}</span>
+                      <span className="font-mono text-[10px] text-fg-3">{claim.confidence}</span>
                     </div>
                   </div>
                 </div>

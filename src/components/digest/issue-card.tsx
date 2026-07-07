@@ -33,8 +33,8 @@ export function IssueCardCompact({ issue }: { issue: DigestIssue }) {
         style={{ gridTemplateColumns: "auto 1fr auto" }}
       >
         <div className="flex flex-col items-center text-center">
-          <span className="font-mono text-[9px] uppercase tracking-wider text-fg-3">{dayOfWeek}</span>
-          <span className="font-mono text-[9px] uppercase text-fg-3">{month}</span>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-fg-3">{dayOfWeek}</span>
+          <span className="font-mono text-[10px] uppercase text-fg-3">{month}</span>
           <span className="font-mono text-lg font-semibold leading-tight text-fg">{day}</span>
         </div>
         <div className="min-w-0">

@@ -129,7 +129,7 @@ export function TopNav() {
             className="gap-1.5"
           >
             <Search className="w-[15px] h-[15px]" strokeWidth={1.5} />
-            <kbd className="hidden sm:inline-block rounded bg-hover px-1.5 py-0.5 font-mono text-[9px] text-fg-3">&#x2318;K</kbd>
+            <kbd className="hidden sm:inline-block rounded bg-hover px-1.5 py-0.5 font-mono text-[10px] text-fg-3">&#x2318;K</kbd>
           </IconButton>
           <IconButton
             onClick={toggleTheme}

@@ -40,7 +40,7 @@ export function QuickFacts({ entry }: { entry: Entry }) {
       <dl className="space-y-2">
         {facts.map((f) => (
           <div key={f.label} className="flex flex-col gap-0.5">
-            <dt className="font-mono text-[9px] uppercase tracking-[0.04em] text-fg-3">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
               {f.label}
             </dt>
             <dd className="text-[12px] text-fg break-words">{f.value}</dd>

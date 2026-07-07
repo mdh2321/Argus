@@ -182,7 +182,7 @@ export function SourceSuggestionPanel({ entryId, onClose, onApproved }: Props) {
                         <span className="font-mono text-[11px] text-fg-2">{c.hostname}</span>
                         {tierConfig && (
                           <span
-                            className="rounded px-1.5 py-0.5 font-mono text-[9px] font-medium leading-none"
+                            className="rounded px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none"
                             style={{
                               color: tierConfig.color,
                               background: `${tierConfig.color}15`,
@@ -193,7 +193,7 @@ export function SourceSuggestionPanel({ entryId, onClose, onApproved }: Props) {
                           </span>
                         )}
                         <span
-                          className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-medium leading-none ${
+                          className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none ${
                             c.confidence === "high"
                               ? "bg-accent/10 text-accent"
                               : c.confidence === "medium"
