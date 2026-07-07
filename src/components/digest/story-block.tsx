@@ -15,19 +15,22 @@ type DraftFormat = "linkedin" | "email";
 
 function sourceTypeColor(type: string): string {
   const map: Record<string, string> = {
-    Regulator: "text-green",
+    Regulator: "text-green-text",
     "Law Firm": "text-blue",
-    Publication: "text-purple",
-    Court: "text-amber",
+    Publication: "text-purple-text",
+    Court: "text-amber-text",
   };
   return map[type] || "text-fg-3";
 }
 
-function impactDot(impact: string): string {
+// The 4px stripe down the left edge of each story — lets a reader triage a
+// full issue by colour before reading a word. Keyed to the same impact levels
+// used elsewhere.
+function impactColor(impact: string): string {
   switch (impact) {
-    case "High": return "bg-red";
-    case "Medium": return "bg-amber";
-    default: return "bg-green";
+    case "High": return "var(--red)";
+    case "Medium": return "var(--amber)";
+    default: return "var(--green)";
   }
 }
 
@@ -108,19 +111,20 @@ export function StoryBlock({
   return (
     <article
       id={story.id}
-      className="scroll-mt-20 rounded-xl border border-border bg-surface p-6 transition-colors hover:border-border-hover cursor-pointer"
+      className="scroll-mt-20 rounded-xl border border-border bg-surface p-6 pl-5 transition-colors hover:border-border-hover cursor-pointer"
+      style={{ borderLeftWidth: "4px", borderLeftColor: impactColor(story.impact || "Low") }}
       onClick={() => setExpanded(!expanded)}
     >
       {/* Badges */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         {story.urgency === "immediate_action" && (
-          <span className="rounded-full border border-red/20 bg-red-bg px-2 py-0.5 font-mono text-[10px] font-medium text-red">
+          <span className="rounded-full border border-red/20 bg-red-bg px-2 py-0.5 font-mono text-[10px] font-medium text-red-text">
             ACTION REQUIRED
           </span>
         )}
         {matchedRefCount > 0 && (
           <span
-            className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent-bg px-2 py-0.5 font-mono text-[10px] font-medium text-accent"
+            className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent-bg px-2 py-0.5 font-mono text-[10px] font-medium text-accent-text"
             title={`${matchedRefCount} reference${matchedRefCount === 1 ? "" : "s"} linked to tracker`}
           >
             <Database className="h-2.5 w-2.5" />
@@ -135,6 +139,12 @@ export function StoryBlock({
             {unmatchedRefCount} untracked
           </span>
         )}
+        <span
+          className="ml-auto font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3"
+          title={`Impact: ${story.impact || "Low"}`}
+        >
+          {story.impact || "Low"} impact
+        </span>
       </div>
 
       {/* Header + body in a shared column under the flag — keeps text width constant across collapsed/expanded states */}
@@ -176,12 +186,6 @@ export function StoryBlock({
             )}
             <span>&middot;</span>
             <span>{new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-            <span>&middot;</span>
-            <span className="flex items-center gap-1.5">
-              <span className="uppercase tracking-wide">Impact</span>
-              <span className={`inline-block h-1.5 w-1.5 rounded-full ${impactDot(story.impact || "Low")}`} />
-              <span>{story.impact || "Low"}</span>
-            </span>
           </div>
 
           {/* Summary with inline reference highlights. Clamps to 2 lines when collapsed. */}
