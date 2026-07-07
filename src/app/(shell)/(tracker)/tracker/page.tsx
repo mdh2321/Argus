@@ -9,7 +9,7 @@ import { EntriesKanban } from "@/components/tracker/entries-kanban";
 import { EntriesGrid } from "@/components/tracker/entries-grid";
 import { ScanButton } from "@/components/tracker/scan-button";
 import { ChevronLeft, ChevronRight, CalendarClock, Sparkles, Database, Rows3, List, LayoutGrid, KanbanSquare, Table as TableIcon, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
 
 export default function TrackerPage() {
   return (
@@ -144,20 +144,14 @@ function TrackerContent() {
             </div>
           )}
           <ScanButton />
-          <Link
-            href="/tracker/horizon"
-            className="flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:bg-hover"
-          >
+          <ButtonLink href="/tracker/horizon" variant="secondary">
             <CalendarClock className="w-3.5 h-3.5" />
             Horizon
-          </Link>
-          <Link
-            href="/tracker/new"
-            className="flex items-center gap-1.5 px-4 py-2 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-[var(--shadow-m)]"
-          >
+          </ButtonLink>
+          <ButtonLink href="/tracker/new">
             <Sparkles className="w-3.5 h-3.5" />
             New Entry
-          </Link>
+          </ButtonLink>
         </div>
       </div>
 
