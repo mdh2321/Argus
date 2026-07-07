@@ -125,7 +125,7 @@ export default function DashboardPage() {
             {latestIssue && (
               <Link
                 href={`/digest/issues/${latestIssue.slug}`}
-                className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent hover:text-accent-2 flex items-center gap-1.5 transition-colors"
+                className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent-text hover:text-accent flex items-center gap-1.5 transition-colors"
               >
                 Full digest <ArrowRight className="w-3 h-3" />
               </Link>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                   {signal.link && (
                     <Link
                       href={signal.link}
-                      className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent hover:text-accent-2 transition-colors flex-shrink-0"
+                      className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent-text hover:text-accent transition-colors flex-shrink-0"
                     >
                       {signal.linkLabel} <ArrowRight className="w-3 h-3" />
                     </Link>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                 {signal.relevanceRationale && (
                   <span
                     className="text-[11px] leading-relaxed block mt-1 italic"
-                    style={{ color: "var(--accent)" }}
+                    style={{ color: "var(--accent-text)" }}
                   >
                     Why for you &middot; {signal.relevanceRationale}
                   </span>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/tracker"
-            className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent hover:text-accent-2 flex items-center gap-1.5 transition-colors"
+            className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent-text hover:text-accent flex items-center gap-1.5 transition-colors"
           >
             All entries <ArrowRight className="w-3 h-3" />
           </Link>

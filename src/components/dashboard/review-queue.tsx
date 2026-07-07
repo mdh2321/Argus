@@ -131,7 +131,7 @@ function ReviewGroupRow({ group }: { group: ReviewGroup }) {
           {group.count > group.items.length && (
             <Link
               href={group.href}
-              className="mt-1 flex items-center gap-1 px-2 py-1.5 font-mono text-[11px] text-accent hover:text-accent-2"
+              className="mt-1 flex items-center gap-1 px-2 py-1.5 font-mono text-[11px] text-accent-text hover:text-accent"
             >
               View all {group.count} <ArrowRight className="h-3 w-3" />
             </Link>

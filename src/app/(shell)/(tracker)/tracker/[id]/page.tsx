@@ -964,7 +964,7 @@ export default function EntryDetailPage() {
                   setShowDocForm(!showDocForm);
                   setShowSuggestPanel(false);
                 }}
-                className="flex items-center gap-1 text-[11px] font-mono text-accent hover:text-accent-2 transition-colors"
+                className="flex items-center gap-1 text-[11px] font-mono text-accent-text hover:text-accent transition-colors"
               >
                 <Plus className="w-3 h-3" />
                 {showDocForm ? "Cancel" : "Add"}
@@ -1504,7 +1504,7 @@ function UrlLeadsBanner({
             return (
               <div key={i} className="flex items-center gap-2 py-1.5">
                 <a href={url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[13px] text-accent hover:text-accent-2 transition-colors min-w-0 flex-1">
+                  className="flex items-center gap-2 text-[13px] text-accent-text hover:text-accent transition-colors min-w-0 flex-1">
                   <ExternalLink className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{(typeof source === "string" ? null : source.label) || host}</span>
                 </a>
@@ -2288,7 +2288,7 @@ function SourceDocRow({
                 href={doc.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] text-accent hover:text-accent-2 transition-colors"
+                className="flex items-center gap-1 text-[11px] text-accent-text hover:text-accent transition-colors"
               >
                 <Link2 className="w-2.5 h-2.5" />
                 {(() => {
