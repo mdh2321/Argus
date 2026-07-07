@@ -22,7 +22,11 @@ import {
   CalendarDays,
   Search,
   Newspaper,
+  Database,
+  Sparkles,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ButtonLink } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const { data: allData } = useEntries({ limit: "200" });
@@ -275,7 +279,12 @@ export default function DashboardPage() {
             })}
           </div>
         ) : (
-          <p className="text-[13px] text-fg-3 py-4">No upcoming dates on the horizon.</p>
+          <EmptyState
+            size="sm"
+            icon={CalendarDays}
+            title="Nothing on the horizon"
+            description="Upcoming key dates from your tracked entries will appear here."
+          />
         )}
       </section>
 
@@ -315,7 +324,7 @@ export default function DashboardPage() {
               {computeTrustBadges(entry).map((badge) => (
                 <span
                   key={badge.label}
-                  className={`rounded-full border px-1.5 py-0.5 font-mono text-[9px] font-medium ${badge.className}`}
+                  className={`rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-medium ${badge.className}`}
                 >
                   {badge.label}
                 </span>
@@ -327,12 +336,17 @@ export default function DashboardPage() {
           ))}
 
           {recentEntries.length === 0 && (
-            <p className="py-16 text-center text-[14px] text-fg-3">
-              No entries yet.{" "}
-              <Link href="/settings" className="text-accent hover:underline">
-                Add one
-              </Link>
-            </p>
+            <EmptyState
+              icon={Database}
+              title="Your tracker is empty"
+              description="Add a regulation, bill, or policy to start tracking its lifecycle and deadlines."
+              action={
+                <ButtonLink href="/tracker/new">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  New entry
+                </ButtonLink>
+              }
+            />
           )}
         </div>
       </section>

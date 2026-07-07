@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useTopics } from "@/hooks/use-topics";
 import { FreshnessBadge } from "@/components/library/freshness-badge";
-import { BookOpen, Loader2, Database, Newspaper, Radar } from "lucide-react";
+import { BookOpen, Database, Newspaper, Radar } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonCard } from "@/components/ui/skeleton";
 
 // Topics wiki index — the Library's front door. Each topic is a living,
 // compiled dossier; freshness is always visible.
@@ -25,13 +27,22 @@ export default function TopicsPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-5 w-5 animate-spin text-fg-3" />
+        <div className="grid gap-3 sm:grid-cols-2 anim-enter" aria-busy="true">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       ) : topics.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface px-6 py-16 text-center text-[14px] text-fg-3">
-          No topics yet. Seed them with <code className="font-mono text-[12px]">npx tsx scripts/archive/seed-topics.ts</code>.
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="No topics yet"
+          description={
+            <>
+              Seed them with{" "}
+              <code className="font-mono text-[12px]">npx tsx scripts/archive/seed-topics.ts</code>.
+            </>
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 stagger">
           {topics.map((topic) => (

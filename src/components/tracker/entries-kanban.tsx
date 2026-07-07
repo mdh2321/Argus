@@ -6,7 +6,8 @@ import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { STATUSES } from "@/lib/constants";
 import { formatDate, relativeTime } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
-import { Flag, Clock, CornerDownRight, Sparkles, ShieldAlert, Compass } from "lucide-react";
+import { Flag, Clock, CornerDownRight, Sparkles, ShieldAlert, Compass, SearchX } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type LifecycleStage = "horizon" | "active" | "archive";
 
@@ -86,9 +87,11 @@ export function EntriesKanban({ entries }: EntriesKanbanProps) {
 
   if (flat.length === 0) {
     return (
-      <div className="py-20 text-center anim-enter">
-        <p className="text-[15px] text-fg-3">No entries match your filters</p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="No entries match your filters"
+        description="Try clearing a filter or widening your search to see more of the tracker."
+      />
     );
   }
 
@@ -177,7 +180,7 @@ function KanbanCard({ entry }: { entry: Entry }) {
 
       {/* Parent relationship badge */}
       {entry.parentShortName && (
-        <div className="mt-1.5 flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.04em] text-fg-3">
+        <div className="mt-1.5 flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
           <CornerDownRight className="w-2.5 h-2.5" />
           <span className="truncate">
             {verb} <span className="text-fg-2">{entry.parentShortName}</span>

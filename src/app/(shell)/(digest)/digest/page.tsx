@@ -6,7 +6,8 @@ import { useDigestIssues } from "@/hooks/use-digest";
 import { IssueCardCompact, IssueCardFull } from "@/components/digest/issue-card";
 import { DigestSearchDialog } from "@/components/digest/search-dialog";
 import { GapNudge } from "@/components/digest/gap-nudge";
-import { Search, BookOpen, Loader2 } from "lucide-react";
+import { Search, BookOpen } from "lucide-react";
+import { SkeletonCards } from "@/components/ui/skeleton";
 
 export default function DigestPage() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -44,9 +45,7 @@ export default function DigestPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-5 w-5 animate-spin text-fg-3" />
-          </div>
+          <SkeletonCards count={4} />
         ) : issues.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface px-6 py-16 text-center text-[14px] text-fg-3">
             No digest issues yet. The weekly digest generates automatically each

@@ -2,7 +2,9 @@
 
 import { useDigestStories } from "@/hooks/use-digest";
 import { StoryBlock } from "@/components/digest/story-block";
-import { Star, Loader2 } from "lucide-react";
+import { Star } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SkeletonCards } from "@/components/ui/skeleton";
 
 // Personal shortlist of "things to raise with the business". Deliberately
 // not a workflow — no statuses, no owners, just starred stories newest first.
@@ -23,13 +25,13 @@ export default function SavedStoriesPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-5 w-5 animate-spin text-fg-3" />
-        </div>
+        <SkeletonCards count={3} />
       ) : stories.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface px-6 py-16 text-center text-[14px] text-fg-3">
-          Nothing saved yet. Star a story in any digest issue and it lands here.
-        </div>
+        <EmptyState
+          icon={Star}
+          title="Nothing saved yet"
+          description="Star a story in any digest issue and it lands here for quick reference."
+        />
       ) : (
         <div className="space-y-4">
           {stories.map((story) => (

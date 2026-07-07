@@ -7,7 +7,8 @@ import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { STATUSES, ENTRY_TYPES } from "@/lib/constants";
 import { formatDate, relativeTime } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
-import { Flag, ArrowUp, ArrowDown } from "lucide-react";
+import { Flag, ArrowUp, ArrowDown, SearchX } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type SortKey = "type" | "jurisdiction" | "name" | "parent" | "status" | "impact" | "next";
 type SortDir = "asc" | "desc";
@@ -72,9 +73,11 @@ export function EntriesGrid({ entries }: EntriesGridProps) {
 
   if (rows.length === 0) {
     return (
-      <div className="py-20 text-center anim-enter">
-        <p className="text-[15px] text-fg-3">No entries match your filters</p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="No entries match your filters"
+        description="Try clearing a filter or widening your search to see more of the tracker."
+      />
     );
   }
 

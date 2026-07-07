@@ -9,7 +9,8 @@ import { relativeTime, formatDate } from "@/lib/utils";
 import { updateEntry } from "@/hooks/use-entries";
 import type { Entry } from "@/lib/types";
 import { computeTrustBadges } from "@/lib/trust-badges";
-import { Flag, Clock, CornerDownRight, ChevronRight, ArrowUpRight, BookOpen, Replace, Link2 } from "lucide-react";
+import { Flag, Clock, CornerDownRight, ChevronRight, ArrowUpRight, BookOpen, Replace, Link2, SearchX } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 // Lookups built once per render module-load.
 const TYPE_LABEL: Record<string, string> = Object.fromEntries(
@@ -91,9 +92,11 @@ export function EntriesTable({
 
   if (entries.length === 0) {
     return (
-      <div className="py-20 text-center anim-enter">
-        <p className="text-[15px] text-fg-3">No entries match your filters</p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="No entries match your filters"
+        description="Try clearing a filter or widening your search to see more of the tracker."
+      />
     );
   }
 

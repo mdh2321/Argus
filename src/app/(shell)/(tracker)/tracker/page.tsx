@@ -10,16 +10,11 @@ import { EntriesGrid } from "@/components/tracker/entries-grid";
 import { ScanButton } from "@/components/tracker/scan-button";
 import { ChevronLeft, ChevronRight, CalendarClock, Sparkles, Database, Rows3, List, LayoutGrid, KanbanSquare, Table as TableIcon, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
+import { SkeletonList } from "@/components/ui/skeleton";
 
 export default function TrackerPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center py-24">
-          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="mt-8"><SkeletonList rows={8} /></div>}>
       <TrackerContent />
     </Suspense>
   );
@@ -198,9 +193,7 @@ function TrackerContent() {
       {/* Results */}
       <div className="mt-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          </div>
+          <SkeletonList rows={8} />
         ) : (
           <>
             {viewMode === "list" && (
