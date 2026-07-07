@@ -140,7 +140,7 @@ export function EntriesTable({
               e.stopPropagation();
               toggleExpanded(entry.id);
             }}
-            className="flex-shrink-0 flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 font-mono text-[9px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
+            className="flex-shrink-0 flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 font-mono text-[10px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
             title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
@@ -154,8 +154,8 @@ export function EntriesTable({
           if (days === null) return null;
           return (
             <span
-              className="flex-shrink-0 flex items-center gap-1 font-mono text-[9px] font-medium"
-              style={{ color: "var(--amber)" }}
+              className="flex-shrink-0 flex items-center gap-1 font-mono text-[10px] font-medium"
+              style={{ color: "var(--amber-text)" }}
               title={`Commences ${formatDate(entry.nextKeyDate)}`}
             >
               <Clock className="w-2.5 h-2.5" />
@@ -212,7 +212,7 @@ export function EntriesTable({
         <div className="flex-1 min-w-0">
           {/* Typed parent breadcrumb — verb varies by relationship kind. */}
           {entry.parentShortName && (
-            <div className="flex items-center gap-1 mb-1 font-mono text-[10px] tracking-[0.04em] uppercase text-fg-3">
+            <div className="flex items-center gap-1 mb-1 font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
               <RelationshipIcon kind={entry.parentRelationshipKind} className="w-3 h-3" />
               <span>
                 {entry.parentRelationshipKind && KIND_VERB[entry.parentRelationshipKind]
@@ -222,6 +222,8 @@ export function EntriesTable({
               </span>
             </div>
           )}
+          {/* Line 1 — the name leads; only a live urgency clock earns a place
+              beside it. Everything else is demoted to the meta line below. */}
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[14px] font-medium text-fg group-hover:text-accent transition-colors duration-150 truncate">
               {entry.shortName}
@@ -229,72 +231,13 @@ export function EntriesTable({
             {entry.flagged && (
               <Flag className="w-3 h-3 flex-shrink-0" style={{ color: "var(--amber)" }} fill="currentColor" />
             )}
-            {/* Type chip */}
-            <span className="rounded-full border border-border px-1.5 py-0.5 font-mono text-[9px] font-medium tracking-[0.04em] uppercase text-fg-3">
-              {TYPE_LABEL[entry.type] ?? entry.type}
-            </span>
-            {/* Authority indicator — solid for binding, outline for expected,
-                ghost for interpretive, muted dot for informational. */}
-            {(() => {
-              const a = authorityFor(entry);
-              const base = "rounded-full font-mono text-[9px] font-medium tracking-[0.04em] uppercase";
-              if (a.value === "binding") {
-                return (
-                  <span
-                    className={`${base} px-1.5 py-0.5 text-white`}
-                    style={{ background: a.color }}
-                    title={`Authority: ${a.label}`}
-                  >
-                    {a.label}
-                  </span>
-                );
-              }
-              if (a.value === "expected") {
-                return (
-                  <span
-                    className={`${base} border px-1.5 py-0.5`}
-                    style={{ color: a.color, borderColor: a.color }}
-                    title={`Authority: ${a.label}`}
-                  >
-                    {a.label}
-                  </span>
-                );
-              }
-              if (a.value === "interpretive") {
-                return (
-                  <span
-                    className={`${base} px-1.5 py-0.5`}
-                    style={{ color: a.color }}
-                    title={`Authority: ${a.label}`}
-                  >
-                    {a.label}
-                  </span>
-                );
-              }
-              return (
-                <span
-                  className={`${base} px-1.5 py-0.5 text-fg-3`}
-                  title={`Authority: ${a.label}`}
-                >
-                  {a.label}
-                </span>
-              );
-            })()}
-            {computeTrustBadges(entry).map((badge) => (
-              <span
-                key={badge.label}
-                className={`rounded-full border px-1.5 py-0.5 font-mono text-[9px] font-medium ${badge.className}`}
-              >
-                {badge.label}
-              </span>
-            ))}
             {(() => {
               const days = commencingDays(entry);
               if (days === null) return null;
               return (
                 <span
-                  className="flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-mono text-[9px] font-medium"
-                  style={{ color: "var(--amber)", borderColor: "var(--amber)" }}
+                  className="flex-shrink-0 flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium"
+                  style={{ color: "var(--amber-text)", borderColor: "color-mix(in srgb, var(--amber) 40%, transparent)" }}
                   title={`Commences ${formatDate(entry.nextKeyDate)}`}
                 >
                   <Clock className="w-2.5 h-2.5" />
@@ -302,6 +245,60 @@ export function EntriesTable({
                 </span>
               );
             })()}
+          </div>
+          <p className="text-[12px] text-fg-3 leading-relaxed line-clamp-2">
+            {entry.summary || entry.fullName}
+          </p>
+          {/* Meta line — type, authority, category and regulator read as plain
+              text; only "binding" authority keeps a colored emphasis. Trust
+              badges and the subordinate-instruments toggle live here too, so
+              the title stays uncluttered. */}
+          <div className="flex items-center gap-2 mt-2 flex-wrap font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
+            <span>{TYPE_LABEL[entry.type] ?? entry.type}</span>
+            {(() => {
+              const a = authorityFor(entry);
+              const binding = a.value === "binding";
+              return (
+                <>
+                  <span className="opacity-30">·</span>
+                  <span
+                    className={binding ? "font-semibold" : ""}
+                    style={binding ? { color: a.color } : undefined}
+                    title={`Authority: ${a.label}`}
+                  >
+                    {a.label}
+                  </span>
+                </>
+              );
+            })()}
+            <span className="opacity-30">·</span>
+            <span>{entry.category}</span>
+            <span className="opacity-30">·</span>
+            <span>{entry.regulator}</span>
+            {entry.tags && entry.tags.length > 0 && (
+              <>
+                <span className="opacity-30">·</span>
+                {entry.tags.slice(0, 2).map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-accent-bg px-2 py-0.5 text-[10px] normal-case text-accent-text"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {entry.tags.length > 2 && (
+                  <span className="text-[10px]">+{entry.tags.length - 2}</span>
+                )}
+              </>
+            )}
+            {computeTrustBadges(entry).map((badge) => (
+              <span
+                key={badge.label}
+                className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${badge.className}`}
+              >
+                {badge.label}
+              </span>
+            ))}
             {childCount > 0 && (
               <button
                 type="button"
@@ -309,41 +306,14 @@ export function EntriesTable({
                   e.stopPropagation();
                   toggleExpanded(entry.id);
                 }}
-                className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 font-mono text-[9px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
+                className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
                 aria-expanded={isExpanded}
                 aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
                 title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
               >
                 <ChevronRight className={`w-2.5 h-2.5 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
-                <span>{childCount} subordinate</span>
+                <span>{childCount} instrument{childCount === 1 ? "" : "s"}</span>
               </button>
-            )}
-          </div>
-          <p className="text-[12px] text-fg-3 leading-relaxed line-clamp-2">
-            {entry.summary || entry.fullName}
-          </p>
-          {/* Meta row */}
-          <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className="font-mono text-[10px] tracking-[0.04em] uppercase text-fg-3">{entry.category}</span>
-            <span className="text-fg-3 opacity-30">·</span>
-            <span className="font-mono text-[10px] tracking-[0.04em] uppercase text-fg-3">
-              {entry.regulator}
-            </span>
-            {entry.tags && entry.tags.length > 0 && (
-              <>
-                <span className="text-fg-3 opacity-30">·</span>
-                {entry.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-accent-bg px-2 py-0.5 font-mono text-[9px] text-accent"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {entry.tags.length > 3 && (
-                  <span className="font-mono text-[9px] text-fg-3">+{entry.tags.length - 3}</span>
-                )}
-              </>
             )}
           </div>
         </div>
