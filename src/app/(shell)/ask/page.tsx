@@ -10,6 +10,7 @@ import type {
   AskSourceOption,
 } from "@/lib/ask-types";
 import { AgentBadge } from "@/components/ui/agent-badge";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
 import { HistoryDrawer } from "@/components/ask/history-drawer";
 import { askAnswerToMarkdown } from "@/lib/markdown-export";
@@ -886,20 +887,19 @@ function Composer({
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {!hideMode && (
-            <div className="flex items-center gap-1 overflow-hidden rounded-xl border border-border">
-              {(Object.keys(MODE_META) as Mode[]).map((m) => {
+            <SegmentedControl
+              aria-label="Answer mode"
+              value={mode}
+              onChange={setMode}
+              options={(Object.keys(MODE_META) as Mode[]).map((m) => {
                 const Icon = MODE_META[m].icon;
-                return (
-                  <ModeButton
-                    key={m}
-                    active={mode === m}
-                    onClick={() => setMode(m)}
-                    icon={<Icon className="h-3 w-3" />}
-                    label={MODE_META[m].label}
-                  />
-                );
+                return {
+                  value: m,
+                  label: MODE_META[m].label,
+                  icon: <Icon className="h-3 w-3" />,
+                };
               })}
-            </div>
+            />
           )}
           {large && !hideMode && (
             <span className="hidden text-[12px] text-fg-3 sm:inline">{MODE_META[mode].blurb}</span>
@@ -914,7 +914,7 @@ function Composer({
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-white transition-all hover:-translate-y-px hover:bg-accent-2 hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-white transition-all hover:bg-accent-2 hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? (
             <>
@@ -948,7 +948,7 @@ function StarterCard({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="group flex items-start gap-3 rounded-2xl border border-border bg-surface p-3.5 text-left shadow-[var(--shadow-s)] transition-all hover:-translate-y-px hover:border-border-hover hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+      className="group flex items-start gap-3 rounded-2xl border border-border bg-surface p-3.5 text-left shadow-[var(--shadow-s)] transition-all hover:border-border-hover hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span
         className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${starter.chipClass}`}
@@ -968,21 +968,6 @@ function StarterCard({
         </span>
       </span>
       <ArrowRight className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-fg-3 opacity-0 transition-opacity group-hover:opacity-100" />
-    </button>
-  );
-}
-
-function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors ${
-        active ? "bg-accent text-white" : "text-fg-3 hover:bg-hover hover:text-fg-2"
-      }`}
-    >
-      {icon}
-      {label}
     </button>
   );
 }
@@ -1041,9 +1026,7 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
             Reading the story and searching…
           </div>
         )}
-        {streaming && turn.text && (
-          <span className="ml-0.5 inline-block h-3.5 w-[2px] animate-pulse bg-accent align-middle" />
-        )}
+        {streaming && turn.text && <span className="stream-cursor" aria-hidden="true" />}
       </div>
 
       {turn.status === "done" && turn.citations.length > 0 && (
@@ -1153,7 +1136,7 @@ function AnswerCard({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 anim-enter">
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)]">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           {answer.mode === "deep_report" && (

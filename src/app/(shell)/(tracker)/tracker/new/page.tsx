@@ -233,7 +233,7 @@ export default function NewEntryPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-white transition-all hover:-translate-y-px hover:bg-accent-2 hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-white transition-all hover:bg-accent-2 hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>

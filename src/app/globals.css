@@ -153,6 +153,14 @@ body {
   color: var(--fg-3);
 }
 
+/* ===== Tabular numerals =====
+   For digits set in the proportional sans that need to line up in columns or
+   sit still as they update (deadlines, relevance scores, counts). Mono figures
+   are already fixed-width, so this is only for sans numeric spots. */
+.tnum { font-variant-numeric: tabular-nums; }
+/* Data tables always align their figures. */
+table { font-variant-numeric: tabular-nums; }
+
 /* ===== Grid pattern for hero ===== */
 .grid-pattern {
   position: relative;
@@ -177,12 +185,11 @@ body {
   border: 1px solid var(--border-accent);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-  transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s;
+  transition: box-shadow 0.3s, border-color 0.3s;
 }
 .card-featured:hover {
   box-shadow: var(--shadow-card-hover);
   border-color: var(--border-hover);
-  transform: translateY(-1px);
 }
 
 /* ===== Gradient text ===== */
@@ -218,6 +225,21 @@ body {
 /* ===== Animations ===== */
 @keyframes enter { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 .anim-enter { animation: enter .35s ease-out both; }
+
+/* Streaming caret — a thin bar that blinks (hard on/off, like a text cursor)
+   while an answer is still arriving, then is removed when the stream ends. */
+@keyframes caret-blink { 0%, 55% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: caret-blink 1s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) { .stream-cursor { animation: none; } }
 .stagger > * { animation: enter .35s ease-out both; }
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
 .stagger > *:nth-child(2) { animation-delay: 35ms; }

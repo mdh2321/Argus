@@ -164,7 +164,7 @@ function HorizonRow({ item }: { item: HorizonItem }) {
   return (
     <Link
       href={`/tracker/${item.entryId}`}
-      className="group flex gap-4 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-px hover:border-border-hover hover:shadow-[var(--shadow-card)]"
+      className="group flex gap-4 rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
     >
       <div className="flex w-[88px] flex-shrink-0 flex-col items-center justify-center rounded-xl bg-accent-bg py-3">
         <span className="font-mono text-[15px] font-bold leading-tight text-accent">

@@ -49,7 +49,7 @@ export default function TopicsPage() {
             <Link
               key={topic.slug}
               href={`/library/topics/${topic.slug}`}
-              className="group rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-px hover:border-border-hover hover:shadow-[var(--shadow-card)]"
+              className="group rounded-2xl border border-border bg-surface p-5 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <h2 className="text-[16px] font-semibold leading-snug text-fg transition-colors group-hover:text-accent">

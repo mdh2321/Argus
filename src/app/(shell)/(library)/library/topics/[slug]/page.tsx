@@ -110,7 +110,7 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
               <Link
                 key={entry.id}
                 href={`/tracker/${entry.id}`}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-all hover:-translate-y-px hover:border-border-hover"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-all hover:border-border-hover"
               >
                 <span className="text-base leading-none">{getFlag(entry.jurisdiction)}</span>
                 <div className="min-w-0 flex-1">

@@ -84,7 +84,7 @@ export function CompanyContextEditor() {
       <button
         type="submit"
         disabled={saving || loading || !content.trim()}
-        className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-[var(--shadow-m)] disabled:opacity-50 disabled:hover:translate-y-0"
+        className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:shadow-[var(--shadow-m)] disabled:opacity-50"
       >
         <Save className="w-3.5 h-3.5" />
         {saving ? "Saving..." : "Save Company Context"}

@@ -17,7 +17,7 @@ type Size = "sm" | "md";
 const base =
   "inline-flex items-center justify-center gap-1.5 font-mono uppercase font-medium " +
   "tracking-[0.04em] rounded-xl transition-all duration-150 " +
-  "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none";
+  "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none";
 
 const sizes: Record<Size, string> = {
   sm: "px-3 py-1.5 text-[11px]",
@@ -26,7 +26,7 @@ const sizes: Record<Size, string> = {
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-accent text-white hover:bg-accent-2 hover:-translate-y-px hover:shadow-[var(--shadow-m)]",
+    "bg-accent text-white hover:bg-accent-2 hover:shadow-[var(--shadow-m)]",
   secondary:
     "border border-border text-fg-2 hover:bg-hover hover:text-fg hover:border-border-hover",
   ghost: "text-fg-3 hover:text-fg-2 hover:bg-hover",

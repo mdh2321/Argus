@@ -221,7 +221,7 @@ function ProfileTab() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-[var(--shadow-m)] disabled:opacity-50 disabled:hover:translate-y-0"
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:shadow-[var(--shadow-m)] disabled:opacity-50"
         >
           <Save className="w-3.5 h-3.5" />
           {saving ? "Saving..." : "Save Profile"}
@@ -300,13 +300,13 @@ function ExportTab() {
       <div className="flex gap-3">
         <button
           onClick={() => handleExport("json")}
-          className="px-5 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:-translate-y-px hover:shadow-[var(--shadow-m)]"
+          className="px-5 py-2.5 bg-accent hover:bg-accent-2 text-white font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl transition-all duration-150 hover:shadow-[var(--shadow-m)]"
         >
           JSON
         </button>
         <button
           onClick={() => handleExport("csv")}
-          className="px-5 py-2.5 bg-surface border border-border text-fg-2 font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl hover:bg-hover transition-all duration-150 hover:-translate-y-px"
+          className="px-5 py-2.5 bg-surface border border-border text-fg-2 font-mono text-[11px] tracking-[0.04em] uppercase font-medium rounded-xl hover:bg-hover transition-all duration-150"
         >
           CSV
         </button>

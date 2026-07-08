@@ -61,7 +61,7 @@ export function TopNav() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`nav-dot ${active ? "active" : ""} inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 hover:-translate-y-px ${
+                className={`nav-dot ${active ? "active" : ""} inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 ${
                   active
                     ? "text-fg bg-hover"
                     : "text-fg-3 hover:text-fg-2 hover:bg-hover"
@@ -75,7 +75,7 @@ export function TopNav() {
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 hover:-translate-y-px data-[state=open]:bg-hover ${
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 data-[state=open]:bg-hover ${
                   secondaryActive
                     ? "text-fg bg-hover"
                     : "text-fg-3 hover:text-fg-2 hover:bg-hover"
@@ -134,7 +134,6 @@ export function TopNav() {
           <IconButton
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="hover:-translate-y-px"
           >
             {theme === "dark" ? (
               <Sun className="w-[15px] h-[15px]" strokeWidth={1.5} />

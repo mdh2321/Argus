@@ -130,7 +130,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       {horizonNext90 > 0 && (
         <Link
           href="/tracker/horizon"
-          className="group mb-10 flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3.5 transition-all hover:-translate-y-px hover:border-border-hover hover:shadow-[var(--shadow-card)]"
+          className="group mb-10 flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3.5 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
         >
           <Telescope className="h-4 w-4 flex-shrink-0" style={{ color: "var(--accent)" }} />
           <span className="text-[14px] text-fg-2">
