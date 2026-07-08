@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
   const page = parseInt(params.get("page") || "1");
   const limit = parseInt(params.get("limit") || "50");
   const flagged = params.get("flagged");
+  const depth = params.get("depth");
   // Nested mode groups children under their parents. The list view turns this
   // on when no filters or search are active; cross-cutting views (filtered,
   // searched, "commencing soon") stay flat so urgency doesn't get hidden.
@@ -72,6 +73,9 @@ export async function GET(request: NextRequest) {
   if (impactMin) conditions.push(gte(entries.impactScore, parseInt(impactMin)));
   if (impactMax) conditions.push(lte(entries.impactScore, parseInt(impactMax)));
   if (flagged === "true") conditions.push(eq(entries.flagged, true));
+  if (depth === "preliminary" || depth === "full") {
+    conditions.push(eq(entries.summaryDepth, depth));
+  }
 
   // Awaiting-commencement view: passed legislation with a commencement date
   // landing in the next 90 days. Maps to "what's about to switch on".

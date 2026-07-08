@@ -3,141 +3,206 @@
 import useSWR from "swr";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronDown,
-  GitPullRequest,
-  AlertCircle,
-  FileWarning,
-  SearchX,
-  Inbox,
-} from "lucide-react";
+import { toast } from "sonner";
+import { ArrowRight, Check, ChevronDown, X } from "lucide-react";
 
-// B1 — "N items need you". A single panel aggregating every pending decision
-// so the daily loop is "open Sentinel, clear the queue" rather than hunting
-// across surfaces for buttons. Read-only over /api/review-queue.
+// B1 — the review strip. Collapsed it's a one-line count ("3 decisions
+// waiting"); expanded it's a flat, actionable list: proposed changes get
+// inline Approve/Dismiss (same PATCH contract as ProposedChangesPanel),
+// stale analyses link to their entry where re-run lives. Renders nothing at
+// all when the queue is empty — an empty queue shouldn't occupy the page.
 
-interface ReviewItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  href: string;
+interface ProposedItem {
+  changeId: string;
+  entryId: string;
+  entryShortName: string;
+  field: string;
+  fieldLabel: string;
+  oldValue: string | null;
+  newValue: string | null;
+  changeSummary: string | null;
 }
-interface ReviewGroup {
-  key: string;
-  label: string;
-  count: number;
-  href: string;
-  items: ReviewItem[];
+interface StaleItem {
+  entryId: string;
+  entryShortName: string;
+  reason: string;
 }
 interface ReviewQueueResponse {
   total: number;
-  groups: ReviewGroup[];
+  proposed: ProposedItem[];
+  stale: StaleItem[];
+  related: { preliminaryCount: number; gapCount: number };
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const GROUP_ICON: Record<string, typeof GitPullRequest> = {
-  proposed: GitPullRequest,
-  stale: AlertCircle,
-  preliminary: FileWarning,
-  gaps: SearchX,
-};
-
-export function ReviewQueue() {
-  const { data } = useSWR<ReviewQueueResponse>("/api/review-queue", fetcher, {
-    refreshInterval: 60_000,
-  });
-
-  // Nothing to render until we have data — keeps the dashboard from flashing
-  // an empty panel on first paint.
-  if (!data) return null;
-
-  if (data.total === 0) {
-    return (
-      <section className="mb-10">
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3.5">
-          <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "var(--green)" }} />
-          <div className="min-w-0">
-            <div className="text-[13px] font-medium text-fg">You&apos;re caught up</div>
-            <div className="text-[11px] text-fg-3">No proposals, stale analyses, or gaps need review.</div>
-          </div>
-          <Inbox className="ml-auto h-4 w-4 text-fg-3" />
-        </div>
-      </section>
-    );
+// key_dates values are stored as JSON arrays; other fields are plain strings.
+function shortValue(field: string, value: string | null): string {
+  if (!value) return "—";
+  if (field === "key_dates") {
+    try {
+      const dates = JSON.parse(value) as { date: string; label?: string }[];
+      if (!Array.isArray(dates) || dates.length === 0) return "(no dates)";
+      const last = dates[dates.length - 1];
+      return `${last.label ?? "date"} · ${last.date}`;
+    } catch {
+      return value;
+    }
   }
-
-  return (
-    <section className="mb-10">
-      <div className="mb-3 flex items-center gap-2">
-        <Inbox className="h-4 w-4 text-accent" />
-        <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.04em] text-fg">
-          Needs you
-        </h2>
-        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[11px] font-medium text-accent">
-          {data.total}
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        {data.groups.map((group) => (
-          <ReviewGroupRow key={group.key} group={group} />
-        ))}
-      </div>
-    </section>
-  );
+  return value.replaceAll("_", " ");
 }
 
-function ReviewGroupRow({ group }: { group: ReviewGroup }) {
+export function ReviewQueue() {
+  const { data, mutate } = useSWR<ReviewQueueResponse>("/api/review-queue", fetcher, {
+    refreshInterval: 60_000,
+  });
   const [open, setOpen] = useState(false);
-  const Icon = GROUP_ICON[group.key] ?? GitPullRequest;
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  if (!data || data.total === 0) return null;
+
+  const parts: string[] = [];
+  if (data.proposed.length > 0) {
+    parts.push(`${data.proposed.length} proposed change${data.proposed.length === 1 ? "" : "s"}`);
+  }
+  if (data.stale.length > 0) {
+    parts.push(`${data.stale.length} stale analys${data.stale.length === 1 ? "is" : "es"}`);
+  }
+
+  const act = async (changeId: string, action: "approve" | "dismiss") => {
+    setBusyId(changeId);
+    try {
+      const res = await fetch(`/api/tracker/changes/${changeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      toast.success(action === "approve" ? "Change applied to entry" : "Proposal dismissed");
+      await mutate();
+    } catch (err) {
+      toast.error(`Couldn't ${action} change`, {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const { preliminaryCount, gapCount } = data.related;
 
   return (
-    <div className="rounded-xl border border-border bg-surface">
+    <section className="mb-10 rounded-xl border border-border bg-surface">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-bg-hover/40 rounded-xl"
       >
-        <Icon className="h-4 w-4 flex-shrink-0 text-fg-2" />
-        <span className="text-[13px] font-medium text-fg">{group.label}</span>
-        <span className="rounded-full bg-bg-hover px-1.5 py-0.5 font-mono text-[10px] font-medium text-fg-2">
-          {group.count}
+        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[11px] font-medium text-accent">
+          {data.total}
         </span>
-        <ChevronDown
-          className={`ml-auto h-3.5 w-3.5 text-fg-3 transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        <span className="text-[13px] text-fg-2">
+          <span className="font-medium text-fg">
+            decision{data.total === 1 ? "" : "s"} waiting
+          </span>{" "}
+          — {parts.join(", ")}
+        </span>
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-accent-text">
+          Review
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </span>
       </button>
 
       {open && (
-        <div className="border-t border-border/60 px-2 pb-2 pt-1">
-          {group.items.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-bg-hover/50"
+        <div className="border-t border-border/60 px-4 pb-3 pt-1">
+          {data.proposed.map((p) => (
+            <div
+              key={p.changeId}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-border/60 py-2.5 last:border-0"
             >
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[12px] font-medium text-fg group-hover:text-accent">
-                  {item.title}
-                </div>
-                <div className="truncate text-[11px] text-fg-3">{item.subtitle}</div>
+                <Link
+                  href={`/tracker/${p.entryId}`}
+                  className="truncate text-[13px] font-medium text-fg hover:text-accent transition-colors block"
+                >
+                  {p.entryShortName}
+                </Link>
+                <span className="mt-0.5 block font-mono text-[11px] text-fg-3">
+                  {p.fieldLabel}&nbsp;&nbsp;
+                  <span className="line-through opacity-70">{shortValue(p.field, p.oldValue)}</span>
+                  {" → "}
+                  <span style={{ color: "var(--green-text)" }}>{shortValue(p.field, p.newValue)}</span>
+                </span>
               </div>
-              <ArrowRight className="h-3 w-3 flex-shrink-0 text-fg-3 group-hover:text-accent" />
+              <div className="flex flex-shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={busyId === p.changeId}
+                  onClick={() => act(p.changeId, "approve")}
+                  className="inline-flex items-center gap-1 rounded-md bg-accent px-2 py-0.5 font-mono text-[11px] font-medium text-white transition-colors hover:bg-accent-2 disabled:opacity-50"
+                >
+                  <Check className="h-3 w-3" /> Approve
+                </button>
+                <button
+                  type="button"
+                  disabled={busyId === p.changeId}
+                  onClick={() => act(p.changeId, "dismiss")}
+                  className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 font-mono text-[11px] text-fg-2 transition-colors hover:bg-hover disabled:opacity-50"
+                >
+                  <X className="h-3 w-3" /> Dismiss
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {data.stale.map((s) => (
+            <Link
+              key={s.entryId}
+              href={`/tracker/${s.entryId}`}
+              className="group flex items-center gap-3 border-b border-border/60 py-2.5 last:border-0"
+            >
+              <div className="min-w-0 flex-1">
+                <span className="truncate text-[13px] font-medium text-fg group-hover:text-accent transition-colors block">
+                  {s.entryShortName}
+                </span>
+                <span className="mt-0.5 block truncate text-[11px] text-fg-3">{s.reason}</span>
+              </div>
+              <span className="flex flex-shrink-0 items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 group-hover:text-accent">
+                Re-run on entry <ArrowRight className="h-3 w-3" />
+              </span>
             </Link>
           ))}
-          {group.count > group.items.length && (
-            <Link
-              href={group.href}
-              className="mt-1 flex items-center gap-1 px-2 py-1.5 font-mono text-[11px] text-accent-text hover:text-accent"
-            >
-              View all {group.count} <ArrowRight className="h-3 w-3" />
-            </Link>
+
+          {(preliminaryCount > 0 || gapCount > 0) && (
+            <div className="pt-2.5 font-mono text-[10.5px] text-fg-3">
+              Also:{" "}
+              {preliminaryCount > 0 && (
+                <Link
+                  href="/tracker?depth=preliminary"
+                  className="text-accent-text hover:text-accent transition-colors"
+                >
+                  {preliminaryCount} ungrounded entr{preliminaryCount === 1 ? "y" : "ies"} → Tracker
+                </Link>
+              )}
+              {preliminaryCount > 0 && gapCount > 0 && " · "}
+              {gapCount > 0 && (
+                <Link
+                  href="/digest"
+                  className="text-accent-text hover:text-accent transition-colors"
+                >
+                  {gapCount} possible gap{gapCount === 1 ? "" : "s"} → Digest
+                </Link>
+              )}
+            </div>
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 }

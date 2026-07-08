@@ -1,55 +1,34 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { useEntries } from "@/hooks/use-entries";
 import { useDeadlines } from "@/hooks/use-deadlines";
 import { useSignals } from "@/hooks/use-signals";
 import { useDigestIssues } from "@/hooks/use-digest";
 import { workflowLabel } from "@/lib/agent-workflows";
 import { getFlag } from "@/lib/digest-utils";
-import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { JURISDICTIONS, URGENCY } from "@/lib/constants";
-import { computeTrustBadges } from "@/lib/trust-badges";
 import { relativeTime, calculateUrgency } from "@/lib/utils";
 import { ReviewQueue } from "@/components/dashboard/review-queue";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Radar,
-  CalendarDays,
-  Search,
-  Newspaper,
-  Database,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Radar, CalendarDays, Search, Newspaper } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ButtonLink } from "@/components/ui/button";
+
+// The Briefing — reading-first dashboard. Decisions arrive in weekly bursts
+// (post-digest), reading is the daily act, so the page leads with Ask and the
+// latest stories; the review strip stays one quiet line until there's
+// something to clear. Counts and recent-entry lists live on the Tracker.
+
+const RELEVANCE_FLOOR = 50;
 
 export default function DashboardPage() {
-  const { data: allData } = useEntries({ limit: "200" });
-  const { data: recentData } = useEntries({
-    sort: "updated_at",
-    order: "desc",
-    limit: "8",
-  });
   const { data: deadlinesData } = useDeadlines();
-
   const { data: signalsData } = useSignals({ status: "active" });
   const { data: latestIssueData } = useDigestIssues({ status: "published", limit: 1, order: "desc" });
 
-  const entries = allData?.entries || [];
-  const recentEntries = recentData?.entries || [];
   const allDeadlines = deadlinesData?.deadlines || [];
-
-  const total = allData?.total || 0;
-  const inForce = entries.filter((e) => e.status === "in_force").length;
-  const highImpact = entries.filter((e) => e.impactScore && e.impactScore >= 4).length;
-  const pipeline = entries.filter(
-    (e) => ["proposed", "consultation", "bill_introduced", "passed"].includes(e.status)
-  ).length;
 
   // Upcoming dates: next 3 future dates
   const today = new Date().toISOString().split("T")[0];
@@ -58,68 +37,42 @@ export default function DashboardPage() {
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 3);
 
-  // Signals: use AI-generated signals, fallback to derived
+  // Radar: only signals scored relevant to the profile — no generic filler.
   const aiSignals = signalsData?.signals || [];
-  const signals: Signal[] = aiSignals.length > 0
-    ? [...aiSignals]
-        .sort((a, b) => (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0))
-        .map((s) => ({
-          title: s.title,
-          description: s.summary,
-          link: s.link || undefined,
-          linkLabel: s.linkLabel || undefined,
-          relevanceScore: s.relevanceScore,
-          relevanceRationale: s.relevanceRationale,
-        }))
-    : buildSignals(entries);
+  const radar = [...aiSignals]
+    .filter((s) => (s.relevanceScore ?? 0) >= RELEVANCE_FLOOR)
+    .sort((a, b) => (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0))
+    .slice(0, 3);
 
-  // Top stories from latest digest
+  // Top stories from latest digest: one featured lead + three compact rows.
   const latestIssue = latestIssueData?.issues?.[0];
   const topStories = (latestIssue?.stories || [])
     .sort((a, b) => {
       const impactOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
       return (impactOrder[b.impact || "Low"] || 0) - (impactOrder[a.impact || "Low"] || 0);
     })
-    .slice(0, 5);
+    .slice(0, 4);
+  const [leadStory, ...restStories] = topStories;
 
   return (
     <div className="anim-enter">
       {/* Hero with grid pattern */}
-      <div className="relative mb-14 grid-pattern py-4">
+      <div className="relative mb-8 grid-pattern py-4">
         <h1 className="text-gradient text-[36px] font-bold tracking-[-0.03em] leading-tight relative z-10">
           Legal Intelligence
         </h1>
         <p className="text-[15px] text-fg-3 mt-2.5 leading-relaxed max-w-lg relative z-10">
           Tracking legislation, regulation, and policy across the Asia-Pacific.
         </p>
-
-        {/* Stats bar */}
-        <div className="flex items-center gap-6 mt-6 relative z-10">
-          <StatPill value={total} label="tracked" />
-          <StatPill value={inForce} label="in force" color="var(--green)" />
-          <StatPill value={highImpact} label="high impact" color="var(--red)" />
-          <StatPill value={pipeline} label="in pipeline" color="var(--amber)" />
-        </div>
-
-        <TrustStrip />
       </div>
 
-      {/* Ask Sentinel */}
-      <Link
-        href="/ask"
-        className="group mb-14 flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-3 transition-all duration-200 hover:border-accent hover:shadow-[0_0_0_1px_var(--accent)]"
-      >
-        <Search className="w-5 h-5 text-accent flex-shrink-0" />
-        <span className="text-[15px] text-fg-3 group-hover:text-fg-2 transition-colors">
-          Ask Sentinel anything…
-        </span>
-      </Link>
+      <AskInput />
 
-      {/* Review queue — every pending decision in one place (B1) */}
+      {/* Review strip — pending decisions, one line until expanded (B1) */}
       <ReviewQueue />
 
       {/* Top Stories */}
-      {topStories.length > 0 && (
+      {leadStory && (
         <section className="mb-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -135,43 +88,67 @@ export default function DashboardPage() {
               </Link>
             )}
           </div>
+
+          {/* Featured lead — the day's most consequential story */}
+          <Link
+            href={`/digest/issues/${latestIssue?.slug}#${leadStory.id}`}
+            className="group mb-2 flex gap-4 rounded-xl border border-border bg-surface px-4 py-4 shadow-[var(--shadow-card)] transition-all hover:border-border-hover hover:shadow-[var(--shadow-card-hover)]"
+          >
+            <span
+              className="w-[3px] flex-shrink-0 rounded-full"
+              style={{ background: impactColor(leadStory.impact) }}
+            />
+            <div className="min-w-0">
+              <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-fg group-hover:text-accent transition-colors">
+                {leadStory.title}
+              </h3>
+              {leadStory.summary && (
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-fg-2 line-clamp-2">
+                  {leadStory.summary}
+                </p>
+              )}
+              <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+                {getFlag(leadStory.jurisdictionCode || "")} {leadStory.source} ·{" "}
+                {new Date(leadStory.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} ·{" "}
+                {leadStory.impact || "Low"} impact
+              </span>
+            </div>
+          </Link>
+
           <div className="space-y-1 stagger">
-            {topStories.map((story) => {
-              const impactColor = story.impact === "High" ? "var(--red)" : story.impact === "Medium" ? "var(--amber)" : "var(--green)";
-              return (
-                <Link
-                  key={story.id}
-                  href={`/digest/issues/${latestIssue?.slug}#${story.id}`}
-                  className="group flex items-center gap-3 py-2.5 border-b border-border last:border-0 rounded-lg transition-all hover:bg-surface hover:border-transparent"
-                >
-                  <span className="text-sm leading-none flex-shrink-0">{getFlag(story.jurisdictionCode || "")}</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-medium text-fg group-hover:text-accent transition-colors truncate block">
-                      {story.title}
-                    </span>
-                    <span className="text-[11px] text-fg-3 line-clamp-1 mt-0.5 block">
-                      {story.source} &middot; {new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
-                  </div>
-                  <span className="flex items-center gap-1 font-mono text-[10px] text-fg-3 flex-shrink-0">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: impactColor }} />
-                    {story.impact || "Low"}
+            {restStories.map((story) => (
+              <Link
+                key={story.id}
+                href={`/digest/issues/${latestIssue?.slug}#${story.id}`}
+                className="group flex items-center gap-3 py-2.5 border-b border-border last:border-0 rounded-lg transition-all hover:bg-surface hover:border-transparent"
+              >
+                <span className="text-sm leading-none flex-shrink-0">{getFlag(story.jurisdictionCode || "")}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[13px] font-medium text-fg group-hover:text-accent transition-colors truncate block">
+                    {story.title}
                   </span>
-                </Link>
-              );
-            })}
+                  <span className="text-[11px] text-fg-3 line-clamp-1 mt-0.5 block">
+                    {story.source} &middot; {new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                </div>
+                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-3 flex-shrink-0">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: impactColor(story.impact) }} />
+                  {story.impact || "Low"}
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Signals */}
-      <section id="signals" className="mb-10">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <Radar className="w-4 h-4" style={{ color: "var(--amber)" }} />
-            <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Signals</h2>
-          </div>
-          {aiSignals.length > 0 && (
+      {/* Radar — profile-scored signals only; absent when nothing qualifies */}
+      {radar.length > 0 && (
+        <section id="signals" className="mb-10">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <Radar className="w-4 h-4" style={{ color: "var(--amber)" }} />
+              <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Radar</h2>
+            </div>
             <AgentBadge
               workflow="signals"
               timestamp={aiSignals.reduce(
@@ -179,24 +156,16 @@ export default function DashboardPage() {
                 aiSignals[0].updatedAt
               )}
             />
-          )}
-        </div>
-        <div className="space-y-2 stagger">
-          {signals.map((signal, i) => {
-            const score = signal.relevanceScore;
-            const scoreColor =
-              score == null ? "var(--fg-3)"
-                : score >= 75 ? "var(--red)"
-                : score >= 50 ? "var(--amber)"
-                : "var(--fg-3)";
-            return (
-              <div
-                key={i}
-                className="py-2 border-b border-border last:border-0"
-              >
-                <div className="flex items-baseline justify-between gap-4">
-                  <div className="flex items-baseline gap-2 min-w-0">
-                    {score != null && (
+          </div>
+          <div className="space-y-2 stagger">
+            {radar.map((signal) => {
+              const score = signal.relevanceScore ?? 0;
+              const scoreColor =
+                score >= 75 ? "var(--red)" : score >= 50 ? "var(--amber)" : "var(--fg-3)";
+              return (
+                <div key={signal.id} className="py-2 border-b border-border last:border-0">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <div className="flex items-baseline gap-2 min-w-0">
                       <span
                         className="font-mono text-[10px] tabular-nums flex-shrink-0"
                         style={{ color: scoreColor }}
@@ -204,34 +173,34 @@ export default function DashboardPage() {
                       >
                         {score}
                       </span>
+                      <span className="text-[13px] font-medium text-fg">{signal.title}</span>
+                    </div>
+                    {signal.link && (
+                      <Link
+                        href={signal.link}
+                        className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent-text hover:text-accent transition-colors flex-shrink-0"
+                      >
+                        {signal.linkLabel || "View"} <ArrowRight className="w-3 h-3" />
+                      </Link>
                     )}
-                    <span className="text-[13px] font-medium text-fg">{signal.title}</span>
                   </div>
-                  {signal.link && (
-                    <Link
-                      href={signal.link}
-                      className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent-text hover:text-accent transition-colors flex-shrink-0"
+                  {signal.relevanceRationale && (
+                    <span
+                      className="text-[11px] leading-relaxed block mt-1 italic"
+                      style={{ color: "var(--accent-text)" }}
                     >
-                      {signal.linkLabel} <ArrowRight className="w-3 h-3" />
-                    </Link>
+                      Why for you &middot; {signal.relevanceRationale}
+                    </span>
                   )}
-                </div>
-                {signal.relevanceRationale && (
-                  <span
-                    className="text-[11px] leading-relaxed block mt-1 italic"
-                    style={{ color: "var(--accent-text)" }}
-                  >
-                    Why for you &middot; {signal.relevanceRationale}
+                  <span className="text-[12px] text-fg-3 leading-relaxed block mt-0.5">
+                    {signal.summary}
                   </span>
-                )}
-                <span className="text-[12px] text-fg-3 leading-relaxed block mt-0.5">
-                  {signal.description}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Upcoming Dates */}
       <section className="mb-10">
@@ -240,7 +209,7 @@ export default function DashboardPage() {
           <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Upcoming Dates</h2>
         </div>
         {upcomingDates.length > 0 ? (
-          <div className="space-y-1 stagger">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 stagger">
             {upcomingDates.map((d) => {
               const jur = JURISDICTIONS.find((j) => j.code === d.entryJurisdiction);
               const dateObj = new Date(d.date);
@@ -255,23 +224,19 @@ export default function DashboardPage() {
                 <Link
                   key={d.id}
                   href={`/tracker/${d.entryId}`}
-                  className="group flex items-center gap-3 py-2 border-b border-border last:border-0 rounded-lg transition-all hover:bg-surface hover:border-transparent"
+                  className="group rounded-xl border border-border bg-surface px-4 py-3.5 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
                 >
                   <span
-                    className="font-mono text-[12px] tabular-nums font-medium w-10 text-left flex-shrink-0"
+                    className="font-mono text-[20px] font-semibold tabular-nums tracking-tight block"
                     style={{ color: URGENCY[calculateUrgency(d.date)].color }}
                   >
                     {days}d
                   </span>
-
-                  <span className="text-sm leading-none flex-shrink-0">{jur?.flag || "\u{1F30F}"}</span>
-
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-medium text-fg truncate block group-hover:text-accent transition-colors">
-                      {d.entryShortName}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-fg-3 flex-shrink-0">
+                  <span className="mt-1 flex items-center gap-1.5 text-[12.5px] font-medium text-fg group-hover:text-accent transition-colors">
+                    <span className="text-sm leading-none">{jur?.flag || "\u{1F30F}"}</span>
+                    <span className="truncate">{d.entryShortName}</span>
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] text-fg-3">
                     {d.label} &middot; {dateStr}
                   </span>
                 </Link>
@@ -288,69 +253,43 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* Recent — clean list */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ArrowRight className="w-4 h-4" style={{ color: "var(--accent)" }} />
-            <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Recent Activity</h2>
-          </div>
-          <Link
-            href="/tracker"
-            className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent-text hover:text-accent flex items-center gap-1.5 transition-colors"
-          >
-            All entries <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-
-        <div className="stagger">
-          {recentEntries.map((entry) => (
-            <Link
-              key={entry.id}
-              href={`/tracker/${entry.id}`}
-              className="group flex items-center gap-5 py-3.5 border-b border-border last:border-0 -mx-3 px-3 rounded-xl transition-all duration-200 hover:bg-surface hover:shadow-[var(--shadow-card)] hover:border-transparent"
-            >
-              <JurisdictionBadge code={entry.jurisdiction} />
-              <div className="flex-1 min-w-0">
-                <span className="text-[14px] font-medium text-fg group-hover:text-accent transition-colors duration-150 truncate block">
-                  {entry.shortName}
-                </span>
-                <span className="text-[12px] text-fg-3 truncate block mt-0.5">
-                  {entry.category}
-                </span>
-              </div>
-              <StatusBadge status={entry.status} />
-              <ImpactIndicator score={entry.impactScore} />
-              {computeTrustBadges(entry).map((badge) => (
-                <span
-                  key={badge.label}
-                  className={`rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-medium ${badge.className}`}
-                >
-                  {badge.label}
-                </span>
-              ))}
-              <span className="font-mono text-[11px] text-fg-3 tabular-nums w-16 text-right">
-                {relativeTime(entry.updatedAt)}
-              </span>
-            </Link>
-          ))}
-
-          {recentEntries.length === 0 && (
-            <EmptyState
-              icon={Database}
-              title="Your tracker is empty"
-              description="Add a regulation, bill, or policy to start tracking its lifecycle and deadlines."
-              action={
-                <ButtonLink href="/tracker/new">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  New entry
-                </ButtonLink>
-              }
-            />
-          )}
-        </div>
-      </section>
+      <TrustStrip />
     </div>
+  );
+}
+
+function impactColor(impact: string | null): string {
+  return impact === "High" ? "var(--red)" : impact === "Medium" ? "var(--amber)" : "var(--green)";
+}
+
+// Real Ask entry point: submitting navigates to /ask with the question
+// seeded via ?q=, which the Ask page auto-runs.
+function AskInput() {
+  const router = useRouter();
+  const [q, setQ] = useState("");
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const trimmed = q.trim();
+        router.push(trimmed ? `/ask?q=${encodeURIComponent(trimmed)}` : "/ask");
+      }}
+      className="group mb-6 flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-3 transition-all duration-200 focus-within:border-accent focus-within:shadow-[0_0_0_1px_var(--accent)] hover:border-accent"
+    >
+      <Search className="w-5 h-5 text-accent flex-shrink-0" />
+      <input
+        type="text"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Ask Sentinel anything…"
+        aria-label="Ask Sentinel"
+        className="flex-1 bg-transparent text-[15px] text-fg placeholder:text-fg-3 outline-none"
+      />
+      <kbd className="hidden sm:block rounded bg-hover px-1.5 py-0.5 font-mono text-[10px] text-fg-3">
+        ↵
+      </kbd>
+    </form>
   );
 }
 
@@ -383,110 +322,9 @@ function TrustStrip() {
   }
 
   return (
-    <div className="mt-4 flex items-center gap-2 relative z-10 font-mono text-[11px] tracking-[0.02em] text-fg-3">
+    <div className="flex items-center gap-2 border-t border-border pt-4 font-mono text-[11px] tracking-[0.02em] text-fg-3">
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
       {parts.join(" · ")}
     </div>
   );
-}
-
-function StatPill({
-  value,
-  label,
-  color,
-}: {
-  value: number;
-  label: string;
-  color?: string;
-}) {
-  const c = color || "var(--fg)";
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span
-        className="font-mono text-[20px] font-semibold tabular-nums tracking-tight"
-        style={{ color: c }}
-      >
-        {value}
-      </span>
-      <span className="font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">{label}</span>
-    </div>
-  );
-}
-
-interface Signal {
-  title: string;
-  description: string;
-  link?: string;
-  linkLabel?: string;
-  relevanceScore?: number | null;
-  relevanceRationale?: string | null;
-}
-
-function buildSignals(entries: { status: string; category: string; jurisdiction: string; impactScore: number | null }[]): Signal[] {
-  const signals: Signal[] = [];
-
-  // Signal 1: AI regulation momentum
-  const aiEntries = entries.filter((e) =>
-    e.category.toLowerCase().includes("ai") || e.category.toLowerCase().includes("emerging")
-  );
-  if (aiEntries.length > 0) {
-    const aiJurisdictions = new Set(aiEntries.map((e) => e.jurisdiction));
-    signals.push({
-      title: "AI governance accelerating across APAC",
-      description: `${aiEntries.length} AI-related regulatory developments tracked across ${aiJurisdictions.size} jurisdiction${aiJurisdictions.size !== 1 ? "s" : ""}. Multiple frameworks moving from voluntary to mandatory.`,
-      link: "/tracker?category=AI+%26+Emerging+Technology",
-      linkLabel: "View AI entries",
-    });
-  }
-
-  // Signal 2: Enforcement activity
-  const enforcement = entries.filter((e) => e.status === "enforcement");
-  if (enforcement.length > 0) {
-    signals.push({
-      title: "Enforcement actions increasing",
-      description: `${enforcement.length} active enforcement matter${enforcement.length !== 1 ? "s" : ""} across the region. Regulators demonstrating willingness to impose significant penalties on technology companies.`,
-      link: "/tracker?status=enforcement",
-      linkLabel: "View enforcement",
-    });
-  }
-
-  // Signal 3: Privacy convergence
-  const privacyEntries = entries.filter((e) =>
-    e.category.toLowerCase().includes("privacy") || e.category.toLowerCase().includes("data protection")
-  );
-  if (privacyEntries.length > 0) {
-    const privacyJurisdictions = new Set(privacyEntries.map((e) => e.jurisdiction));
-    signals.push({
-      title: "Privacy regimes converging on GDPR model",
-      description: `${privacyJurisdictions.size} jurisdictions actively reforming privacy frameworks. Cross-border data transfer rules tightening, with adequacy assessments becoming the norm.`,
-      link: "/tracker?category=Privacy+%26+Data+Protection",
-      linkLabel: "View privacy entries",
-    });
-  }
-
-  // Fallback signals if no entries exist yet
-  if (signals.length === 0) {
-    signals.push(
-      {
-        title: "AI governance accelerating across APAC",
-        description: "Multiple jurisdictions moving AI frameworks from voluntary to mandatory. South Korea, Singapore, and Japan leading with sector-specific obligations.",
-        link: "/digest",
-        linkLabel: "Read digest",
-      },
-      {
-        title: "Enforcement posture shifting",
-        description: "Record penalties in Singapore and Australia signal regulatory maturity. Expect increased scrutiny of cloud security practices and data handling by SaaS providers.",
-        link: "/digest",
-        linkLabel: "Read digest",
-      },
-      {
-        title: "Cross-border data transfer rules tightening",
-        description: "Japan, India, and New Zealand all consulting on stricter cross-border transfer requirements. Adequacy assessments and contractual safeguards becoming baseline expectations.",
-        link: "/digest",
-        linkLabel: "Read digest",
-      }
-    );
-  }
-
-  return signals.slice(0, 3);
 }
