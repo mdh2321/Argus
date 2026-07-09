@@ -29,7 +29,7 @@ export function IssueCardCompact({ issue }: { issue: DigestIssue }) {
     <li className="group relative z-0 hover:z-50">
       <Link
         href={`/digest/issues/${issue.slug}`}
-        className="grid items-center gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-hover"
+        className="grid items-center gap-3 rounded-xl bg-surface px-4 py-3 shadow-[var(--shadow-s)] transition-shadow hover:shadow-[var(--shadow-card)]"
         style={{ gridTemplateColumns: "auto 1fr auto" }}
       >
         <div className="flex flex-col items-center text-center">

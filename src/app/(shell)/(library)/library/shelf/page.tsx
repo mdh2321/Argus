@@ -86,7 +86,7 @@ function ShelfRow({ item }: { item: KnowledgeItem }) {
   return (
     <Link
       href={`/library/briefings/${item.id}`}
-      className="group flex items-center gap-3 rounded-xl border border-border bg-surface p-5 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
+      className="group flex items-center gap-3 rounded-xl bg-surface p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
     >
       <Icon className="h-4 w-4 flex-shrink-0 text-fg-3" strokeWidth={1.5} />
       <div className="min-w-0 flex-1">

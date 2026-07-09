@@ -6,6 +6,7 @@ import { useDigestTags, type DigestTagInfo } from "@/hooks/use-digest";
 import { JURISDICTIONS } from "@/lib/constants";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import { Tag, Globe, Scale, FileType } from "lucide-react";
 
 // Browsable tag index — the way in to "show me every story about AI". Tags are
@@ -30,12 +31,12 @@ export default function DigestTagsPage() {
 
   return (
     <div className="anim-enter mx-auto max-w-3xl">
-      <div className="mb-6 flex items-center gap-2">
-        <Tag className="h-4 w-4 text-accent" />
-        <h1 className="text-[15px] font-semibold uppercase tracking-[0.04em] text-fg font-mono">
-          Browse by tag
-        </h1>
-      </div>
+      <PageHeader
+        icon={Tag}
+        iconColor="var(--purple)"
+        title="Tags"
+        subtitle="Browse stories by legal area, jurisdiction, or format."
+      />
 
       {isLoading ? (
         <div className="space-y-8">

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { relativeTime } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layout/page-header";
 import { MessagesSquare, ArrowRight } from "lucide-react";
 
 interface SessionSummary {
@@ -24,12 +25,11 @@ export default function ThreadsPage() {
 
   return (
     <div className="anim-enter mx-auto max-w-3xl">
-      <div className="mb-6 flex items-center gap-2">
-        <MessagesSquare className="h-4 w-4 text-accent" />
-        <h1 className="font-mono text-[15px] font-semibold uppercase tracking-[0.04em] text-fg">
-          Research threads
-        </h1>
-      </div>
+      <PageHeader
+        icon={MessagesSquare}
+        title="Threads"
+        subtitle="Your past Ask Sentinel conversations — pick one up any time."
+      />
 
       {isLoading ? (
         <div className="space-y-2">

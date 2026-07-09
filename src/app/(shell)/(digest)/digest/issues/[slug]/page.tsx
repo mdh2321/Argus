@@ -97,7 +97,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       </div>
 
       {/* Synopsis */}
-      <section className="mb-8 rounded-xl border border-border bg-surface p-6">
+      <section className="mb-8 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
         <h2 className="label-mono mb-3">Synopsis</h2>
         <ul className="space-y-2">
           {issue.synopsis.map((s: string, i: number) => (
@@ -111,7 +111,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
 
       {/* Executive brief */}
       {issue.executiveBrief && (
-        <section className="mb-8 rounded-xl border border-border bg-surface p-6">
+        <section className="mb-8 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
           <h2 className="label-mono mb-3">Executive Brief</h2>
           <div className="space-y-3">
             {issue.executiveBrief
@@ -130,7 +130,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       {horizonNext90 > 0 && (
         <Link
           href="/tracker/horizon"
-          className="group mb-10 flex items-center gap-3 rounded-xl border border-border bg-surface px-5 py-3.5 transition-all hover:border-border-hover hover:shadow-[var(--shadow-card)]"
+          className="group mb-10 flex items-center gap-3 rounded-xl bg-surface px-5 py-3.5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
         >
           <Telescope className="h-4 w-4 flex-shrink-0" style={{ color: "var(--accent)" }} />
           <span className="text-[14px] text-fg-2">
@@ -142,7 +142,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       )}
 
       {/* Table of Contents — follows the grouped + impact-sorted render order */}
-      <section className="mb-10 rounded-xl border border-border bg-surface p-6">
+      <section className="mb-10 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
         <h2 className="label-mono mb-3">Contents</h2>
         <ol className="space-y-1">
           {jurisdictionOrder.flatMap((code) => byJurisdiction[code]).map((story, i) => (
