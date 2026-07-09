@@ -26,6 +26,7 @@ import {
   Zap,
   ChevronRight,
   BookmarkPlus,
+  GitBranch,
   Plus,
   Clock,
   CornerDownLeft,
@@ -376,6 +377,22 @@ export default function AskPage() {
     setInput("");
   }
 
+  // Fork the current thread into a new branch (server copies its messages),
+  // then load the branch so follow-ups continue with full context without
+  // touching the original.
+  async function forkSession() {
+    if (!sessionId || busy) return;
+    try {
+      const res = await fetch(`/api/ask/sessions/${sessionId}/fork`, { method: "POST" });
+      if (!res.ok) throw new Error("fork failed");
+      const data = (await res.json()) as { id: string };
+      await loadSession(data.id);
+      toast.success("Forked — a new branch; the original thread is untouched");
+    } catch {
+      toast.error("Couldn't fork this conversation");
+    }
+  }
+
   // Rehydrate a past conversation from the History drawer. Assistant turns with
   // a stored `answer` re-render at full fidelity (structured card or news
   // bubble); older turns (answer === null) fall back to the saved summary text.
@@ -585,7 +602,7 @@ export default function AskPage() {
 
           <div className="space-y-6">
             {turns.map((turn) => (
-              <TurnView key={turn.id} turn={turn} onRelated={(q) => void submit(q)} />
+              <TurnView key={turn.id} turn={turn} onRelated={(q) => void submit(q)} onFork={() => void forkSession()} />
             ))}
           </div>
 
@@ -952,7 +969,7 @@ function StarterCard({
   );
 }
 
-function TurnView({ turn, onRelated }: { turn: Turn; onRelated: (q: string) => void }) {
+function TurnView({ turn, onRelated, onFork }: { turn: Turn; onRelated: (q: string) => void; onFork: () => void }) {
   return (
     <div className="space-y-3">
       {/* Question */}
@@ -966,7 +983,7 @@ function TurnView({ turn, onRelated }: { turn: Turn; onRelated: (q: string) => v
       {turn.kind === "conversational" ? (
         <ConversationalAnswer turn={turn} />
       ) : turn.status === "done" && turn.answer ? (
-        <AnswerCard answer={turn.answer} answeredAt={turn.answeredAt ?? null} onRelated={onRelated} />
+        <AnswerCard answer={turn.answer} answeredAt={turn.answeredAt ?? null} onRelated={onRelated} onFork={onFork} />
       ) : turn.status === "error" ? (
         <div className="rounded-xl border border-red/20 bg-red-bg px-4 py-3 text-[13px] text-red">
           {turn.error || "Something went wrong."}
@@ -1139,10 +1156,12 @@ function AnswerCard({
   answer,
   answeredAt,
   onRelated,
+  onFork,
 }: {
   answer: AskSentinelAnswer;
   answeredAt: string | null;
   onRelated: (q: string) => void;
+  onFork: () => void;
 }) {
   const [saving, setSaving] = useState(false);
 
@@ -1225,7 +1244,7 @@ function AnswerCard({
           </Section>
         )}
 
-        <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
+        <div className="mt-6 flex items-center gap-2 border-t border-border pt-4">
           <button
             onClick={() => void pinToShelf()}
             disabled={saving}
@@ -1233,6 +1252,14 @@ function AnswerCard({
           >
             <BookmarkPlus className="h-3.5 w-3.5" />
             {saving ? "Pinning…" : "Pin to Shelf"}
+          </button>
+          <button
+            onClick={onFork}
+            title="Branch this thread into a new conversation with the same context"
+            className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-fg-3 transition-colors hover:bg-hover hover:text-fg-2"
+          >
+            <GitBranch className="h-3.5 w-3.5" />
+            Fork
           </button>
         </div>
       </div>

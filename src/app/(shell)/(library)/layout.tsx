@@ -8,6 +8,7 @@ import { SubNav } from "@/components/layout/sub-nav";
 const tabs = [
   { href: "/library", label: "Topics", exact: true },
   { href: "/library/shelf", label: "Shelf" },
+  { href: "/library/threads", label: "Threads" },
 ];
 
 export default function LibraryLayout({
