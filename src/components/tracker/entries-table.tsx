@@ -4,7 +4,7 @@ import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
-import { STATUSES, ENTRY_TYPES, AUTHORITY_LEVELS, TYPE_DEFAULT_AUTHORITY, RELATIONSHIP_KINDS } from "@/lib/constants";
+import { STATUSES, ENTRY_TYPES, RELATIONSHIP_KINDS } from "@/lib/constants";
 import { relativeTime, formatDate } from "@/lib/utils";
 import { updateEntry } from "@/hooks/use-entries";
 import type { Entry } from "@/lib/types";
@@ -16,18 +16,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 const TYPE_LABEL: Record<string, string> = Object.fromEntries(
   ENTRY_TYPES.map((t) => [t.value, t.label])
 );
-const AUTHORITY_BY_VALUE: Record<string, { label: string; color: string }> = Object.fromEntries(
-  AUTHORITY_LEVELS.map((a) => [a.value, { label: a.label, color: a.color }])
-);
 const KIND_VERB: Record<string, string> = Object.fromEntries(
   RELATIONSHIP_KINDS.map((k) => [k.value, k.verb])
 );
-
-function authorityFor(entry: Entry): { value: string; label: string; color: string } {
-  const value = entry.authorityLevel ?? TYPE_DEFAULT_AUTHORITY[entry.type] ?? "informational";
-  const meta = AUTHORITY_BY_VALUE[value] ?? { label: value, color: "var(--fg-3)" };
-  return { value, ...meta };
-}
 
 // Pick the right icon for a relationship kind. Each verb gets a distinct
 // affordance so users can scan the breadcrumb without reading it.
@@ -143,7 +134,7 @@ export function EntriesTable({
               e.stopPropagation();
               toggleExpanded(entry.id);
             }}
-            className="flex-shrink-0 flex items-center gap-1 rounded-full border border-border px-1.5 py-0.5 font-mono text-[10px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
+            className="flex-shrink-0 flex items-center gap-1 rounded-full bg-hover px-1.5 py-0.5 font-mono text-[10px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
             title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
@@ -239,8 +230,7 @@ export function EntriesTable({
               if (days === null) return null;
               return (
                 <span
-                  className="flex-shrink-0 flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium"
-                  style={{ color: "var(--amber-text)", borderColor: "color-mix(in srgb, var(--amber) 40%, transparent)" }}
+                  className="flex-shrink-0 flex items-center gap-1 rounded-full bg-amber-bg px-2 py-0.5 font-mono text-[10px] font-medium text-amber-text"
                   title={`Commences ${formatDate(entry.nextKeyDate)}`}
                 >
                   <Clock className="w-2.5 h-2.5" />
@@ -258,22 +248,6 @@ export function EntriesTable({
               the title stays uncluttered. */}
           <div className="flex items-center gap-2 mt-2 flex-wrap font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
             <span>{TYPE_LABEL[entry.type] ?? entry.type}</span>
-            {(() => {
-              const a = authorityFor(entry);
-              const binding = a.value === "binding";
-              return (
-                <>
-                  <span className="opacity-30">·</span>
-                  <span
-                    className={binding ? "font-semibold" : ""}
-                    style={binding ? { color: a.color } : undefined}
-                    title={`Authority: ${a.label}`}
-                  >
-                    {a.label}
-                  </span>
-                </>
-              );
-            })()}
             <span className="opacity-30">·</span>
             <span>{entry.category}</span>
             <span className="opacity-30">·</span>
@@ -284,7 +258,7 @@ export function EntriesTable({
                 {entry.tags.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-accent-bg px-2 py-0.5 text-[10px] normal-case text-accent-text"
+                    className="rounded-full bg-hover px-2 py-0.5 text-[10px] normal-case text-fg-2"
                   >
                     {tag}
                   </span>
@@ -297,7 +271,7 @@ export function EntriesTable({
             {computeTrustBadges(entry).map((badge) => (
               <span
                 key={badge.label}
-                className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${badge.className}`}
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.className}`}
               >
                 {badge.label}
               </span>
@@ -309,7 +283,7 @@ export function EntriesTable({
                   e.stopPropagation();
                   toggleExpanded(entry.id);
                 }}
-                className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-fg-3 hover:bg-surface hover:text-fg hover:border-fg-3 transition-colors"
+                className="flex items-center gap-1 rounded-full bg-hover px-2 py-0.5 text-[10px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
                 aria-expanded={isExpanded}
                 aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
                 title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
