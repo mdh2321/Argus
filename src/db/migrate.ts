@@ -266,5 +266,29 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_gap_suggestions_story ON gap_suggestions(source_story_id);
 `);
 
+// Matters — workstream bundles (the Spaces analog).
+db.exec(`
+  CREATE TABLE IF NOT EXISTS matters (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    instructions TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS matter_items (
+    id TEXT PRIMARY KEY,
+    matter_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    ref_id TEXT NOT NULL,
+    label TEXT NOT NULL,
+    href TEXT NOT NULL,
+    added_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_matter_items_matter ON matter_items(matter_id);
+`);
+
 console.log("Database migrated successfully at", dbPath);
 db.close();

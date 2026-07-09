@@ -419,3 +419,27 @@ export const queryMessages = sqliteTable("query_messages", {
   answerJson: text("answer_json"),
   createdAt: text("created_at").notNull(),
 });
+
+// ── Matters (workstream bundles) ────────────────────────────────
+// A Matter bundles tracker entries, digest stories, Ask threads and briefings
+// around one workstream (e.g. "EU AI Act readiness"), with matter-specific
+// instructions. The Spaces analog.
+
+export const matters = sqliteTable("matters", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  instructions: text("instructions"), // steer Ask/analysis scoped to this matter
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const matterItems = sqliteTable("matter_items", {
+  id: text("id").primaryKey(),
+  matterId: text("matter_id").notNull().references(() => matters.id),
+  kind: text("kind").notNull(), // "entry" | "story" | "thread" | "briefing" | "knowledge" | "signal"
+  refId: text("ref_id").notNull(),
+  label: text("label").notNull(), // denormalised title for display
+  href: text("href").notNull(), // where the item lives
+  addedAt: text("added_at").notNull(),
+});

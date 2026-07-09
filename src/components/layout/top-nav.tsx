@@ -25,6 +25,7 @@ const primaryLinks = [
 ];
 
 const secondaryLinks = [
+  { href: "/matters", label: "Matters" },
   { href: "/compare", label: "Compare" },
   { href: "/automations", label: "Automations" },
   { href: "/methodology", label: "Methodology" },
