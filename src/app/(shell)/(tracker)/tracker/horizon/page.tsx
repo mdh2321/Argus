@@ -9,8 +9,9 @@ import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
 import { HorizonHeatmap } from "@/components/tracker/horizon-heatmap";
 import { formatDate, calculateUrgency } from "@/lib/utils";
-import type { HorizonItem } from "@/lib/types";
-import { Telescope, ChevronRight, Filter } from "lucide-react";
+import { DEADLINE_KIND_META, DEADLINE_KINDS } from "@/lib/deadline-kind";
+import type { HorizonItem, DeadlineKind } from "@/lib/types";
+import { Telescope, ChevronRight, Filter, PenLine } from "lucide-react";
 
 type Range = "3" | "6" | "12" | "all";
 
@@ -22,6 +23,7 @@ export default function HorizonPage() {
   const [range, setRange] = useState<Range>("12");
   const [jurisdiction, setJurisdiction] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
+  const [kind, setKind] = useState<DeadlineKind | "all">("all");
 
   const filtered = useMemo(() => {
     const items = data?.items || [];
@@ -31,9 +33,10 @@ export default function HorizonPage() {
       if (range !== "all" && new Date(item.date) > cutoff) return false;
       if (jurisdiction !== "all" && item.jurisdiction !== jurisdiction) return false;
       if (category !== "all" && item.category !== category) return false;
+      if (kind !== "all" && item.kind !== kind) return false;
       return true;
     });
-  }, [data?.items, range, jurisdiction, category]);
+  }, [data?.items, range, jurisdiction, category, kind]);
 
   const quarters = useMemo(() => groupByQuarter(filtered), [filtered]);
 
@@ -107,6 +110,29 @@ export default function HorizonPage() {
 
         <div className="mx-1 h-5 w-px bg-border" />
 
+        {DEADLINE_KINDS.map((k) => {
+          const meta = DEADLINE_KIND_META[k];
+          const active = kind === k;
+          return (
+            <button
+              key={k}
+              onClick={() => setKind(active ? "all" : k)}
+              title={meta.description}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors ${
+                active ? "bg-accent text-white" : "bg-hover text-fg-2 hover:text-fg"
+              }`}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: active ? "currentColor" : meta.color }}
+              />
+              {meta.label}
+            </button>
+          );
+        })}
+
+        <div className="mx-1 h-5 w-px bg-border" />
+
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -163,45 +189,78 @@ function HorizonRow({ item }: { item: HorizonItem }) {
   const jur = JURISDICTIONS.find((j) => j.code === item.jurisdiction);
   const days = daysUntil(item.date);
   const consequence = consequenceLine(item);
+  const kindMeta = DEADLINE_KIND_META[item.kind];
+
+  // A process date is a window to act — offer a one-tap scoped Ask that
+  // drafts the response, alongside the usual open-the-entry navigation.
+  const draftHref =
+    item.kind === "process"
+      ? `/ask?scopeKind=entry&scopeId=${item.entryId}&scopeLabel=${encodeURIComponent(item.shortName)}&q=${encodeURIComponent(
+          `Draft a submission responding to "${item.label}" (closes ${formatDate(item.date)}) for ${item.shortName}. Cover our position, key concerns, and recommended asks.`
+        )}`
+      : null;
 
   return (
-    <Link
-      href={`/tracker/${item.entryId}`}
-      className="group flex gap-4 rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
-    >
-      <div className="flex w-[88px] flex-shrink-0 flex-col items-center justify-center rounded-xl bg-accent-bg py-3">
-        <span className="font-mono text-[15px] font-bold leading-tight text-accent">
-          {shortDate(item.date)}
-        </span>
-        <span
-          className="mt-1 font-mono text-[10px] uppercase tracking-[0.06em]"
-          style={{ color: URGENCY[calculateUrgency(item.date)].color }}
-        >
-          {days === 0 ? "today" : `in ${days}d`}
-        </span>
-      </div>
+    <div className="group flex gap-4 rounded-2xl bg-surface p-4 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]">
+      <Link href={`/tracker/${item.entryId}`} className="flex min-w-0 flex-1 gap-4">
+        <div className="flex w-[88px] flex-shrink-0 flex-col items-center justify-center rounded-xl bg-accent-bg py-3">
+          <span className="font-mono text-[15px] font-bold leading-tight text-accent">
+            {shortDate(item.date)}
+          </span>
+          <span
+            className="mt-1 font-mono text-[10px] uppercase tracking-[0.06em]"
+            style={{ color: URGENCY[calculateUrgency(item.date)].color }}
+          >
+            {days === 0 ? "today" : `in ${days}d`}
+          </span>
+        </div>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-base leading-none">{jur?.flag}</span>
-          <h3 className="text-[15px] font-semibold leading-tight text-fg transition-colors group-hover:text-accent">
-            {item.shortName}
-          </h3>
-          <StatusBadge status={item.status} />
-          <ImpactIndicator score={item.impactScore} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-base leading-none">{jur?.flag}</span>
+            <h3 className="text-[15px] font-semibold leading-tight text-fg transition-colors group-hover:text-accent">
+              {item.shortName}
+            </h3>
+            <StatusBadge status={item.status} />
+            <ImpactIndicator score={item.impactScore} />
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3">
+            <span
+              className="inline-flex items-center gap-1"
+              style={{ color: kindMeta.color }}
+              title={kindMeta.description}
+            >
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
+              {kindMeta.label}
+            </span>
+            <span>{item.label}</span>
+          </div>
+          {consequence && (
+            <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-fg-2">{consequence}</p>
+          )}
         </div>
-        <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3">
-          {item.label}
-        </div>
-        {consequence && (
-          <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-fg-2">{consequence}</p>
+      </Link>
+
+      <div className="flex flex-shrink-0 flex-col items-end justify-center gap-2 self-center">
+        {draftHref && (
+          <Link
+            href={draftHref}
+            className="inline-flex items-center gap-1.5 rounded-full bg-hover px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:bg-accent hover:text-white"
+            title="Ask Argus to draft a consultation response"
+          >
+            <PenLine className="h-3 w-3" />
+            Draft response
+          </Link>
         )}
+        <Link
+          href={`/tracker/${item.entryId}`}
+          className="text-fg-3 transition-colors group-hover:text-fg-2"
+          aria-label={`Open ${item.shortName}`}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Link>
       </div>
-
-      <div className="flex flex-shrink-0 items-center self-center text-fg-3 transition-colors group-hover:text-fg-2">
-        <ChevronRight className="h-4 w-4" />
-      </div>
-    </Link>
+    </div>
   );
 }
 

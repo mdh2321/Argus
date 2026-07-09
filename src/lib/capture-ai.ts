@@ -3,6 +3,7 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { getProfileContext } from "@/lib/profile-context";
 import { CATEGORIES, ENTRY_TYPES, STATUSES, JURISDICTIONS } from "@/lib/constants";
+import { classifyDeadlineKind } from "@/lib/deadline-kind";
 import type { KeyDate, TrackerSource } from "@/lib/types";
 import { normalizeSourceUrls } from "@/lib/source-tiers";
 
@@ -44,7 +45,7 @@ const EXTRACTION_SCHEMA = `{
   "impactScore": <integer 1-5, 1=minimal, 5=critical>,
   "regulator": "<regulator name e.g. OAIC, MAS, PDPC, or null>",
   "sourceUrls": ["<array of 1-5 authoritative URLs — prefer official gov / regulator sources>"],
-  "keyDates": [{"label": "<e.g. Effective date, Consultation deadline>", "date": "<YYYY-MM-DD>"}],
+  "keyDates": [{"label": "<e.g. Effective date, Consultation deadline>", "date": "<YYYY-MM-DD>", "kind": "<compliance = obligation lands | process = window to act closes (consultations, submissions) | watch = event to monitor (expected publication, decision)>"}],
   "notes": "<cross-references, related legislation, or null>",
   "openQuestions": "<bullets on ambiguities or null>",
   "tags": ["<short topical tags>"]
@@ -225,7 +226,12 @@ function coerceDraft(raw: Record<string, unknown>): CapturedDraft {
     ) {
       const date = (kd as KeyDate).date;
       if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        keyDates.push({ label: (kd as KeyDate).label, date });
+        const rawKind = (kd as KeyDate).kind;
+        const kind =
+          rawKind === "compliance" || rawKind === "process" || rawKind === "watch"
+            ? rawKind
+            : classifyDeadlineKind((kd as KeyDate).label);
+        keyDates.push({ label: (kd as KeyDate).label, date, kind });
       }
     }
   }

@@ -142,6 +142,7 @@ const alterColumns = [
   "ALTER TABLE update_runs ADD COLUMN workflow TEXT",
   "ALTER TABLE update_runs ADD COLUMN profile_snapshot TEXT",
   "ALTER TABLE gap_suggestions ADD COLUMN source TEXT NOT NULL DEFAULT 'digest'",
+  "ALTER TABLE deadlines ADD COLUMN kind TEXT",
 ];
 for (const sql of alterColumns) {
   try { db.exec(sql); } catch { /* column already exists */ }

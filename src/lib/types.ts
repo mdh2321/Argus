@@ -177,9 +177,21 @@ export interface Entry {
   children?: Entry[];
 }
 
+// What kind of action a dated milestone demands (Horizon typing, Jul 2026):
+//   compliance — an obligation lands: in force, applies, transition ends
+//   process    — a window to act closes: consultation, submissions, hearing
+//   watch      — an event to monitor: expected publication, decision, passage
+export type DeadlineKind = "compliance" | "process" | "watch";
+
 export interface KeyDate {
   date: string;
   label: string;
+  // Optional: set by AI extraction/capture going forward; legacy dates are
+  // classified from the label at read/sync time.
+  kind?: DeadlineKind | null;
+  // Where in the source the date comes from (e.g. "s 2", "cl 14") — set by
+  // the extract-dates pass so dates stay auditable.
+  sectionRef?: string | null;
 }
 
 export interface EntryChange {
@@ -203,6 +215,7 @@ export interface Deadline {
   date: string;
   label: string;
   urgency: string;
+  kind: DeadlineKind;
 }
 
 export interface DeadlineItem extends Deadline {
@@ -506,6 +519,7 @@ export interface HorizonItem {
   impactOnUs: string | null;
   impactOnCustomers: string | null;
   whyItMatters: string | null;
+  kind: DeadlineKind;
 }
 
 export interface HorizonResponse {

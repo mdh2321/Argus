@@ -229,6 +229,9 @@ export const deadlines = sqliteTable("deadlines", {
   date: text("date").notNull(),
   label: text("label").notNull(),
   urgency: text("urgency").notNull(), // overdue, imminent, upcoming, future
+  // compliance | process | watch — see DeadlineKind. Nullable: legacy rows
+  // are classified from the label at read time until their entry re-syncs.
+  kind: text("kind"),
 });
 
 export const updateRuns = sqliteTable("update_runs", {

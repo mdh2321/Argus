@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { deadlines, entries } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { calculateUrgency } from "@/lib/utils";
+import { classifyDeadlineKind } from "@/lib/deadline-kind";
+import type { DeadlineKind } from "@/lib/types";
 
 export async function GET() {
   const rows = await db
@@ -11,6 +13,7 @@ export async function GET() {
       entryId: deadlines.entryId,
       date: deadlines.date,
       label: deadlines.label,
+      kind: deadlines.kind,
       entryShortName: entries.shortName,
       entryJurisdiction: entries.jurisdiction,
       entryImpactScore: entries.impactScore,
@@ -25,6 +28,10 @@ export async function GET() {
   // Urgency is derived from the date at read time — the stored column drifts
   // as dates pass (June 2026 audit P0).
   return NextResponse.json({
-    deadlines: rows.map((r) => ({ ...r, urgency: calculateUrgency(r.date) })),
+    deadlines: rows.map((r) => ({
+      ...r,
+      urgency: calculateUrgency(r.date),
+      kind: (r.kind as DeadlineKind | null) ?? classifyDeadlineKind(r.label),
+    })),
   });
 }

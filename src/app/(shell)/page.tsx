@@ -9,6 +9,7 @@ import { useDigestIssues } from "@/hooks/use-digest";
 import { workflowLabel } from "@/lib/agent-workflows";
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { JURISDICTIONS, URGENCY } from "@/lib/constants";
+import { DEADLINE_KIND_META } from "@/lib/deadline-kind";
 import { relativeTime, calculateUrgency } from "@/lib/utils";
 import { ReviewQueue } from "@/components/dashboard/review-queue";
 import { StoryFeedCard } from "@/components/digest/story-feed-card";
@@ -163,9 +164,17 @@ export default function DashboardPage() {
 
       {/* Upcoming Dates */}
       <section className="mb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <CalendarDays className="w-4 h-4" style={{ color: "var(--cyan)" }} />
-          <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Upcoming Dates</h2>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4" style={{ color: "var(--cyan)" }} />
+            <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Upcoming Dates</h2>
+          </div>
+          <Link
+            href="/tracker/horizon"
+            className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent-text hover:text-accent flex items-center gap-1.5 transition-colors"
+          >
+            Horizon <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
         {upcomingDates.length > 0 ? (
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 stagger">
@@ -196,7 +205,14 @@ export default function DashboardPage() {
                     <span className="truncate">{d.entryShortName}</span>
                   </span>
                   <span className="mt-0.5 block truncate text-[11px] text-fg-3">
-                    {d.label} &middot; {dateStr}
+                    <span
+                      className="font-mono uppercase tracking-[0.04em]"
+                      style={{ color: DEADLINE_KIND_META[d.kind].color }}
+                      title={DEADLINE_KIND_META[d.kind].description}
+                    >
+                      {DEADLINE_KIND_META[d.kind].label}
+                    </span>{" "}
+                    &middot; {d.label} &middot; {dateStr}
                   </span>
                 </Link>
               );

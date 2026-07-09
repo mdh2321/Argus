@@ -863,8 +863,14 @@ export default function EntryDetailPage() {
             linked digest stories on one axis, soonest/most-recent first. */}
         {((entry.keyDates && entry.keyDates.length > 0) ||
           (changes && changes.length > 0) ||
-          newsStories.length > 0) && (
-          <Section id="timeline" title="Timeline" icon={<Calendar className="w-3.5 h-3.5 text-fg-3" />}>
+          newsStories.length > 0 ||
+          (docsData?.documents?.length ?? 0) > 0) && (
+          <Section
+            id="timeline"
+            title="Timeline"
+            icon={<Calendar className="w-3.5 h-3.5 text-fg-3" />}
+            actions={<ExtractDatesButton entryId={entry.id} onDone={() => mutate()} />}
+          >
             <EntryTimeline
               keyDates={entry.keyDates ?? []}
               changes={changes ?? []}
@@ -1322,6 +1328,54 @@ function RelatedEntryList({ items }: { items: RelatedEntryWithKind[] }) {
         </Link>
       ))}
     </div>
+  );
+}
+
+// One-tap source-grounded date extraction (Horizon upgrade, Jul 2026): pulls
+// commencement / transition / consultation dates out of the attached source
+// documents and merges them into keyDates. Existing dates always win.
+function ExtractDatesButton({ entryId, onDone }: { entryId: string; onDone: () => void }) {
+  const [running, setRunning] = useState(false);
+
+  return (
+    <button
+      type="button"
+      disabled={running}
+      title="Extract commencement, transition and consultation dates from the attached source documents"
+      onClick={async () => {
+        setRunning(true);
+        try {
+          const res = await fetch(`/api/tracker/entries/${entryId}/extract-dates`, {
+            method: "POST",
+          });
+          const json = (await res.json()) as {
+            extractedCount?: number;
+            added?: unknown[];
+            error?: string;
+          };
+          if (!res.ok) {
+            toast.error(json.error || "Date extraction failed");
+          } else if ((json.added?.length ?? 0) === 0) {
+            toast.message("No new dates found", {
+              description: `${json.extractedCount ?? 0} dated milestone${(json.extractedCount ?? 0) === 1 ? "" : "s"} in the sources, all already tracked.`,
+            });
+          } else {
+            toast.success(
+              `${json.added!.length} date${json.added!.length === 1 ? "" : "s"} added from sources`
+            );
+            onDone();
+          }
+        } catch {
+          toast.error("Date extraction failed");
+        } finally {
+          setRunning(false);
+        }
+      }}
+      className="flex items-center gap-1 text-[11px] font-mono text-fg-3 transition-colors hover:text-accent disabled:opacity-50"
+    >
+      <Sparkles className={`w-3 h-3 ${running ? "animate-spin" : ""}`} />
+      {running ? "Extracting…" : "Extract dates"}
+    </button>
   );
 }
 

@@ -9,6 +9,7 @@ export type Workflow =
   | "ask"
   | "compare"
   | "ingest"
+  | "dates"
   | "artifact:complianceChecklist"
   | "artifact:thresholdTests"
   | "artifact:escalationTriggers"
@@ -25,6 +26,7 @@ const LABELS: Record<Workflow, string> = {
   ask: "Ask",
   compare: "Comparator",
   ingest: "Ingest",
+  dates: "Date extraction",
   "artifact:complianceChecklist": "Compliance checklist",
   "artifact:thresholdTests": "Threshold tests",
   "artifact:escalationTriggers": "Escalation triggers",

@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { entries, entryChanges, deadlines } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateId, now, calculateUrgency, parseJsonField } from "./utils";
+import { classifyDeadlineKind } from "./deadline-kind";
 import type {
   Entry,
   KeyDate,
@@ -126,6 +127,7 @@ export async function syncDeadlines(entryId: string, keyDatesJson: string | null
       date: kd.date,
       label: kd.label || "",
       urgency: calculateUrgency(kd.date),
+      kind: kd.kind ?? classifyDeadlineKind(kd.label || ""),
     });
   }
 }
