@@ -213,13 +213,14 @@ export default function AutomationsPage() {
       {data && data.monthly.length > 0 && (
         <section className="mb-10">
           <h2 className="label-mono mb-3">Spend by month</h2>
-          <div className="flex items-end gap-2 rounded-xl bg-surface p-4 shadow-[var(--shadow-card)]" style={{ height: 140 }}>
+          <div className="flex items-end gap-3 rounded-xl bg-surface p-4 shadow-[var(--shadow-card)]" style={{ height: 116 }}>
             {data.monthly.map((m) => (
-              <div key={m.month} className="flex flex-1 flex-col items-center gap-1.5" title={`${fmtUsd(m.total)} · ${m.runs} runs`}>
+              <div key={m.month} className="flex flex-1 flex-col items-center gap-1" title={`${fmtUsd(m.total)} · ${m.runs} runs`}>
+                <span className="font-mono text-[9px] text-fg-3 tabular-nums">{fmtUsd(m.total)}</span>
                 <div className="flex w-full flex-1 items-end">
                   <div
                     className="w-full rounded-t bg-accent/70 transition-all"
-                    style={{ height: `${Math.max(2, (m.total / maxMonthly) * 100)}%` }}
+                    style={{ height: `${Math.max(10, (m.total / maxMonthly) * 100)}%` }}
                   />
                 </div>
                 <span className="font-mono text-[9px] text-fg-3">{m.month.slice(5)}</span>
