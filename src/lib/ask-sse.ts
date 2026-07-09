@@ -1,7 +1,12 @@
-import type { AskSentinelAnswer, AskConversationalAnswer } from "@/lib/ask-types";
+import type {
+  AskSentinelAnswer,
+  AskConversationalAnswer,
+  AskSentinelCitation,
+} from "@/lib/ask-types";
 
 /** SSE events emitted by /api/ask/stream (deep report + conversational). */
 export type StreamEvent =
+  | { type: "sources"; sources: AskSentinelCitation[] }
   | { type: "progress"; chars: number }
   | { type: "delta"; text: string }
   | { type: "done"; answer: AskSentinelAnswer & Partial<AskConversationalAnswer> }

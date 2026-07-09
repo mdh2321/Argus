@@ -140,6 +140,8 @@ interface Turn {
   /** Conversational (news) answers stream prose here. */
   text: string;
   citations: AskSentinelCitation[];
+  /** Retrieved sources, surfaced before the answer streams (S3). */
+  sources?: AskSentinelCitation[];
   error?: string;
   progressTokens: number;
   answeredAt?: string;
@@ -272,7 +274,9 @@ export default function AskPage() {
     if (!res.ok || !res.body) throw new Error("stream failed");
 
     await readSSE(res.body, (evt) => {
-      if (evt.type === "progress") {
+      if (evt.type === "sources") {
+        patchTurn(id, { sources: evt.sources });
+      } else if (evt.type === "progress") {
         patchTurn(id, { progressTokens: Math.round(evt.chars / 4) });
       } else if (evt.type === "done") {
         if (evt.answer.sessionId) setSessionId(evt.answer.sessionId);
@@ -968,7 +972,10 @@ function TurnView({ turn, onRelated }: { turn: Turn; onRelated: (q: string) => v
           {turn.error || "Something went wrong."}
         </div>
       ) : (
-        <PendingCard mode={turn.mode} progressTokens={turn.progressTokens} />
+        <div className="space-y-2">
+          {turn.sources && turn.sources.length > 0 && <SourceRibbon sources={turn.sources} />}
+          <PendingCard mode={turn.mode} progressTokens={turn.progressTokens} />
+        </div>
       )}
     </div>
   );
@@ -1018,6 +1025,47 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Sources-first ribbon (S3): the retrieved records rendered above the answer
+ *  while the model is still writing, so evidence arrives before the claim. */
+function SourceRibbon({ sources }: { sources: AskSentinelCitation[] }) {
+  return (
+    <div className="anim-enter">
+      <div className="label-mono mb-1.5 flex items-center gap-1.5">
+        <FileText className="h-3 w-3" />
+        Grounded in {sources.length} source{sources.length === 1 ? "" : "s"}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {sources.slice(0, 8).map((s, i) => {
+          const external = s.externalUrl;
+          const inner = (
+            <>
+              {external ? (
+                <SourceFavicon url={external} size={14} />
+              ) : (
+                <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-hover font-mono text-[10px] text-fg-3">
+                  {i + 1}
+                </span>
+              )}
+              <span className="max-w-[200px] truncate text-[11px] text-fg-2">{s.title}</span>
+            </>
+          );
+          const className =
+            "inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2 py-1 transition-colors hover:border-border-hover hover:bg-hover";
+          return external ? (
+            <a key={`${s.id}-${i}`} href={external} target="_blank" rel="noopener noreferrer" className={className}>
+              {inner}
+            </a>
+          ) : (
+            <Link key={`${s.id}-${i}`} href={s.href} className={className}>
+              {inner}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1229,22 +1277,72 @@ function AnswerCard({
         </div>
       )}
 
-      {answer.relatedQuestions.length > 0 && (
+      {/* Outcome rewrites (S6): one tap re-runs the thread toward a concrete
+          deliverable, labelled by outcome rather than by parameter. */}
+      <div>
+        <div className="label-mono mb-2 flex items-center gap-1.5">
+          <Sparkles className="h-3 w-3" />
+          Take it further
+        </div>
         <div className="flex flex-wrap gap-2">
-          {answer.relatedQuestions.map((q) => (
-            <button
-              key={q}
-              onClick={() => onRelated(q)}
-              className="rounded-full border border-border bg-surface px-3 py-1.5 text-left text-[12px] text-fg-2 transition-colors hover:border-border-hover hover:bg-hover hover:text-fg"
-            >
-              {q}
-            </button>
-          ))}
+          {REWRITES.map((r) => {
+            const Icon = r.icon;
+            return (
+              <button
+                key={r.label}
+                onClick={() => onRelated(r.prompt)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border-accent bg-accent-bg px-3 py-1.5 text-[12px] font-medium text-accent-text transition-colors hover:bg-accent/15"
+              >
+                <Icon className="h-3 w-3" />
+                {r.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {answer.relatedQuestions.length > 0 && (
+        <div>
+          <div className="label-mono mb-2 flex items-center gap-1.5">
+            <CornerDownLeft className="h-3 w-3" />
+            Follow up
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {answer.relatedQuestions.map((q) => (
+              <button
+                key={q}
+                onClick={() => onRelated(q)}
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-left text-[12px] text-fg-2 transition-colors hover:border-border-hover hover:bg-hover hover:text-fg"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+// Outcome-labelled rewrites — the same query pushed toward a deliverable. They
+// reuse the follow-up path (onRelated), so no new server surface is needed.
+const REWRITES: { label: string; prompt: string; icon: typeof Sparkles }[] = [
+  {
+    label: "Turn into a checklist",
+    prompt: "Turn your answer into a concise, actionable compliance checklist with owners and deadlines where known.",
+    icon: Target,
+  },
+  {
+    label: "Draft a client note",
+    prompt: "Draft a short, client-ready note summarising this — plain language, no legalese, ready to send.",
+    icon: FileText,
+  },
+  {
+    label: "What should we do first?",
+    prompt: "Given all of the above, what are the two or three highest-priority actions we should take first, and why?",
+    icon: Crosshair,
+  },
+];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

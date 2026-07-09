@@ -219,6 +219,7 @@ Write a direct, factual answer.
 // ── Deep report (streamed) ──────────────────────────────────────
 
 export type DeepReportStreamEvent =
+  | { type: "sources"; sources: AskSentinelCitation[] }
   | { type: "progress"; chars: number }
   | { type: "done"; answer: AskSentinelAnswer }
   | { type: "error"; message: string };
@@ -273,6 +274,13 @@ Generate a comprehensive, structured report:
     console.error("Ask deep report setup failed:", err);
     yield { type: "error", message: "Could not assemble the report context." };
     return;
+  }
+
+  // Sources-first: the records were retrieved before generation, so surface
+  // them immediately — the reader sees the evidence the answer is built on
+  // while the model is still writing, rather than a bare token counter.
+  if (assembled.citations.length > 0) {
+    yield { type: "sources", sources: assembled.citations };
   }
 
   let payload: DeepPayload;
