@@ -80,7 +80,7 @@ interface EntryNewsStory {
 // so the cited source document expands and scrolls to (or near) the referenced
 // section. Decoupled via a window event because the claim marker and the source
 // panel are far apart in this large tree.
-const REVEAL_SOURCE_EVENT = "sentinel:reveal-source";
+const REVEAL_SOURCE_EVENT = "argus:reveal-source";
 interface RevealSourceDetail {
   docId: string;
   sectionRef: string | null;
@@ -582,7 +582,7 @@ export default function EntryDetailPage() {
               <Link
                 href={`/ask?scopeKind=entry&scopeId=${entry.id}&scopeLabel=${encodeURIComponent(entry.shortName)}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
-                title="Ask Sentinel about this record, grounded in its source"
+                title="Ask Argus about this record, grounded in its source"
               >
                 <Bot className="w-3 h-3" />
                 Ask about this
@@ -2552,7 +2552,7 @@ function GeneratingPlaceholder() {
       </div>
       <h2 className="text-[16px] font-semibold text-fg">Drafting preliminary analysis</h2>
       <p className="mx-auto mt-1.5 max-w-md text-[13px] text-fg-3 leading-relaxed">
-        Sentinel is sketching a quick model-knowledge summary while you work on attaching source documents. This usually takes 30–90 seconds.
+        Argus is sketching a quick model-knowledge summary while you work on attaching source documents. This usually takes 30–90 seconds.
       </p>
     </div>
   );

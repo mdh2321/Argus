@@ -73,7 +73,7 @@ Summary: ${item.summary || "(none)"}`
 async function fetchFeed(url: string): Promise<string> {
   const res = await fetch(url, {
     signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
-    headers: { "User-Agent": "Mozilla/5.0 (Sentinel digest)" },
+    headers: { "User-Agent": "Mozilla/5.0 (Argus digest)" },
     redirect: "follow",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -1,4 +1,6 @@
-# Sentinel
+# Argus
+
+> Renamed from **Sentinel** (July 2026) — after Argus Panoptes, the all-seeing watchman. Infra artifacts keep the old name: the DB file (`data/sentinel.db`), env vars (`SENTINEL_BASE_URL`), the launchd label (`com.sentinel.digest`), backup dir, and the `~/Projects/sentinel/` folder.
 
 Personal legal intelligence platform for in-house APJ legal work: discover and track legal/regulatory updates, and review and understand legislation across APJ jurisdictions. Single-user, runs locally on this Mac.
 

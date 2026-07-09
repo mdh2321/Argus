@@ -17,7 +17,7 @@ export default function MethodologyPage() {
           </h1>
         </div>
         <p className="relative z-10 mt-1.5 max-w-2xl text-[14px] text-fg-3">
-          How Sentinel collects, scores, and presents legal intelligence.
+          How Argus collects, scores, and presents legal intelligence.
         </p>
       </div>
 
@@ -28,7 +28,7 @@ export default function MethodologyPage() {
           title="Source hierarchy"
         >
           <p className="mb-4 text-[14px] leading-relaxed text-fg-2">
-            Every piece of information in Sentinel is tagged with a source tier.
+            Every piece of information in Argus is tagged with a source tier.
             Higher-tier sources carry more weight in confidence scoring and
             recommendations.
           </p>
@@ -64,7 +64,7 @@ export default function MethodologyPage() {
         >
           <p className="mb-4 text-[14px] leading-relaxed text-fg-2">
             Confidence reflects how well a claim or answer is grounded in
-            authoritative sources. It is assigned per-response in Ask Sentinel
+            authoritative sources. It is assigned per-response in Ask Argus
             and per-claim in deep reports.
           </p>
           <div className="flex flex-wrap gap-3">
@@ -121,12 +121,12 @@ export default function MethodologyPage() {
         {/* AI Usage */}
         <Section icon={<Bot className="h-4 w-4" />} title="AI usage">
           <p className="mb-3 text-[14px] leading-relaxed text-fg-2">
-            Sentinel uses Claude (Anthropic) for several capabilities:
+            Argus uses Claude (Anthropic) for several capabilities:
           </p>
           <ul className="space-y-2">
             {[
               [
-                "Ask Sentinel",
+                "Ask Argus",
                 "Answers legal-intelligence queries by searching across all tracked data, then synthesising a brief with linked citations.",
               ],
               [

@@ -5,8 +5,8 @@ import Link from "next/link";
 import type {
   AskConversationalAnswer,
   AskScope,
-  AskSentinelAnswer,
-  AskSentinelCitation,
+  AskArgusAnswer,
+  AskArgusCitation,
   AskSourceOption,
 } from "@/lib/ask-types";
 import { AgentBadge } from "@/components/ui/agent-badge";
@@ -137,12 +137,12 @@ interface Turn {
   mode: Mode;
   kind: TurnKind;
   status: "loading" | "streaming" | "done" | "error";
-  answer: AskSentinelAnswer | null;
+  answer: AskArgusAnswer | null;
   /** Conversational (news) answers stream prose here. */
   text: string;
-  citations: AskSentinelCitation[];
+  citations: AskArgusCitation[];
   /** Retrieved sources, surfaced before the answer streams (S3). */
-  sources?: AskSentinelCitation[];
+  sources?: AskArgusCitation[];
   error?: string;
   progressTokens: number;
   answeredAt?: string;
@@ -323,7 +323,7 @@ export default function AskPage() {
       body: JSON.stringify({ query: question, sessionId, ...scopeBody() }),
     });
     if (!res.ok) throw new Error("ask failed");
-    const data = (await res.json()) as AskSentinelAnswer;
+    const data = (await res.json()) as AskArgusAnswer;
     if (data.sessionId) setSessionId(data.sessionId);
     patchTurn(id, { status: "done", answer: data, answeredAt: new Date().toISOString() });
   }
@@ -359,7 +359,7 @@ export default function AskPage() {
       else if (turnMode === "deep_report") await streamStructured(id, question);
       else await runQuick(id, question);
     } catch {
-      patchTurn(id, { status: "error", error: "Sentinel could not complete that request." });
+      patchTurn(id, { status: "error", error: "Argus could not complete that request." });
     } finally {
       setBusy(false);
     }
@@ -411,7 +411,7 @@ export default function AskPage() {
           continue;
         }
         if (m.role !== "assistant") continue;
-        const ans = m.answer as (AskSentinelAnswer & Partial<AskConversationalAnswer>) | null;
+        const ans = m.answer as (AskArgusAnswer & Partial<AskConversationalAnswer>) | null;
         const structured = !!ans && typeof ans.summary === "string" && "mode" in ans;
         if (ans && structured) {
           rebuilt.push({
@@ -420,7 +420,7 @@ export default function AskPage() {
             mode: ans.mode ?? "quick",
             kind: "structured",
             status: "done",
-            answer: ans as AskSentinelAnswer,
+            answer: ans as AskArgusAnswer,
             text: "",
             citations: ans.citations ?? [],
             answeredAt: m.createdAt,
@@ -513,7 +513,7 @@ export default function AskPage() {
               <Bot className="h-6 w-6" style={{ color: "var(--accent)" }} />
             </div>
             <h1 className="text-gradient relative z-10 text-[34px] font-bold leading-tight tracking-[-0.02em]">
-              Ask Sentinel
+              Ask Argus
             </h1>
             <p className="relative z-10 mx-auto mt-2 max-w-xl text-[14px] leading-relaxed text-fg-3">
               {isNews
@@ -569,7 +569,7 @@ export default function AskPage() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-5 flex items-center gap-2.5">
             <Bot className="h-5 w-5" style={{ color: "var(--accent)" }} />
-            <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-fg">Ask Sentinel</h1>
+            <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-fg">Ask Argus</h1>
             <div className="ml-auto flex items-center gap-1.5">
               <button
                 onClick={() => void pinConversation()}
@@ -920,7 +920,7 @@ function Composer({
             </>
           ) : (
             <>
-              Ask Sentinel
+              Ask Argus
               <CornerDownLeft className="h-3.5 w-3.5" />
             </>
           )}
@@ -1048,7 +1048,7 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
 
 /** Sources-first ribbon (S3): the retrieved records rendered above the answer
  *  while the model is still writing, so evidence arrives before the claim. */
-function SourceRibbon({ sources }: { sources: AskSentinelCitation[] }) {
+function SourceRibbon({ sources }: { sources: AskArgusCitation[] }) {
   return (
     <div className="anim-enter">
       <div className="label-mono mb-1.5 flex items-center gap-1.5">
@@ -1087,7 +1087,7 @@ function SourceRibbon({ sources }: { sources: AskSentinelCitation[] }) {
   );
 }
 
-function SourceRow({ index, citation }: { index: number; citation: AskSentinelCitation }) {
+function SourceRow({ index, citation }: { index: number; citation: AskArgusCitation }) {
   const external = citation.externalUrl;
   const inner = (
     <>
@@ -1158,7 +1158,7 @@ function AnswerCard({
   onRelated,
   onFork,
 }: {
-  answer: AskSentinelAnswer;
+  answer: AskArgusAnswer;
   answeredAt: string | null;
   onRelated: (q: string) => void;
   onFork: () => void;
@@ -1284,7 +1284,7 @@ function AnswerCard({
                       href={citation.href}
                       className="inline-flex items-center gap-1 text-[12px] text-accent transition-colors hover:text-accent-2"
                     >
-                      Open in Sentinel <ArrowRight className="h-3 w-3" />
+                      Open in Argus <ArrowRight className="h-3 w-3" />
                     </Link>
                     {citation.externalUrl && (
                       <a
@@ -1380,7 +1380,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function ReportSection({ section }: { section: NonNullable<AskSentinelAnswer["reportSections"]>[number] }) {
+function ReportSection({ section }: { section: NonNullable<AskArgusAnswer["reportSections"]>[number] }) {
   const [expanded, setExpanded] = useState(true);
 
   const groundingColors: Record<string, string> = {

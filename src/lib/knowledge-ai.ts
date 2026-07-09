@@ -749,7 +749,7 @@ function buildBriefingPrompt(
   const sources = buildKnowledgeSourcesBlock(docs);
   const docsAvailable = docs.filter((d) => d.fullText).length;
 
-  const instructions = `You are Sentinel, a legal intelligence platform. Generate a weekly intelligence briefing.
+  const instructions = `You are Argus, a legal intelligence platform. Generate a weekly intelligence briefing.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}PERIOD: ${input.periodFrom} to ${input.periodTo}
 ${input.jurisdiction ? `JURISDICTION FILTER: ${input.jurisdiction}` : "ALL JURISDICTIONS"}

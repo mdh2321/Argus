@@ -507,7 +507,7 @@ function buildDraftInstructions(input: SummaryInput, profileContext: string): st
 
   const relatedContext =
     input.relatedEntryNames.length > 0
-      ? `\nOTHER ENTRIES IN SENTINEL (for cross-referencing only):\n${input.relatedEntryNames.map((n) => `- ${n}`).join("\n")}`
+      ? `\nOTHER ENTRIES IN ARGUS (for cross-referencing only):\n${input.relatedEntryNames.map((n) => `- ${n}`).join("\n")}`
       : "";
 
   const timingBlock = buildTimingBlock(input.currentDate, input.keyDates);

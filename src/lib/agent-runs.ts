@@ -19,7 +19,7 @@ interface LogAgentRunInput {
 }
 
 /**
- * Record a Sentinel agent run in updateRuns with a profile snapshot.
+ * Record a Argus agent run in updateRuns with a profile snapshot.
  * Must never throw — logging failures are swallowed so generation flows aren't broken.
  */
 export async function logAgentRun(input: LogAgentRunInput): Promise<void> {

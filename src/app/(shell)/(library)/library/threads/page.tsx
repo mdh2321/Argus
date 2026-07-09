@@ -28,7 +28,7 @@ export default function ThreadsPage() {
       <PageHeader
         icon={MessagesSquare}
         title="Threads"
-        subtitle="Your past Ask Sentinel conversations — pick one up any time."
+        subtitle="Your past Ask Argus conversations — pick one up any time."
       />
 
       {isLoading ? (
@@ -41,7 +41,7 @@ export default function ThreadsPage() {
         <EmptyState
           icon={MessagesSquare}
           title="No threads yet"
-          description="Conversations you have with Ask Sentinel are saved here — pick one up where you left off, any time."
+          description="Conversations you have with Ask Argus are saved here — pick one up where you left off, any time."
         />
       ) : (
         <div className="space-y-2 stagger">

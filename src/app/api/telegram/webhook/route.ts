@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     await handleTrack(request, chatId, msg.message_id, n);
   } catch (err) {
     console.error("[telegram-webhook] track failed:", err);
-    await safeReply(chatId, "Something went wrong adding that story. Try again from Sentinel.", msg.message_id);
+    await safeReply(chatId, "Something went wrong adding that story. Try again from Argus.", msg.message_id);
   }
   return NextResponse.json({ ok: true });
 }

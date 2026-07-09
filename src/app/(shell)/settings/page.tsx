@@ -123,10 +123,10 @@ function ProfileTab() {
             />
             <div>
               <p className="text-[13px] font-semibold text-fg mb-1">
-                Teach Sentinel about you
+                Teach Argus about you
               </p>
               <p className="text-[13px] text-fg-2 leading-relaxed">
-                Fill in the fields below so Sentinel can tailor what it surfaces. Without
+                Fill in the fields below so Argus can tailor what it surfaces. Without
                 a profile, intelligence is generic; with one, every output reflects your
                 company, role, and focus.
               </p>
@@ -213,7 +213,7 @@ function ProfileTab() {
             value={form.freeText}
             onChange={(e) => setForm({ ...form, freeText: e.target.value })}
             rows={4}
-            placeholder="Any other context that helps Sentinel understand what matters to you..."
+            placeholder="Any other context that helps Argus understand what matters to you..."
             className="field resize-y"
           />
         </F>
@@ -290,7 +290,7 @@ function ExportTab() {
           });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `sentinel-export.${format}`;
+    a.download = `argus-export.${format}`;
     a.click();
   };
 
@@ -360,7 +360,7 @@ function ProfileSummary({
     <section className="mb-10 rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">
-          What Sentinel knows about you
+          What Argus knows about you
         </h2>
       </div>
 

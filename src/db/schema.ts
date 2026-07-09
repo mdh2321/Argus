@@ -413,7 +413,7 @@ export const queryMessages = sqliteTable("query_messages", {
   role: text("role").notNull(), // "user" or "assistant"
   content: text("content").notNull(),
   citedEntryIds: text("cited_entry_ids"), // JSON array
-  // Full serialized answer (AskSentinelAnswer / AskConversationalAnswer) for
+  // Full serialized answer (AskArgusAnswer / AskConversationalAnswer) for
   // assistant turns, so past conversations re-render with full fidelity. Null
   // for user turns and for sessions created before this column existed.
   answerJson: text("answer_json"),

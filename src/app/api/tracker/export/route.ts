@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": "attachment; filename=sentinel-export.csv",
+        "Content-Disposition": "attachment; filename=argus-export.csv",
       },
     });
   }

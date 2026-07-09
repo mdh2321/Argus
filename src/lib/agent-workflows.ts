@@ -32,6 +32,6 @@ const LABELS: Record<Workflow, string> = {
 };
 
 export function workflowLabel(w: Workflow | string | null | undefined): string {
-  if (!w) return "Sentinel";
+  if (!w) return "Argus";
   return LABELS[w as Workflow] ?? String(w);
 }

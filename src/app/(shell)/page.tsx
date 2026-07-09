@@ -237,8 +237,8 @@ function AskInput() {
         type="text"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Ask Sentinel anything…"
-        aria-label="Ask Sentinel"
+        placeholder="Ask Argus anything…"
+        aria-label="Ask Argus"
         className="flex-1 bg-transparent text-[15px] text-fg placeholder:text-fg-3 outline-none"
       />
       <kbd className="hidden sm:block rounded bg-hover px-1.5 py-0.5 font-mono text-[10px] text-fg-3">

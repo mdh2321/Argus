@@ -203,7 +203,7 @@ export function GlobalSearch() {
       });
     }
     list.push(
-      { id: "ask", label: "Ask Sentinel a question", icon: MessagesSquare, keywords: "ask question query", run: () => ask("") },
+      { id: "ask", label: "Ask Argus a question", icon: MessagesSquare, keywords: "ask question query", run: () => ask("") },
       { id: "capture", label: "Capture URL or text", icon: Plus, keywords: "add tracker clip save", run: () => { setOpen(false); openCaptureModal(); } },
       { id: "new-entry", label: "New tracker entry", icon: FilePlus2, keywords: "create add law", run: () => go("/tracker/new") },
       { id: "horizon", label: "Go to Horizon (deadlines)", icon: CalendarClock, keywords: "deadlines dates upcoming calendar", run: () => go("/tracker/horizon") },
@@ -275,7 +275,7 @@ export function GlobalSearch() {
             >
               <Sparkles className="h-4 w-4 flex-shrink-0" />
               <span className="min-w-0 flex-1 truncate">
-                Ask Sentinel: <span className="font-medium text-fg">&ldquo;{query.trim()}&rdquo;</span>
+                Ask Argus: <span className="font-medium text-fg">&ldquo;{query.trim()}&rdquo;</span>
               </span>
               <kbd className="flex-shrink-0 rounded bg-surface/70 px-1.5 py-0.5 font-mono text-[10px]">&#8984;&#8629;</kbd>
             </button>

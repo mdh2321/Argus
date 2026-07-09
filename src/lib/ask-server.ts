@@ -14,9 +14,9 @@ import type {
   AskConversationalAnswer,
   AskMessage,
   AskScope,
-  AskSentinelAction,
-  AskSentinelAnswer,
-  AskSentinelCitation,
+  AskArgusAction,
+  AskArgusAnswer,
+  AskArgusCitation,
   DeepReportSection,
 } from "@/lib/ask-types";
 
@@ -42,7 +42,7 @@ export interface AskContext {
 /** Context assembled for a single Ask turn, from the corpus or a scoped source. */
 interface AssembledContext {
   context: string;
-  citations: AskSentinelCitation[];
+  citations: AskArgusCitation[];
   validIds: Set<string>;
   matchedCount: number;
   hasSourceContent: boolean;
@@ -129,7 +129,7 @@ const DEEP_SCHEMA = {
 interface QuickPayload {
   summary: string;
   whyItMatters: string;
-  actions: AskSentinelAction[];
+  actions: AskArgusAction[];
   relatedQuestions: string[];
   confidence: "high" | "medium" | "low";
 }
@@ -138,14 +138,14 @@ interface DeepPayload {
   summary: string;
   whyItMatters: string;
   sections: DeepReportSection[];
-  actions: AskSentinelAction[];
+  actions: AskArgusAction[];
   relatedQuestions: string[];
   confidence: "high" | "medium" | "low";
 }
 
 // ── Quick answer ────────────────────────────────────────────────
 
-export async function answerAskSentinel(query: string, ctx: AskContext = {}): Promise<AskSentinelAnswer> {
+export async function answerAskArgus(query: string, ctx: AskContext = {}): Promise<AskArgusAnswer> {
   const cleanedQuery = query.trim();
   const history = ctx.history ?? [];
   const answerMode = detectMode(cleanedQuery);
@@ -162,7 +162,7 @@ export async function answerAskSentinel(query: string, ctx: AskContext = {}): Pr
 
   const profileContext = await getProfileContext();
 
-  const prompt = `You are Sentinel, a legal intelligence assistant tracking legislation and regulation across the Asia-Pacific region (AU, NZ, SG, JP, HK, IN, PH). Today's date is ${new Date().toISOString().slice(0, 10)}.
+  const prompt = `You are Argus, a legal intelligence assistant tracking legislation and regulation across the Asia-Pacific region (AU, NZ, SG, JP, HK, IN, PH). Today's date is ${new Date().toISOString().slice(0, 10)}.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}${scopeInstruction(assembled.scopeLabel)}A user has asked:
 "${cleanedQuery}"
@@ -219,9 +219,9 @@ Write a direct, factual answer.
 // ── Deep report (streamed) ──────────────────────────────────────
 
 export type DeepReportStreamEvent =
-  | { type: "sources"; sources: AskSentinelCitation[] }
+  | { type: "sources"; sources: AskArgusCitation[] }
   | { type: "progress"; chars: number }
-  | { type: "done"; answer: AskSentinelAnswer }
+  | { type: "done"; answer: AskArgusAnswer }
   | { type: "error"; message: string };
 
 /**
@@ -253,7 +253,7 @@ export async function* streamDeepReport(
 
     const profileContext = await getProfileContext();
 
-    prompt = `You are Sentinel, a legal intelligence platform generating an in-depth analytical report. Today's date is ${new Date().toISOString().slice(0, 10)}.
+    prompt = `You are Argus, a legal intelligence platform generating an in-depth analytical report. Today's date is ${new Date().toISOString().slice(0, 10)}.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}${scopeInstruction(assembled.scopeLabel)}A user has requested a deep report on:
 "${cleanedQuery}"
@@ -345,7 +345,7 @@ Generate a comprehensive, structured report:
 
 // ── Shared helpers ──────────────────────────────────────────────
 
-function buildCitations(items: CorpusItem[]): AskSentinelCitation[] {
+function buildCitations(items: CorpusItem[]): AskArgusCitation[] {
   return items.map((item) => ({
     id: item.id,
     kind: item.kind,
@@ -517,10 +517,10 @@ function scopeInstruction(label?: string): string {
 function contextHeading(label?: string): string {
   return label
     ? `Relevant passages from "${label}":`
-    : `Most relevant records from Sentinel's tracker, digest, knowledge store, and signals, with any source content fetched from official URLs:`;
+    : `Most relevant records from Argus's tracker, digest, knowledge store, and signals, with any source content fetched from official URLs:`;
 }
 
-function fallbackActionsFromCitations(citations: AskSentinelCitation[]): AskSentinelAction[] {
+function fallbackActionsFromCitations(citations: AskArgusCitation[]): AskArgusAction[] {
   const first = citations[0];
   if (!first) return [];
   return [
@@ -535,16 +535,16 @@ function fallbackActionsFromCitations(citations: AskSentinelCitation[]): AskSent
 function errorAnswer(
   query: string,
   mode: "quick" | "deep_report",
-  answerMode: AskSentinelAnswer["answerMode"],
-  citations: AskSentinelCitation[],
+  answerMode: AskArgusAnswer["answerMode"],
+  citations: AskArgusCitation[],
   matchedCount: number
-): AskSentinelAnswer {
+): AskArgusAnswer {
   return {
     query,
     mode,
     answerMode,
     confidence: "low",
-    summary: "Sentinel couldn't complete that request. Please try again.",
+    summary: "Argus couldn't complete that request. Please try again.",
     whyItMatters: "",
     actions: [],
     citations,
@@ -553,7 +553,7 @@ function errorAnswer(
   };
 }
 
-function detectMode(query: string): AskSentinelAnswer["answerMode"] {
+function detectMode(query: string): AskArgusAnswer["answerMode"] {
   const q = query.toLowerCase();
   if (/compare|difference|versus|\bvs\b/.test(q)) return "comparison";
   if (/deadline|deadlines|due|upcoming|when|date/.test(q)) return "deadlines";
@@ -604,7 +604,7 @@ export async function* streamConversationalAnswer(
 
     const profileContext = await getProfileContext();
 
-    prompt = `You are Sentinel, a legal-intelligence assistant. Today's date is ${new Date().toISOString().slice(0, 10)}. The user is asking quick, conversational follow-up questions about a specific news story (or stories). Answer like a knowledgeable colleague over text message: brief, direct, plain language — a sentence or two, a short paragraph at most. No headings, no bullet-point reports (those are for deep reports).
+    prompt = `You are Argus, a legal-intelligence assistant. Today's date is ${new Date().toISOString().slice(0, 10)}. The user is asking quick, conversational follow-up questions about a specific news story (or stories). Answer like a knowledgeable colleague over text message: brief, direct, plain language — a sentence or two, a short paragraph at most. No headings, no bullet-point reports (those are for deep reports).
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}${transcript(history)}STORY / STORIES IN SCOPE:
 ${storyBlocks}
@@ -646,7 +646,7 @@ Ground your answer in the story text above first. When it doesn't cover the ques
     };
   } catch (err) {
     console.error("Ask conversational generation failed:", err);
-    yield { type: "error", message: "Sentinel couldn't answer that. Please try again." };
+    yield { type: "error", message: "Argus couldn't answer that. Please try again." };
   }
 }
 
@@ -689,8 +689,8 @@ function hostOf(url: string): string {
 function extractWebCitations(
   blocks: ContentBlockLike[],
   resolved: ScopedSource[]
-): AskSentinelCitation[] {
-  const out: AskSentinelCitation[] = [];
+): AskArgusCitation[] {
+  const out: AskArgusCitation[] = [];
   const seen = new Set<string>();
 
   for (const r of resolved) {

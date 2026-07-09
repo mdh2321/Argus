@@ -1,10 +1,10 @@
-export interface AskSentinelAction {
+export interface AskArgusAction {
   title: string;
   detail: string;
   href?: string;
 }
 
-export interface AskSentinelCitation {
+export interface AskArgusCitation {
   id: string;
   kind: "tracker" | "digest" | "signal" | "knowledge" | "web";
   title: string;
@@ -53,12 +53,12 @@ export interface AskConversationalAnswer {
   sessionId?: string;
   /** Free-form markdown-ish prose. */
   content: string;
-  citations: AskSentinelCitation[];
+  citations: AskArgusCitation[];
   /** The story (or stories) the conversation is scoped to. */
   scopeLabel?: string;
 }
 
-export interface AskSentinelAnswer {
+export interface AskArgusAnswer {
   query: string;
   /** Conversation this answer belongs to. Set by the server on the first turn. */
   sessionId?: string;
@@ -67,8 +67,8 @@ export interface AskSentinelAnswer {
   confidence: "high" | "medium" | "low";
   summary: string;
   whyItMatters: string;
-  actions: AskSentinelAction[];
-  citations: AskSentinelCitation[];
+  actions: AskArgusAction[];
+  citations: AskArgusCitation[];
   relatedQuestions: string[];
   matchedCount: number;
   // Deep report fields (only present when mode === "deep_report")

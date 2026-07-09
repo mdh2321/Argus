@@ -185,7 +185,7 @@ interface DraftOutput {
 async function draftFromStory(input: DraftInput): Promise<DraftOutput> {
   const profileContext = await getProfileContext();
 
-  const prompt = `You are drafting a tracker entry for the Sentinel legal intelligence platform from a single source news story. The entry will collect future stories about this same legal subject over time, so frame it as the *subject*, not the news event.
+  const prompt = `You are drafting a tracker entry for the Argus legal intelligence platform from a single source news story. The entry will collect future stories about this same legal subject over time, so frame it as the *subject*, not the news event.
 
 ${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}TRACKER ENTRY METADATA (already decided):
 - Short name: ${input.shortName}
@@ -202,7 +202,7 @@ Draft THREE short fields:
 
 1. **summary** — 2-3 sentences in plain English describing what this legal instrument is or does. Frame it as the durable subject (e.g. "A bill before the Australian parliament that would..."), not as a news event ("Last week, the parliament introduced..."). Acknowledge uncertainty if the source is thin: prefer "appears to" over confident claims you cannot verify from the source. Do NOT invent specific dates, penalties, or section numbers.
 
-2. **whyItMatters** — 1-2 sentences specifically explaining why this is worth tracking, framed through Sentinel's pass-through-impact lens. Impact = effects flowing to Docusign through TWO pathways:
+2. **whyItMatters** — 1-2 sentences specifically explaining why this is worth tracking, framed through Argus's pass-through-impact lens. Impact = effects flowing to Docusign through TWO pathways:
    (a) **Direct** — Docusign is itself legally obligated.
    (b) **Customer pass-through** — a rule binding Docusign's customers (financial services, healthcare, government, legal) materially alters how they use Docusign. Examples: financial-services outsourcing rules requiring banks to renegotiate vendor contracts; sectoral data-residency mandates forcing new product configurations; third-party risk regimes forcing customer-driven audits or contract terms.
    If the source story doesn't support a strong impact claim, say so plainly ("Direct impact unclear from current reporting; flagged for monitoring.").

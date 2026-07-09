@@ -21,10 +21,10 @@ function subscribe(callback: () => void) {
 
   const handleChange = () => callback();
   window.addEventListener("storage", handleChange);
-  window.addEventListener("sentinel-theme-change", handleChange);
+  window.addEventListener("argus-theme-change", handleChange);
   return () => {
     window.removeEventListener("storage", handleChange);
-    window.removeEventListener("sentinel-theme-change", handleChange);
+    window.removeEventListener("argus-theme-change", handleChange);
   };
 }
 
@@ -33,7 +33,7 @@ function getSnapshot(): Theme {
     return "dark";
   }
 
-  const saved = localStorage.getItem("sentinel-theme");
+  const saved = localStorage.getItem("argus-theme");
   return saved === "light" ? "light" : "dark";
 }
 
@@ -46,8 +46,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
-    localStorage.setItem("sentinel-theme", next);
-    window.dispatchEvent(new Event("sentinel-theme-change"));
+    localStorage.setItem("argus-theme", next);
+    window.dispatchEvent(new Event("argus-theme-change"));
   };
 
   return (

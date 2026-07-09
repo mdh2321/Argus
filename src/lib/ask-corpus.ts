@@ -6,7 +6,7 @@ import { serializeEntry } from "@/lib/entry-helpers";
 import { eq, ne } from "drizzle-orm";
 import { formatDate } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
-import type { AskSentinelAction } from "@/lib/ask-types";
+import type { AskArgusAction } from "@/lib/ask-types";
 
 /**
  * A single retrievable record in the Ask corpus. Tracker entries, digest
@@ -25,7 +25,7 @@ export interface CorpusItem {
   jurisdiction: string;
   impactRank: number;
   urgencyRank: number;
-  actions: AskSentinelAction[];
+  actions: AskArgusAction[];
   externalUrl?: string;
   sourceUrls?: string[];
 }
@@ -104,7 +104,7 @@ export async function buildCorpus(): Promise<CorpusItem[]> {
       href: sig.link || "/",
       body: [sig.title, sig.summary, jurisdictions.join(" ")].join(" "),
       meta: `Signal · ${sig.scope} · ${sig.trendDirection} · ${sig.confidence} confidence`,
-      sourceLabel: "Sentinel Signal",
+      sourceLabel: "Argus Signal",
       date: sig.updatedAt,
       jurisdiction: jurisdictions[0] || "",
       impactRank: sig.confidence === "high" ? 5 : sig.confidence === "medium" ? 3 : 1,
@@ -126,7 +126,7 @@ function entryToCorpusItem(entry: Entry, docSnippets?: string[]): CorpusItem {
     entry.tags?.join(" "), nextDate, ...(docSnippets || []),
   ].filter(Boolean).join(" ");
 
-  const actions: AskSentinelAction[] = [];
+  const actions: AskArgusAction[] = [];
   if (entry.complianceImplications) {
     actions.push({ title: "Compliance implication", detail: entry.complianceImplications, href: `/tracker/${entry.id}` });
   }
@@ -240,7 +240,7 @@ export async function fetchUrlText(url: string): Promise<string> {
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "Sentinel/1.0 (legal-intelligence)" },
+      headers: { "User-Agent": "Argus/1.0 (legal-intelligence)" },
     });
     if (!res.ok) return "";
     const html = await res.text();

@@ -1,4 +1,4 @@
-export function SentinelLogo({
+export function ArgusLogo({
   size = 28,
   className,
 }: {

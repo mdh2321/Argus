@@ -89,7 +89,7 @@ export function UnmatchedReferencePopover({ reference, trigger }: Props) {
             <dd className="text-fg-2">{reference.proposedRegulator || "—"}</dd>
           </dl>
           <p className="mb-4 text-[12px] leading-relaxed text-fg-3">
-            Sentinel will draft a summary and impact framing from this story. You can edit
+            Argus will draft a summary and impact framing from this story. You can edit
             everything on the tracker page after.
           </p>
           <div className="flex justify-end gap-2">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { answerAskSentinel } from "@/lib/ask-server";
+import { answerAskArgus } from "@/lib/ask-server";
 import { parseScopes } from "@/lib/ask-request";
 import { ensureSession, loadHistory, appendMessage } from "@/lib/ask-sessions";
 import { logAgentRun } from "@/lib/agent-runs";
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const sessionId = await ensureSession(incomingSession);
   const history = await loadHistory(sessionId);
 
-  const answer = await answerAskSentinel(query, { history, scopes });
+  const answer = await answerAskArgus(query, { history, scopes });
   answer.sessionId = sessionId;
 
   await appendMessage(sessionId, "user", query);

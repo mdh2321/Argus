@@ -233,7 +233,7 @@ export const JURISDICTION_EXTRA_PROFILES: Record<string, SearchProfile[]> = {
   ],
 };
 
-// Models — match existing Sentinel AI code.
+// Models — match existing Argus AI code.
 export const MODELS = {
   extraction: "claude-haiku-4-5-20251001",
   synthesis: "claude-sonnet-4-6",

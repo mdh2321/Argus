@@ -6,11 +6,11 @@ import { toast } from "sonner";
 import { Loader2, Sparkles, X, Link2, FileText } from "lucide-react";
 
 // D2 — global capture. A paste-anywhere modal: drop a URL or raw text and
-// Sentinel drafts a tracker entry (with a preliminary analysis kicked off by
+// Argus drafts a tracker entry (with a preliminary analysis kicked off by
 // the capture route). Reachable from the command palette (D1) and the header.
 // Decoupled open trigger via a window event so any surface can raise it.
 
-const OPEN_CAPTURE_EVENT = "sentinel:open-capture";
+const OPEN_CAPTURE_EVENT = "argus:open-capture";
 
 export function openCaptureModal() {
   window.dispatchEvent(new CustomEvent(OPEN_CAPTURE_EVENT));

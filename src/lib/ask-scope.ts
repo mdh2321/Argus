@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { serializeEntry } from "@/lib/entry-helpers";
 import { fetchUrlText } from "@/lib/ask-corpus";
 import type { TextChunk } from "@/lib/ask-retrieval";
-import type { AskScope, AskSentinelCitation } from "@/lib/ask-types";
+import type { AskScope, AskArgusCitation } from "@/lib/ask-types";
 
 /**
  * A single source record resolved for scoped Ask, with its text already chunked
@@ -15,7 +15,7 @@ import type { AskScope, AskSentinelCitation } from "@/lib/ask-types";
  */
 export interface ScopedSource {
   label: string;
-  citation: AskSentinelCitation;
+  citation: AskArgusCitation;
   passages: TextChunk[];
   hasFullText: boolean;
   externalUrl?: string;
@@ -201,7 +201,7 @@ async function resolveSignal(id: string): Promise<ScopedSource | null> {
       title: sig.title,
       href: externalUrl || "/",
       meta: `Signal · ${sig.scope} · ${sig.trendDirection} · ${sig.confidence} confidence`,
-      sourceLabel: "Sentinel Signal",
+      sourceLabel: "Argus Signal",
       externalUrl,
     },
     passages,

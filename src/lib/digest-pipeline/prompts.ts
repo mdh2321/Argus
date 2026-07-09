@@ -25,7 +25,7 @@ export interface TrackerContextBlocks {
 
 export function trackerContextString(ctx: TrackerContextBlocks, companyName: string): string {
   return `<tracker_context cache="true">
-The user's Sentinel tracker currently monitors these items for ${companyName}, sorted by most recently updated (max 100 shown):
+The user's Argus tracker currently monitors these items for ${companyName}, sorted by most recently updated (max 100 shown):
 ${ctx.entriesBlock}
 </tracker_context>
 
@@ -58,7 +58,7 @@ export function jurisdictionExtractionPrompt(p: JurisdictionPromptParams): strin
       : "Tier 2 jurisdictions (NZ, HK, IN, PH)";
   const budget = p.tier === "T1" ? 12 : 8;
 
-  return `You are an expert legal researcher specializing in Asia-Pacific technology law, briefing the in-house legal team at ${p.companyName} via the Sentinel legal intelligence platform. The <company_context> block above defines the company, its products, priority topics, impact rubric, and exclusions — triage every candidate story against it.
+  return `You are an expert legal researcher specializing in Asia-Pacific technology law, briefing the in-house legal team at ${p.companyName} via the Argus legal intelligence platform. The <company_context> block above defines the company, its products, priority topics, impact rubric, and exclusions — triage every candidate story against it.
 
 You are given pre-fetched web search results for **${p.jurisdictionName}** (${p.jurisdictionCode}) covering legal and regulatory developments published between **${p.startDate}** and **${p.endDate}**.
 
@@ -140,7 +140,7 @@ export interface SynthesisPromptParams {
 }
 
 export function synthesisPrompt(p: SynthesisPromptParams): string {
-  return `You are a senior legal editor at a premium legal intelligence service, preparing a weekly digest for ${p.companyName}'s in-house legal team via the Sentinel platform.
+  return `You are a senior legal editor at a premium legal intelligence service, preparing a weekly digest for ${p.companyName}'s in-house legal team via the Argus platform.
 
 ${p.companyBlock}
 

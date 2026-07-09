@@ -60,7 +60,7 @@ export default function NewEntryPage() {
     if (mode === "describe") {
       const trimmed = description.trim();
       if (!trimmed) {
-        setError("Describe the regulation so Sentinel can search for it.");
+        setError("Describe the regulation so Argus can search for it.");
         return;
       }
       payload = { mode: "describe", description: trimmed };
@@ -124,7 +124,7 @@ export default function NewEntryPage() {
           </h1>
         </div>
         <p className="relative z-10 mt-1.5 max-w-2xl text-[14px] text-fg-3">
-          Describe a regulation, paste a URL, or upload a document. Sentinel extracts the
+          Describe a regulation, paste a URL, or upload a document. Argus extracts the
           structured entry — you review and refine on the next screen.
         </p>
       </div>
@@ -158,13 +158,13 @@ export default function NewEntryPage() {
         {mode === "describe" && (
           <Field
             label="Describe the regulation"
-            hint="Plain English works — e.g. &quot;Singapore's new AI governance framework from IMDA&quot; or &quot;the Australian privacy reform that introduces a direct right of action&quot;. Sentinel searches primary sources."
+            hint="Plain English works — e.g. &quot;Singapore's new AI governance framework from IMDA&quot; or &quot;the Australian privacy reform that introduces a direct right of action&quot;. Argus searches primary sources."
           >
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
-              placeholder="What regulation would you like Sentinel to find and track?"
+              placeholder="What regulation would you like Argus to find and track?"
               className="field resize-y"
               autoFocus
             />
@@ -174,7 +174,7 @@ export default function NewEntryPage() {
         {mode === "url" && (
           <Field
             label="Source URL"
-            hint="Paste legislation, regulator guidance, consultation, or enforcement links. Sentinel fetches and extracts."
+            hint="Paste legislation, regulator guidance, consultation, or enforcement links. Argus fetches and extracts."
           >
             <div className="relative">
               <Link2 className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-3" />
@@ -210,7 +210,7 @@ export default function NewEntryPage() {
             {documentText && (
               <Field
                 label="Extracted text (editable)"
-                hint="Trim or edit before sending to Sentinel. Up to ~50k characters are used."
+                hint="Trim or edit before sending to Argus. Up to ~50k characters are used."
               >
                 <textarea
                   value={documentText}
@@ -243,7 +243,7 @@ export default function NewEntryPage() {
             ) : (
               <>
                 <Sparkles className="h-3.5 w-3.5" />
-                Capture with Sentinel
+                Capture with Argus
               </>
             )}
           </button>

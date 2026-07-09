@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sentinel — APJ Legal Intelligence",
+  title: "Argus — APJ Legal Intelligence",
   description: "Legal intelligence platform tracking Asia-Pacific regulations",
 };
 

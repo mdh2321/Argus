@@ -72,7 +72,7 @@ export async function deliverDigest(issueId: string): Promise<DeliveryResult> {
 export async function sendFailureAlert(message: string): Promise<ChannelStatus> {
   try {
     return await sendTelegramMessage(
-      `<b>⚠️ Sentinel digest run failed</b>\n\n<pre>${escapeHtml(message.slice(0, 3000))}</pre>\n\nWill retry on the next daily run.`
+      `<b>⚠️ Argus digest run failed</b>\n\n<pre>${escapeHtml(message.slice(0, 3000))}</pre>\n\nWill retry on the next daily run.`
     );
   } catch (err) {
     console.error("[deliver] failure alert itself failed:", err);
@@ -148,14 +148,14 @@ async function sendTelegramDigest(issue: IssueRow, stories: StoryRow[]): Promise
     .join("\n");
 
   const text = `<b>📋 ${escapeHtml(issue.title)}</b>
-<i>Sentinel digest · week of ${escapeHtml(issue.weekOf)}</i>
+<i>Argus digest · week of ${escapeHtml(issue.weekOf)}</i>
 
 ${synopsis}
 
 <b>Top stories</b>
 ${top}
 
-<a href="${issueUrl(issue.slug)}">Read the full issue in Sentinel</a>
+<a href="${issueUrl(issue.slug)}">Read the full issue in Argus</a>
 
 <i>Reply <code>track 3</code> to add story 3 to the tracker.</i>`;
 

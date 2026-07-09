@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { readSSE } from "@/lib/ask-sse";
 import { SourceFavicon } from "@/components/ui/source-favicon";
-import type { AskSentinelCitation } from "@/lib/ask-types";
+import type { AskArgusCitation } from "@/lib/ask-types";
 import {
   MessagesSquare,
   CornerDownLeft,
@@ -29,7 +29,7 @@ interface QA {
   id: string;
   question: string;
   text: string;
-  citations: AskSentinelCitation[];
+  citations: AskArgusCitation[];
   status: "streaming" | "done" | "error";
   error?: string;
 }

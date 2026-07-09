@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useTheme } from "./theme-provider";
 import { Sun, Moon, Search, Plus, ChevronDown, Menu, X } from "lucide-react";
-import { SentinelLogo } from "@/components/ui/sentinel-logo";
+import { ArgusLogo } from "@/components/ui/argus-logo";
 import { IconButton } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { useDigestIssues, type DigestStory } from "@/hooks/use-digest";
@@ -50,9 +50,9 @@ export function TopNav() {
       <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-3">
         {/* Left: logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <SentinelLogo size={24} className="text-fg" />
+          <ArgusLogo size={24} className="text-fg" />
           <span className="font-mono text-[11px] font-semibold tracking-[0.12em] uppercase text-fg">
-            Sentinel
+            Argus
           </span>
         </Link>
 
@@ -269,7 +269,7 @@ function ProfileChip() {
     <Link
       href="/settings"
       className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-[10px] font-medium tracking-[0.04em] uppercase text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
-      title={`Sentinel is acting for ${companyName}${profile?.role ? ` · ${profile.role}` : ""} — click to edit profile`}
+      title={`Argus is acting for ${companyName}${profile?.role ? ` · ${profile.role}` : ""} — click to edit profile`}
     >
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
       {companyName}

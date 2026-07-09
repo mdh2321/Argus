@@ -1,15 +1,15 @@
 import type {
-  AskSentinelAnswer,
+  AskArgusAnswer,
   AskConversationalAnswer,
-  AskSentinelCitation,
+  AskArgusCitation,
 } from "@/lib/ask-types";
 
 /** SSE events emitted by /api/ask/stream (deep report + conversational). */
 export type StreamEvent =
-  | { type: "sources"; sources: AskSentinelCitation[] }
+  | { type: "sources"; sources: AskArgusCitation[] }
   | { type: "progress"; chars: number }
   | { type: "delta"; text: string }
-  | { type: "done"; answer: AskSentinelAnswer & Partial<AskConversationalAnswer> }
+  | { type: "done"; answer: AskArgusAnswer & Partial<AskConversationalAnswer> }
   | { type: "error"; message: string };
 
 /** Read an SSE response body, invoking `onEvent` for each parsed `data:` event. */

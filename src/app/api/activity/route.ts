@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { updateRuns, entries } from "@/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 
-// E1 — activity + cost. A read-only summary over update_runs (what Sentinel
+// E1 — activity + cost. A read-only summary over update_runs (what Argus
 // spent, by month, and the recent runs) plus a live count of in-flight
 // analyses. Powers the header popover: a "running" pill, a completion toast,
 // and a visible monthly spend so the tool stays honest about cost.
