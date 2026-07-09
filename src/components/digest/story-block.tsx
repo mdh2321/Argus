@@ -8,11 +8,10 @@ import { StorySummary } from "./story-summary";
 import { CopyButton } from "./copy-button";
 import { StoryFollowup } from "./story-followup";
 import { SourceFavicon } from "@/components/ui/source-favicon";
-import { Clock, ChevronDown, Database, Star, Share2, Mail, EyeOff, Loader2, RefreshCw } from "lucide-react";
+import { Clock, ChevronDown, Star, Share2, Mail, EyeOff, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 type DraftFormat = "linkedin" | "email";
-
 
 function sourceTypeColor(type: string): string {
   const map: Record<string, string> = {
@@ -24,15 +23,28 @@ function sourceTypeColor(type: string): string {
   return map[type] || "text-fg-3";
 }
 
-// The 4px stripe down the left edge of each story — lets a reader triage a
-// full issue by colour before reading a word. Keyed to the same impact levels
-// used elsewhere.
-function impactColor(impact: string): string {
-  switch (impact) {
-    case "High": return "var(--red)";
-    case "Medium": return "var(--amber)";
-    default: return "var(--green)";
-  }
+// Impact as a compact 3-bar glyph, coloured by level — magnitude at a glance
+// without a badge or a leading dot that would indent the headline. High fills
+// all three bars, Medium two, Low one.
+function ImpactGlyph({ impact }: { impact: string | null }) {
+  const level = impact === "High" ? 3 : impact === "Medium" ? 2 : 1;
+  const color =
+    impact === "High" ? "var(--red)" : impact === "Medium" ? "var(--amber)" : "var(--green)";
+  return (
+    <span
+      className="inline-flex items-end gap-[2px]"
+      title={`${impact || "Low"} impact`}
+      aria-label={`${impact || "Low"} impact`}
+    >
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full"
+          style={{ height: `${5 + i * 3}px`, background: i < level ? color : "var(--border-hover)" }}
+        />
+      ))}
+    </span>
+  );
 }
 
 export function StoryBlock({
@@ -108,54 +120,26 @@ export function StoryBlock({
 
   const matchedRefCount = story.references.filter((r) => r.status === "matched").length;
   const unmatchedRefCount = story.references.filter((r) => r.status === "unmatched").length;
+  const hasLink = !!story.url && story.url !== "#";
+  const dateLabel = new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  // Quiet ghost action — no border, hover fill. Used for the expanded action row.
+  const ghostAction =
+    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:bg-hover hover:text-fg-2 disabled:opacity-50";
 
   return (
     <article
       id={story.id}
-      className="scroll-mt-20 rounded-xl border border-border bg-surface p-6 pl-5 transition-colors hover:border-border-hover cursor-pointer"
-      style={{ borderLeftWidth: "4px", borderLeftColor: impactColor(story.impact || "Low") }}
+      className="scroll-mt-20 cursor-pointer rounded-xl bg-surface p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
       onClick={() => setExpanded(!expanded)}
     >
-      {/* Badges */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        {story.urgency === "immediate_action" && (
-          <span className="rounded-full border border-red/20 bg-red-bg px-2 py-0.5 font-mono text-[10px] font-medium text-red-text">
-            ACTION REQUIRED
-          </span>
-        )}
-        {matchedRefCount > 0 && (
-          <span
-            className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent-bg px-2 py-0.5 font-mono text-[10px] font-medium text-accent-text"
-            title={`${matchedRefCount} reference${matchedRefCount === 1 ? "" : "s"} linked to tracker`}
-          >
-            <Database className="h-2.5 w-2.5" />
-            {matchedRefCount} tracked
-          </span>
-        )}
-        {unmatchedRefCount > 0 && (
-          <span
-            className="rounded-full border border-border bg-bg-elevated px-2 py-0.5 font-mono text-[10px] text-fg-3"
-            title={`${unmatchedRefCount} reference${unmatchedRefCount === 1 ? "" : "s"} not yet tracked — click underlined text to add`}
-          >
-            {unmatchedRefCount} untracked
-          </span>
-        )}
-        <span
-          className="ml-auto font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3"
-          title={`Impact: ${story.impact || "Low"}`}
-        >
-          {story.impact || "Low"} impact
-        </span>
-      </div>
-
-      {/* Header + body in a shared column under the flag — keeps text width constant across collapsed/expanded states */}
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 text-xl leading-none">{getFlag(story.jurisdictionCode || "")}</span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold leading-snug text-fg">
-            {story.url && story.url !== "#" ? (
+          {/* Headline — flush left, nothing pushing it in */}
+          <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-fg">
+            {hasLink ? (
               <a
-                href={story.url}
+                href={story.url!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-accent"
@@ -167,47 +151,55 @@ export function StoryBlock({
               story.title
             )}
           </h3>
-          <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-3">
-            {story.url && story.url !== "#" && <SourceFavicon url={story.url} size={14} />}
-            <span className={`uppercase tracking-wide ${sourceTypeColor(story.sourceType)}`}>
-              {story.sourceType}
-            </span>
-            <span>&middot;</span>
-            {story.url && story.url !== "#" ? (
+
+          {/* Meta — source identity on the left, status + impact on the right */}
+          <div className="mt-1.5 flex items-center gap-2 font-mono text-[11px] text-fg-3">
+            {hasLink && <SourceFavicon url={story.url} size={14} />}
+            <span className="leading-none">{getFlag(story.jurisdictionCode || "")}</span>
+            {hasLink ? (
               <a
-                href={story.url}
+                href={story.url!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-accent"
+                className="truncate transition-colors hover:text-accent"
                 onClick={(e) => e.stopPropagation()}
               >
-                {story.source} &#x2197;
+                {story.source}
               </a>
             ) : (
-              <span>{story.source}</span>
+              <span className="truncate">{story.source}</span>
             )}
-            <span>&middot;</span>
-            <span>{new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+            <span className="opacity-50">&middot;</span>
+            <span className="tnum flex-shrink-0">{dateLabel}</span>
+
+            <span className="ml-auto flex flex-shrink-0 items-center gap-2.5">
+              {matchedRefCount > 0 && (
+                <span className="text-accent-text" title={`${matchedRefCount} linked to tracker`}>
+                  {matchedRefCount} tracked
+                </span>
+              )}
+              {story.urgency === "immediate_action" && (
+                <span title="Action required" aria-label="Action required" className="inline-flex">
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-text" />
+                </span>
+              )}
+              <ImpactGlyph impact={story.impact} />
+            </span>
           </div>
 
           {/* Summary with inline reference highlights. Clamps to 2 lines when collapsed. */}
-          <StorySummary
-            summary={story.summary}
-            references={story.references}
-            expanded={expanded}
-          />
+          <StorySummary summary={story.summary} references={story.references} expanded={expanded} />
 
-
-          {/* Expanded extras (takeaways, deadline, tags) */}
+          {/* Expanded extras */}
           <div
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-              expanded ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"
+              expanded ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
             }`}
           >
             <div className="overflow-hidden">
               {story.takeaways.length > 0 && (
-                <div className="mb-4 rounded-lg border border-border bg-bg p-4">
-                  <h4 className="label-mono mb-2">Key Takeaways</h4>
+                <div className="mb-4">
+                  <h4 className="label-mono mb-2">Key takeaways</h4>
                   <ul className="space-y-1.5">
                     {story.takeaways.map((t, i) => (
                       <li key={i} className="flex gap-2 text-[14px] leading-relaxed text-fg-2">
@@ -219,13 +211,30 @@ export function StoryBlock({
                 </div>
               )}
 
-              {story.complianceDeadline && (
-                <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber/20 bg-amber-bg px-3 py-2 font-mono text-[12px] text-amber">
-                  <Clock className="h-3.5 w-3.5" />
-                  Compliance deadline: {new Date(story.complianceDeadline).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                </div>
-              )}
+              {/* Deadline + source detail — quiet inline chips, not boxes */}
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {story.complianceDeadline && (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-bg px-2.5 py-1 font-mono text-[11px] text-amber-text">
+                    <Clock className="h-3.5 w-3.5" />
+                    Deadline{" "}
+                    {new Date(story.complianceDeadline).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
+                <span className={`font-mono text-[11px] uppercase tracking-[0.04em] ${sourceTypeColor(story.sourceType)}`}>
+                  {story.sourceType}
+                </span>
+                {unmatchedRefCount > 0 && (
+                  <span className="font-mono text-[11px] text-fg-3" title="Click underlined text in the summary to track">
+                    {unmatchedRefCount} untracked reference{unmatchedRefCount === 1 ? "" : "s"}
+                  </span>
+                )}
+              </div>
 
+              {/* Tags — fill chips */}
               <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                 {story.jurisdiction && <TagBadge name={story.jurisdiction} size="sm" linked />}
                 {story.categories.map((cat) => (
@@ -233,29 +242,22 @@ export function StoryBlock({
                 ))}
               </div>
 
-              {/* Share drafts + relevance feedback */}
-              <div className="mt-3 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => generateDraft("linkedin")}
-                  disabled={drafting}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:border-border-hover hover:text-fg disabled:opacity-50"
-                  title="Draft a LinkedIn post in your voice (copy-only, never auto-posted)"
-                >
+              {/* Actions — one quiet row under a hairline */}
+              <div
+                className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button onClick={() => generateDraft("linkedin")} disabled={drafting} className={ghostAction} title="Draft a LinkedIn post in your voice (copy-only, never auto-posted)">
                   {drafting && draftFormat === "linkedin" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Share2 className="h-3 w-3" />}
                   LinkedIn draft
                 </button>
-                <button
-                  onClick={() => generateDraft("email")}
-                  disabled={drafting}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-elevated px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:border-border-hover hover:text-fg disabled:opacity-50"
-                  title="Draft an internal stakeholder email"
-                >
+                <button onClick={() => generateDraft("email")} disabled={drafting} className={ghostAction} title="Draft an internal stakeholder email">
                   {drafting && draftFormat === "email" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3 w-3" />}
                   Email draft
                 </button>
                 <button
                   onClick={() => setFeedbackOpen(!feedbackOpen)}
-                  className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:border-red/30 hover:text-red"
+                  className={`${ghostAction} ml-auto hover:text-red`}
                   title="Mark not relevant — teaches future triage to skip similar stories"
                 >
                   <EyeOff className="h-3 w-3" />
@@ -284,11 +286,9 @@ export function StoryBlock({
               )}
 
               {draftFormat && (drafting || draftText) && (
-                <div className="mt-3 rounded-lg border border-border bg-bg p-4" onClick={(e) => e.stopPropagation()}>
+                <div className="mt-3 rounded-lg bg-bg p-4" onClick={(e) => e.stopPropagation()}>
                   <div className="mb-2 flex items-center justify-between">
-                    <h4 className="label-mono">
-                      {draftFormat === "linkedin" ? "LinkedIn draft" : "Email draft"}
-                    </h4>
+                    <h4 className="label-mono">{draftFormat === "linkedin" ? "LinkedIn draft" : "Email draft"}</h4>
                     <div className="flex items-center gap-2">
                       {draftText && (
                         <button
@@ -326,6 +326,7 @@ export function StoryBlock({
             </div>
           </div>
         </div>
+
         <div className="flex flex-shrink-0 flex-col items-center gap-2">
           <button
             onClick={toggleSaved}
@@ -338,7 +339,7 @@ export function StoryBlock({
             <Star className="h-4 w-4" fill={saved ? "currentColor" : "none"} />
           </button>
           <ChevronDown
-            className={`w-4 h-4 text-fg-3 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+            className={`h-4 w-4 text-fg-3 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
           />
         </div>
       </div>

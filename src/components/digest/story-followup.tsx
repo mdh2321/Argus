@@ -102,7 +102,7 @@ export function StoryFollowup({
 
   return (
     <div
-      className="mt-4 rounded-xl border border-border bg-bg p-4"
+      className="mt-4 rounded-xl bg-bg p-4"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="label-mono mb-2.5 flex items-center gap-1.5">

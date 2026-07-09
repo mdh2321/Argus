@@ -12,7 +12,7 @@ export function TagBadge({ name, size = "md", linked = false }: TagBadgeProps) {
     ? "px-2 py-0.5 text-[10px]"
     : "px-2.5 py-1 text-[11px]";
 
-  const className = `inline-block rounded-full border border-border bg-hover font-mono ${sizeClasses} text-fg-2 transition-colors hover:border-accent/30 hover:text-accent`;
+  const className = `inline-block rounded-full bg-hover font-mono ${sizeClasses} text-fg-2 transition-colors hover:bg-active hover:text-accent`;
 
   if (linked) {
     return (
