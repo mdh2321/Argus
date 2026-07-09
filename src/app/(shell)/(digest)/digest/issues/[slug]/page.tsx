@@ -173,7 +173,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
           </div>
           <div className="space-y-4">
             {byJurisdiction[code].map((story) => (
-              <StoryBlock key={story.id} story={story} />
+              <StoryBlock key={story.id} story={story} issueSlug={issue.slug} />
             ))}
           </div>
         </section>

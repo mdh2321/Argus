@@ -59,6 +59,7 @@ import { EntryQuestionChips } from "@/components/tracker/entry-question-chips";
 import { toast } from "sonner";
 import { computeTrustBadges } from "@/lib/trust-badges";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
+import { AddToMatterButton } from "@/components/shared/add-to-matter";
 import { entryToMarkdown } from "@/lib/markdown-export";
 import Link from "next/link";
 
@@ -578,6 +579,13 @@ export default function EntryDetailPage() {
             </div>
           ) : (
             <div className="flex gap-1.5 items-center">
+              <AddToMatterButton
+                kind="entry"
+                refId={entry.id}
+                label={entry.shortName}
+                href={`/tracker/${entry.id}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg text-fg-3 hover:bg-hover hover:text-fg transition-colors"
+              />
               <CopyMarkdownButton getMarkdown={() => entryToMarkdown(entry)} />
               <Link
                 href={`/ask?scopeKind=entry&scopeId=${entry.id}&scopeLabel=${encodeURIComponent(entry.shortName)}`}

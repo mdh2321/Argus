@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/layout/page-header";
 import { MessagesSquare, ArrowRight } from "lucide-react";
+import { AddToMatterButton } from "@/components/shared/add-to-matter";
 
 interface SessionSummary {
   id: string;
@@ -46,21 +47,34 @@ export default function ThreadsPage() {
       ) : (
         <div className="space-y-2 stagger">
           {sessions.map((s) => (
-            <Link
+            <div
               key={s.id}
-              href={`/ask?session=${s.id}`}
               className="group flex items-center gap-3 rounded-xl bg-surface p-4 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
             >
-              <div className="min-w-0 flex-1">
+              <Link href={`/ask?session=${s.id}`} className="min-w-0 flex-1">
                 <p className="truncate text-[14px] font-medium text-fg group-hover:text-accent transition-colors">
                   {s.title}
                 </p>
                 <p className="mt-0.5 font-mono text-[11px] text-fg-3">
                   {s.turns} turn{s.turns === 1 ? "" : "s"} · {relativeTime(s.updatedAt)}
                 </p>
-              </div>
-              <ArrowRight className="h-4 w-4 flex-shrink-0 text-fg-3 transition-colors group-hover:text-accent" />
-            </Link>
+              </Link>
+              <AddToMatterButton
+                kind="thread"
+                refId={s.id}
+                label={s.title}
+                href={`/ask?session=${s.id}`}
+                iconOnly
+                className="flex-shrink-0 p-1 text-fg-3 transition-colors hover:text-accent"
+              />
+              <Link
+                href={`/ask?session=${s.id}`}
+                aria-label={`Open thread: ${s.title}`}
+                className="flex-shrink-0"
+              >
+                <ArrowRight className="h-4 w-4 text-fg-3 transition-colors group-hover:text-accent" />
+              </Link>
+            </div>
           ))}
         </div>
       )}

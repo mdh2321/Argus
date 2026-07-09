@@ -7,6 +7,7 @@ import { TagBadge } from "./tag-badge";
 import { StorySummary } from "./story-summary";
 import { CopyButton } from "./copy-button";
 import { StoryFollowup } from "./story-followup";
+import { AddToMatterButton } from "@/components/shared/add-to-matter";
 import { SourceFavicon } from "@/components/ui/source-favicon";
 import { ImpactGlyph } from "./impact-glyph";
 import { Clock, ChevronDown, Star, Share2, Mail, EyeOff, Loader2, RefreshCw, AlertTriangle, ThumbsUp } from "lucide-react";
@@ -26,8 +27,10 @@ function sourceTypeColor(type: string): string {
 
 export function StoryBlock({
   story,
+  issueSlug,
 }: {
   story: DigestStory;
+  issueSlug?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   // Optimistic star state — flipped immediately, rolled back on failure.
@@ -244,6 +247,13 @@ export function StoryBlock({
                 className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3"
                 onClick={(e) => e.stopPropagation()}
               >
+                <AddToMatterButton
+                  kind="story"
+                  refId={story.id}
+                  label={story.title}
+                  href={issueSlug ? `/digest/issues/${issueSlug}#${story.id}` : "/digest"}
+                  className={ghostAction}
+                />
                 <button onClick={() => generateDraft("linkedin")} disabled={drafting} className={ghostAction} title="Draft a LinkedIn post in your voice (copy-only, never auto-posted)">
                   {drafting && draftFormat === "linkedin" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Share2 className="h-3 w-3" />}
                   LinkedIn draft
