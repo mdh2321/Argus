@@ -7,6 +7,7 @@ import { JURISDICTIONS, CATEGORIES, URGENCY } from "@/lib/constants";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
+import { HorizonHeatmap } from "@/components/tracker/horizon-heatmap";
 import { formatDate, calculateUrgency } from "@/lib/utils";
 import type { HorizonItem } from "@/lib/types";
 import { Telescope, ChevronRight, Filter } from "lucide-react";
@@ -119,6 +120,8 @@ export default function HorizonPage() {
           ))}
         </select>
       </div>
+
+      {!isLoading && filtered.length > 0 && <HorizonHeatmap items={filtered} />}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-24">
