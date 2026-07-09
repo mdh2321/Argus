@@ -11,6 +11,8 @@ import type {
 } from "@/lib/ask-types";
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SourceFavicon } from "@/components/ui/source-favicon";
+import { readSSE } from "@/lib/ask-sse";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
 import { HistoryDrawer } from "@/components/ask/history-drawer";
 import { askAnswerToMarkdown } from "@/lib/markdown-export";
@@ -614,32 +616,6 @@ export default function AskPage() {
   );
 }
 
-/** SSE events emitted by /api/ask/stream (deep report + conversational). */
-type StreamEvent =
-  | { type: "progress"; chars: number }
-  | { type: "delta"; text: string }
-  | { type: "done"; answer: AskSentinelAnswer & Partial<AskConversationalAnswer> }
-  | { type: "error"; message: string };
-
-/** Read an SSE response body, invoking `onEvent` for each parsed `data:` event. */
-async function readSSE(body: ReadableStream<Uint8Array>, onEvent: (evt: StreamEvent) => void) {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const chunks = buffer.split("\n\n");
-    buffer = chunks.pop() ?? "";
-    for (const chunk of chunks) {
-      const line = chunk.trim();
-      if (!line.startsWith("data:")) continue;
-      onEvent(JSON.parse(line.slice(5).trim()) as StreamEvent);
-    }
-  }
-}
-
 function SourceChips({
   scopes,
   onRemove,
@@ -1050,9 +1026,13 @@ function SourceRow({ index, citation }: { index: number; citation: AskSentinelCi
   const external = citation.externalUrl;
   const inner = (
     <>
-      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-hover font-mono text-[10px] text-fg-3">
-        {index}
-      </span>
+      {external ? (
+        <SourceFavicon url={external} size={16} />
+      ) : (
+        <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-hover font-mono text-[10px] text-fg-3">
+          {index}
+        </span>
+      )}
       <span className="min-w-0">
         <span className="block truncate text-[12px] text-fg-2 group-hover:text-fg">{citation.title}</span>
         <span className="block truncate font-mono text-[10px] text-fg-3">
@@ -1216,6 +1196,7 @@ function AnswerCard({
               {answer.citations.map((citation) => (
                 <div key={citation.id} className="rounded-xl border border-border px-4 py-3">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
+                    {citation.externalUrl && <SourceFavicon url={citation.externalUrl} size={15} />}
                     <span className="rounded-full bg-hover px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
                       {citation.kind}
                     </span>

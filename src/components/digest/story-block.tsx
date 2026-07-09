@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { setStorySaved, type DigestStory } from "@/hooks/use-digest";
 import { getFlag } from "@/lib/digest-utils";
 import { TagBadge } from "./tag-badge";
 import { StorySummary } from "./story-summary";
 import { CopyButton } from "./copy-button";
-import { Clock, ChevronDown, Database, Star, Bot, Share2, Mail, EyeOff, Loader2, RefreshCw } from "lucide-react";
+import { StoryFollowup } from "./story-followup";
+import { SourceFavicon } from "@/components/ui/source-favicon";
+import { Clock, ChevronDown, Database, Star, Share2, Mail, EyeOff, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 type DraftFormat = "linkedin" | "email";
@@ -167,6 +168,7 @@ export function StoryBlock({
             )}
           </h3>
           <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px] text-fg-3">
+            {story.url && story.url !== "#" && <SourceFavicon url={story.url} size={14} />}
             <span className={`uppercase tracking-wide ${sourceTypeColor(story.sourceType)}`}>
               {story.sourceType}
             </span>
@@ -229,14 +231,6 @@ export function StoryBlock({
                 {story.categories.map((cat) => (
                   <TagBadge key={cat} name={cat} size="sm" linked />
                 ))}
-                <Link
-                  href={`/ask?scopeKind=story&scopeId=${story.id}&scopeLabel=${encodeURIComponent(story.title)}`}
-                  className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent transition-colors hover:bg-accent/20"
-                  title="Ask Sentinel a follow-up about this story"
-                >
-                  <Bot className="h-3 w-3" />
-                  Ask about this
-                </Link>
               </div>
 
               {/* Share drafts + relevance feedback */}
@@ -325,6 +319,10 @@ export function StoryBlock({
                   )}
                 </div>
               )}
+
+              {/* Story-scoped follow-up — ask in place, stream inline, hand off
+                  to Ask only when it deepens. Mounted only while expanded. */}
+              {expanded && <StoryFollowup storyId={story.id} storyTitle={story.title} />}
             </div>
           </div>
         </div>
