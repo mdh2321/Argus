@@ -974,7 +974,7 @@ function TurnView({ turn, onRelated, onFork }: { turn: Turn; onRelated: (q: stri
     <div className="space-y-3">
       {/* Question */}
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-tr-sm border border-border bg-hover px-4 py-2.5 text-[14px] text-fg">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-hover px-4 py-2.5 text-[14px] text-fg">
           {turn.question}
         </div>
       </div>
@@ -1013,7 +1013,7 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
 
   return (
     <div className="space-y-2.5">
-      <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-surface px-4 py-3 shadow-[var(--shadow-s)]">
+      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface px-4 py-3 shadow-[var(--shadow-s)]">
         {turn.text ? (
           <div className="space-y-2 text-[14px] leading-relaxed text-fg-2">
             {paras.map((p, i) => (
@@ -1131,7 +1131,7 @@ function PendingCard({ mode, progressTokens }: { mode: Mode; progressTokens: num
   }, []);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+    <div className="rounded-2xl bg-surface p-5 shadow-[var(--shadow-card)]">
       <div className="flex items-center gap-2.5 text-[13px] text-fg-2">
         <LoaderCircle className="h-4 w-4 animate-spin text-accent" />
         {mode === "deep_report" ? (
@@ -1184,26 +1184,26 @@ function AnswerCard({
 
   return (
     <div className="space-y-4 anim-enter">
-      <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)]">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-card)]">
+        <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
           {answer.mode === "deep_report" && (
-            <span className="rounded-full border border-purple/20 bg-purple-bg px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-purple">
-              Deep Report
-            </span>
+            <>
+              <span className="text-purple-text">Deep report</span>
+              <span className="opacity-30">·</span>
+            </>
           )}
-          <span className="rounded-full bg-hover px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
-            {answer.answerMode}
-          </span>
-          <span className="rounded-full bg-accent-bg px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-accent">
-            {answer.confidence} confidence
-          </span>
-          <span className="rounded-full bg-hover px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
-            {answer.matchedCount} matched records
-          </span>
+          <span>{answer.answerMode}</span>
+          <span className="opacity-30">·</span>
+          <span className="text-accent-text">{answer.confidence} confidence</span>
+          <span className="opacity-30">·</span>
+          <span>{answer.matchedCount} records</span>
           {answer.groundingMetrics && (
-            <span className="rounded-full border border-green/20 bg-green-bg px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.04em] text-green">
-              {Math.round(answer.groundingMetrics.groundingRatio * 100)}% grounded
-            </span>
+            <>
+              <span className="opacity-30">·</span>
+              <span className="text-green-text">
+                {Math.round(answer.groundingMetrics.groundingRatio * 100)}% grounded
+              </span>
+            </>
           )}
           <div className="ml-auto flex items-center gap-1.5">
             <CopyMarkdownButton getMarkdown={() => askAnswerToMarkdown(answer)} />
@@ -1227,7 +1227,7 @@ function AnswerCard({
           <Section title="Recommended next steps">
             <div className="space-y-2">
               {answer.actions.map((action) => (
-                <div key={`${action.title}-${action.detail}`} className="rounded-xl border border-border bg-bg px-4 py-3">
+                <div key={`${action.title}-${action.detail}`} className="rounded-xl bg-bg px-4 py-3">
                   <div className="text-[13px] font-medium text-fg">{action.title}</div>
                   <p className="mt-1 text-[13px] leading-relaxed text-fg-2">{action.detail}</p>
                   {action.href && (
@@ -1265,11 +1265,11 @@ function AnswerCard({
       </div>
 
       {answer.citations.length > 0 && (
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)]">
+        <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-card)]">
           <Section title="Citations">
             <div className="space-y-2">
               {answer.citations.map((citation) => (
-                <div key={citation.id} className="rounded-xl border border-border px-4 py-3">
+                <div key={citation.id} className="rounded-xl bg-bg px-4 py-3">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     {citation.externalUrl && <SourceFavicon url={citation.externalUrl} size={15} />}
                     <span className="rounded-full bg-hover px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
@@ -1409,7 +1409,7 @@ function ReportSection({ section }: { section: NonNullable<AskSentinelAnswer["re
           {section.claims?.length > 0 && (
             <div className="mt-3 space-y-1.5">
               {section.claims.map((claim, i) => (
-                <div key={i} className="flex items-start gap-2 rounded-lg border border-border/60 bg-bg px-3 py-2">
+                <div key={i} className="flex items-start gap-2 rounded-lg bg-bg px-3 py-2">
                   <span
                     className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full"
                     style={{ background: groundingColors[claim.groundingType] || "var(--fg-3)" }}

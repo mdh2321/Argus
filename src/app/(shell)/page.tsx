@@ -7,11 +7,11 @@ import { useDeadlines } from "@/hooks/use-deadlines";
 import { useSignals } from "@/hooks/use-signals";
 import { useDigestIssues } from "@/hooks/use-digest";
 import { workflowLabel } from "@/lib/agent-workflows";
-import { getFlag } from "@/lib/digest-utils";
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { JURISDICTIONS, URGENCY } from "@/lib/constants";
 import { relativeTime, calculateUrgency } from "@/lib/utils";
 import { ReviewQueue } from "@/components/dashboard/review-queue";
+import { StoryFeedCard } from "@/components/digest/story-feed-card";
 import Link from "next/link";
 import { ArrowRight, Radar, CalendarDays, Search, Newspaper } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -89,55 +89,14 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Featured lead — the day's most consequential story */}
-          <Link
-            href={`/digest/issues/${latestIssue?.slug}#${leadStory.id}`}
-            className="group mb-2 flex gap-4 rounded-xl border border-border bg-surface px-4 py-4 shadow-[var(--shadow-card)] transition-all hover:border-border-hover hover:shadow-[var(--shadow-card-hover)]"
-          >
-            <span
-              className="w-[3px] flex-shrink-0 rounded-full"
-              style={{ background: impactColor(leadStory.impact) }}
-            />
-            <div className="min-w-0">
-              <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-fg group-hover:text-accent transition-colors">
-                {leadStory.title}
-              </h3>
-              {leadStory.summary && (
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-fg-2 line-clamp-2">
-                  {leadStory.summary}
-                </p>
-              )}
-              <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
-                {getFlag(leadStory.jurisdictionCode || "")} {leadStory.source} ·{" "}
-                {new Date(leadStory.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} ·{" "}
-                {leadStory.impact || "Low"} impact
-              </span>
+          <StoryFeedCard story={leadStory} issueSlug={latestIssue?.slug ?? ""} hero />
+          {restStories.length > 0 && (
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 stagger">
+              {restStories.map((story) => (
+                <StoryFeedCard key={story.id} story={story} issueSlug={latestIssue?.slug ?? ""} />
+              ))}
             </div>
-          </Link>
-
-          <div className="space-y-1 stagger">
-            {restStories.map((story) => (
-              <Link
-                key={story.id}
-                href={`/digest/issues/${latestIssue?.slug}#${story.id}`}
-                className="group flex items-center gap-3 py-2.5 border-b border-border last:border-0 rounded-lg transition-all hover:bg-surface hover:border-transparent"
-              >
-                <span className="text-sm leading-none flex-shrink-0">{getFlag(story.jurisdictionCode || "")}</span>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-medium text-fg group-hover:text-accent transition-colors truncate block">
-                    {story.title}
-                  </span>
-                  <span className="text-[11px] text-fg-3 line-clamp-1 mt-0.5 block">
-                    {story.source} &middot; {new Date(story.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
-                </div>
-                <span className="flex items-center gap-1 font-mono text-[10px] text-fg-3 flex-shrink-0">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: impactColor(story.impact) }} />
-                  {story.impact || "Low"}
-                </span>
-              </Link>
-            ))}
-          </div>
+          )}
         </section>
       )}
 
@@ -256,10 +215,6 @@ export default function DashboardPage() {
       <TrustStrip />
     </div>
   );
-}
-
-function impactColor(impact: string | null): string {
-  return impact === "High" ? "var(--red)" : impact === "Medium" ? "var(--amber)" : "var(--green)";
 }
 
 // Real Ask entry point: submitting navigates to /ask with the question

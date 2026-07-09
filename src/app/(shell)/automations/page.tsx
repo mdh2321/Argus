@@ -125,7 +125,7 @@ export default function AutomationsPage() {
   const maxMonthly = Math.max(0.0001, ...(data?.monthly ?? []).map((m) => m.total));
 
   return (
-    <div className="anim-enter mx-auto max-w-4xl">
+    <div className="anim-enter mx-auto max-w-3xl">
       {/* Header */}
       <div className="mb-8 flex items-end justify-between gap-4">
         <div className="relative grid-pattern py-4">
