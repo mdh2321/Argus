@@ -28,7 +28,7 @@ export interface AskMessage {
  * or the "Add sources" picker, or seeded from an "Ask about this" deep-link.
  */
 export interface AskScope {
-  kind: "entry" | "story" | "knowledge" | "signal";
+  kind: "entry" | "story" | "knowledge" | "signal" | "matter";
   id: string;
   /** Human label for the chip; resolved server-side if absent. */
   label?: string;

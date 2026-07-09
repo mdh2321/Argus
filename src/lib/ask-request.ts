@@ -1,6 +1,6 @@
 import type { AskScope } from "@/lib/ask-types";
 
-const SCOPE_KINDS: AskScope["kind"][] = ["entry", "story", "knowledge", "signal"];
+const SCOPE_KINDS: AskScope["kind"][] = ["entry", "story", "knowledge", "signal", "matter"];
 const MAX_SCOPES = 8;
 
 /** Validate one untrusted scope object into an AskScope, or null. */

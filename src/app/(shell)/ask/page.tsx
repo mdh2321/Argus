@@ -41,6 +41,7 @@ import {
   Newspaper,
   BookOpen,
   Radio,
+  FolderKanban,
 } from "lucide-react";
 
 type Mode = "quick" | "deep_report";
@@ -129,6 +130,7 @@ const KIND_META: Record<AskScope["kind"], { label: string; icon: typeof Newspape
   story: { label: "News", icon: Newspaper },
   knowledge: { label: "Knowledge", icon: BookOpen },
   signal: { label: "Signal", icon: Radio },
+  matter: { label: "Matter", icon: FolderKanban },
 };
 
 interface Turn {
@@ -205,7 +207,10 @@ export default function AskPage() {
     const kind = params.get("scopeKind");
     const id = params.get("scopeId");
     const label = params.get("scopeLabel");
-    if ((kind === "entry" || kind === "story" || kind === "knowledge" || kind === "signal") && id) {
+    if (
+      (kind === "entry" || kind === "story" || kind === "knowledge" || kind === "signal" || kind === "matter") &&
+      id
+    ) {
       setScopes([{ kind, id, label: label || undefined }]);
     }
     const q = params.get("q");

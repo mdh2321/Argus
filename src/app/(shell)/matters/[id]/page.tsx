@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
+  Bot,
   FolderKanban,
   Trash2,
   Plus,
@@ -130,14 +131,24 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <FolderKanban className="h-5 w-5 text-accent" />
           <h1 className="text-[24px] font-bold tracking-[-0.02em] text-fg">{matter?.name}</h1>
         </div>
-        <button
-          onClick={() => void deleteMatter()}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:bg-red-bg hover:text-red"
-          title="Delete matter"
-        >
-          <Trash2 className="h-3 w-3" />
-          Delete
-        </button>
+        <div className="flex items-center gap-1.5">
+          <Link
+            href={`/ask?scopeKind=matter&scopeId=${id}&scopeLabel=${encodeURIComponent(matter?.name ?? "")}`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 font-mono text-[11px] font-medium text-accent transition-colors hover:bg-accent/20"
+            title="Ask Argus with this matter's items and working instructions as context"
+          >
+            <Bot className="h-3 w-3" />
+            Ask about this matter
+          </Link>
+          <button
+            onClick={() => void deleteMatter()}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:bg-red-bg hover:text-red"
+            title="Delete matter"
+          >
+            <Trash2 className="h-3 w-3" />
+            Delete
+          </button>
+        </div>
       </div>
 
       {/* Working instructions — steer analysis scoped to this matter. */}

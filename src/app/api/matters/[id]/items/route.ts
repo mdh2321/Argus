@@ -12,7 +12,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const kind = typeof body.kind === "string" ? body.kind : "";
-  const refId = typeof body.refId === "string" ? body.refId : "";
+  // Search results use prefixed ids ("entry:01K…") while detail-page buttons
+  // send bare record ids — store bare so matter-scoped Ask can resolve them.
+  const rawRefId = typeof body.refId === "string" ? body.refId : "";
+  const refId = rawRefId.replace(/^(entry|story|knowledge|signal|thread|briefing):/, "");
   const label = typeof body.label === "string" ? body.label.trim() : "";
   const href = typeof body.href === "string" ? body.href : "";
   if (!kind || !refId || !label || !href) {

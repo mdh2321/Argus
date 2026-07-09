@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/db";
-import { entries, sourceDocuments, digestStories, digestIssues, knowledgeItems, signals } from "@/db/schema";
+import { entries, sourceDocuments, digestStories, digestIssues, knowledgeItems, signals, matters, matterItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { serializeEntry } from "@/lib/entry-helpers";
 import { fetchUrlText } from "@/lib/ask-corpus";
@@ -75,10 +75,70 @@ export async function resolveScope(scope: AskScope): Promise<ScopedSource | null
   }
 }
 
-/** Resolve every scope in a working set, dropping any that can't be found. */
+/**
+ * Resolve every scope in a working set, dropping any that can't be found.
+ * A matter scope expands to its bundled items (each resolved as its own
+ * source) plus a "matter brief" source carrying the matter's description and
+ * working instructions, so the whole workstream grounds one conversation.
+ */
 export async function resolveScopes(scopes: AskScope[]): Promise<ScopedSource[]> {
-  const resolved = await Promise.all(scopes.map((s) => resolveScope(s)));
-  return resolved.filter((r): r is ScopedSource => r !== null);
+  const resolved = await Promise.all(
+    scopes.map((s) => (s.kind === "matter" ? resolveMatter(s.id) : resolveScope(s)))
+  );
+  return resolved.flat().filter((r): r is ScopedSource => r !== null);
+}
+
+// Budget guard: assembleScopedContext splits its passage/char budget across
+// sources, so a sprawling matter would starve every source of context. Cap
+// the expansion; the newest-added items win.
+const MATTER_ITEM_CAP = 10;
+
+async function resolveMatter(id: string): Promise<(ScopedSource | null)[]> {
+  const matter = db.select().from(matters).where(eq(matters.id, id)).get();
+  if (!matter) return [null];
+
+  const items = db.select().from(matterItems).where(eq(matterItems.matterId, id)).all();
+
+  const briefText = [
+    `This working set is the matter "${matter.name}".`,
+    matter.description ? `Description: ${matter.description}` : null,
+    matter.instructions
+      ? `Working instructions for this matter (follow these when answering):\n${matter.instructions}`
+      : null,
+    items.length
+      ? `Bundled items:\n${items.map((i) => `- [${i.kind}] ${i.label}`).join("\n")}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const brief: ScopedSource = {
+    label: matter.name,
+    citation: {
+      id: `matter:${matter.id}`,
+      kind: "knowledge",
+      title: `${matter.name} — matter brief`,
+      href: `/matters/${matter.id}`,
+      meta: `Matter · ${items.length} item${items.length === 1 ? "" : "s"}`,
+      sourceLabel: "Matter brief",
+    },
+    passages: chunkText(briefText, `matter:${id}`),
+    hasFullText: false,
+  };
+
+  // Threads are conversations, not sources — skip them; everything else
+  // resolves through the per-kind resolvers. refIds are stored bare.
+  const resolvable = items
+    .filter((i) => i.kind === "entry" || i.kind === "story" || i.kind === "knowledge" || i.kind === "signal")
+    .slice(-MATTER_ITEM_CAP);
+
+  const itemSources = await Promise.all(
+    resolvable.map((i) =>
+      resolveScope({ kind: i.kind as "entry" | "story" | "knowledge" | "signal", id: i.refId })
+    )
+  );
+
+  return [brief, ...itemSources];
 }
 
 async function resolveEntry(id: string): Promise<ScopedSource | null> {
