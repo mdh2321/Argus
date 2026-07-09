@@ -9,6 +9,8 @@ import { Sun, Moon, Search, Plus, ChevronDown, Menu, X } from "lucide-react";
 import { SentinelLogo } from "@/components/ui/sentinel-logo";
 import { IconButton } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
+import { useDigestIssues, type DigestStory } from "@/hooks/use-digest";
+import { getFlag } from "@/lib/digest-utils";
 import { openCaptureModal } from "@/components/shared/capture-modal";
 import { ActivityPopover } from "@/components/layout/activity-popover";
 
@@ -54,23 +56,9 @@ export function TopNav() {
 
         {/* Center: primary links + More (desktop only) */}
         <div className="hidden md:flex items-center gap-1">
-          {primaryLinks.map((link) => {
-            const active = isActive(pathname, link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={`nav-dot ${active ? "active" : ""} inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 ${
-                  active
-                    ? "text-fg bg-hover"
-                    : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          {primaryLinks.map((link) => (
+            <NavPrimaryLink key={link.href} link={link} active={isActive(pathname, link.href)} />
+          ))}
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
@@ -184,6 +172,77 @@ export function TopNav() {
         </div>
       )}
     </nav>
+  );
+}
+
+const LINK_CLASS =
+  "nav-dot inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150";
+
+// A primary nav link. Digest gets a lazy hover preview of the latest issue's
+// top stories — a zero-click glance at what's new, in the spirit of
+// Perplexity's hover-revealed sidebar. The preview only mounts on hover, so it
+// costs nothing until then.
+function NavPrimaryLink({ link, active }: { link: { href: string; label: string }; active: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  const hasPreview = link.href === "/digest";
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Link
+        href={link.href}
+        aria-current={active ? "page" : undefined}
+        className={`${LINK_CLASS} ${active ? "active text-fg bg-hover" : "text-fg-3 hover:text-fg-2 hover:bg-hover"}`}
+      >
+        {link.label}
+      </Link>
+      {hasPreview && hovered && (
+        // pt-2 keeps an invisible bridge so the pointer can cross the gap into
+        // the panel without dropping the hover.
+        <div className="absolute left-0 top-full z-50 pt-2">
+          <DigestNavPreview />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DigestNavPreview() {
+  const { data } = useDigestIssues({ limit: 1 });
+  const issue = data?.issues?.[0];
+  const rank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+  const stories: DigestStory[] = [...(issue?.stories || [])]
+    .sort((a, b) => (rank[b.impact || "Low"] || 0) - (rank[a.impact || "Low"] || 0))
+    .slice(0, 4);
+
+  return (
+    <div className="w-80 overflow-hidden rounded-xl border border-border bg-surface shadow-[var(--shadow-l)] anim-enter">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <span className="label-mono">{issue ? issue.weekOf : "Latest digest"}</span>
+        {issue && (
+          <span className="font-mono text-[10px] text-fg-3">{issue.storyCount} stories</span>
+        )}
+      </div>
+      <div className="p-1.5">
+        {!issue ? (
+          <div className="px-2 py-6 text-center text-[12px] text-fg-3">Loading…</div>
+        ) : (
+          stories.map((s) => (
+            <Link
+              key={s.id}
+              href={`/digest/issues/${issue.slug}#${s.id}`}
+              className="flex items-start gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-hover"
+            >
+              <span className="mt-0.5 text-[13px] leading-none">{getFlag(s.jurisdictionCode || "")}</span>
+              <span className="line-clamp-2 text-[12.5px] leading-snug text-fg-2">{s.title}</span>
+            </Link>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
 

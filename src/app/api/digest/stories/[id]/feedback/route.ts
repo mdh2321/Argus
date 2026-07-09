@@ -4,9 +4,10 @@ import { digestStories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { appendRelevanceFeedback } from "@/lib/company-context";
 
-// "Not relevant" feedback: appends a dated negative example to the Relevance
-// feedback section of data/company-context.md. Every future triage prompt
-// carries these as precedents, so rejections compound into better filtering.
+// Relevance feedback: appends a dated example to the Relevance feedback section
+// of data/company-context.md — negative ("not relevant") or positive ("more
+// like this"). Every future triage prompt carries these as precedents, so the
+// user's judgements compound into better filtering in both directions.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,6 +15,7 @@ export async function POST(
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+  const sentiment = body.sentiment === "positive" ? "positive" : "negative";
 
   const story = db.select().from(digestStories).where(eq(digestStories.id, id)).get();
   if (!story) {
@@ -21,7 +23,8 @@ export async function POST(
   }
 
   const date = new Date().toISOString().slice(0, 10);
-  const line = `[${date}] "${story.title}" (${story.jurisdictionCode ?? "n/a"})${reason ? ` — ${reason}` : ""}`;
+  const marker = sentiment === "positive" ? "\u{1F44D} relevant" : "\u{1F44E} not relevant";
+  const line = `[${date}] ${marker}: "${story.title}" (${story.jurisdictionCode ?? "n/a"})${reason ? ` — ${reason}` : ""}`;
 
   try {
     appendRelevanceFeedback(line);

@@ -97,7 +97,7 @@ export function appendRelevanceFeedback(line: string): void {
 
   const headingIdx = raw.indexOf(FEEDBACK_HEADING);
   if (headingIdx < 0) {
-    raw = `${raw.trimEnd()}\n\n${FEEDBACK_HEADING}\n\nStories the user marked not relevant — treat similar stories as low priority or exclude. (Auto-maintained; newest first.)\n\n${entry}\n`;
+    raw = `${raw.trimEnd()}\n\n${FEEDBACK_HEADING}\n\nStories the user judged — 👍 relevant (surface more like these) or 👎 not relevant (treat similar as low priority or exclude). (Auto-maintained; newest first.)\n\n${entry}\n`;
     writeCompanyContextRaw(raw);
     return;
   }

@@ -9,7 +9,7 @@ import { CopyButton } from "./copy-button";
 import { StoryFollowup } from "./story-followup";
 import { SourceFavicon } from "@/components/ui/source-favicon";
 import { ImpactGlyph } from "./impact-glyph";
-import { Clock, ChevronDown, Star, Share2, Mail, EyeOff, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
+import { Clock, ChevronDown, Star, Share2, Mail, EyeOff, Loader2, RefreshCw, AlertTriangle, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 
 type DraftFormat = "linkedin" | "email";
@@ -40,6 +40,9 @@ export function StoryBlock({
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackReason, setFeedbackReason] = useState("");
   const [feedbackSending, setFeedbackSending] = useState(false);
+  // "More like this" — one-click positive signal, the counterpart to the
+  // "Not relevant" reason form.
+  const [positiveSent, setPositiveSent] = useState(false);
 
   async function generateDraft(format: DraftFormat) {
     if (drafting) return;
@@ -80,6 +83,23 @@ export function StoryBlock({
       toast.error("Couldn't record feedback");
     } finally {
       setFeedbackSending(false);
+    }
+  }
+
+  async function sendPositive() {
+    if (positiveSent) return;
+    setPositiveSent(true);
+    try {
+      const res = await fetch(`/api/digest/stories/${story.id}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sentiment: "positive" }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Noted — future digests will surface more like this");
+    } catch {
+      setPositiveSent(false);
+      toast.error("Couldn't record feedback");
     }
   }
 
@@ -233,8 +253,17 @@ export function StoryBlock({
                   Email draft
                 </button>
                 <button
+                  onClick={sendPositive}
+                  disabled={positiveSent}
+                  className={`${ghostAction} ml-auto hover:text-green`}
+                  title="Surface more stories like this in future digests"
+                >
+                  <ThumbsUp className="h-3 w-3" />
+                  {positiveSent ? "Noted" : "More like this"}
+                </button>
+                <button
                   onClick={() => setFeedbackOpen(!feedbackOpen)}
-                  className={`${ghostAction} ml-auto hover:text-red`}
+                  className={`${ghostAction} hover:text-red`}
                   title="Mark not relevant — teaches future triage to skip similar stories"
                 >
                   <EyeOff className="h-3 w-3" />
