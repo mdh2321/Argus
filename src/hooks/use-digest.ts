@@ -104,6 +104,8 @@ export function useDigestIssue(slug: string | null) {
 export function useDigestStories(params?: {
   contentType?: string;
   jurisdiction?: string;
+  jurisdictionName?: string;
+  category?: string;
   saved?: boolean;
   search?: string;
   limit?: number;
@@ -111,6 +113,8 @@ export function useDigestStories(params?: {
   const searchParams = new URLSearchParams();
   if (params?.contentType) searchParams.set("contentType", params.contentType);
   if (params?.jurisdiction) searchParams.set("jurisdiction", params.jurisdiction);
+  if (params?.jurisdictionName) searchParams.set("jurisdictionName", params.jurisdictionName);
+  if (params?.category) searchParams.set("category", params.category);
   if (params?.saved) searchParams.set("saved", "true");
   if (params?.search) searchParams.set("search", params.search);
   if (params?.limit) searchParams.set("limit", String(params.limit));

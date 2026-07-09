@@ -22,6 +22,8 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const contentType = params.get("contentType");
   const jurisdiction = params.get("jurisdiction");
+  const jurisdictionName = params.get("jurisdictionName");
+  const category = params.get("category");
   const search = params.get("search");
   const limit = parseInt(params.get("limit") || "50");
   const sortOrder = params.get("order") || "desc";
@@ -33,6 +35,17 @@ export async function GET(request: NextRequest) {
   }
   if (jurisdiction) {
     conditions.push(eq(digestStories.jurisdictionCode, jurisdiction));
+  }
+  // Exact match on the jurisdiction display name (e.g. "Singapore") — used by
+  // tag drill-downs, where the tag carries the name rather than the code.
+  if (jurisdictionName) {
+    conditions.push(eq(digestStories.jurisdiction, jurisdictionName));
+  }
+  // Exact membership in the categories JSON array. Categories are stored as a
+  // JSON string like ["AI Governance","Privacy"]; matching the quoted element
+  // avoids the false positives a bare title/summary LIKE would produce.
+  if (category) {
+    conditions.push(sql`${digestStories.categories} LIKE ${'%"' + category + '"%'}`);
   }
   if (params.get("saved") === "true") {
     conditions.push(eq(digestStories.saved, true));
