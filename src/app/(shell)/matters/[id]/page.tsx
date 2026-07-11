@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
-  Bot,
+  Eye,
   FolderKanban,
   Trash2,
   Plus,
@@ -137,7 +137,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             className="inline-flex items-center gap-1.5 rounded-lg bg-accent/10 px-3 py-1.5 font-mono text-[11px] font-medium text-accent transition-colors hover:bg-accent/20"
             title="Ask Argus with this matter's items and working instructions as context"
           >
-            <Bot className="h-3 w-3" />
+            <Eye className="h-3 w-3" />
             Ask about this matter
           </Link>
           <button
