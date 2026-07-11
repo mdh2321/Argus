@@ -32,6 +32,16 @@ export interface EntryClaimCitation {
   sectionRef?: string | null;
   groundingType?: ClaimGrounding;
   note?: string | null;
+  // Exact-quote anchoring (P1.2). When groundingType is "direct_quote" and the
+  // verbatim quote was located in the source document's fullText, `quote` holds
+  // the passage and quoteStart/quoteEnd its character offsets — enabling a
+  // guaranteed pinpoint highlight instead of the best-effort section scroll.
+  // quoteVerified is true only on an exact string match; a failed match
+  // downgrades the claim to "paraphrase" and leaves these null.
+  quote?: string | null;
+  quoteStart?: number | null;
+  quoteEnd?: number | null;
+  quoteVerified?: boolean | null;
 }
 
 export interface EntryClaim {
@@ -118,6 +128,12 @@ export interface Entry {
   applicability: string | null;
   keyCriteria: string | null;
   whyItMatters: string | null;
+  // Satellite delta fields (§2.3). Only one is populated, per relationship kind:
+  // whatItChanges (amendments), whatItClarifies (guidance), outcome (enforcement
+  // / court). Null on anchors.
+  whatItChanges: string | null;
+  whatItClarifies: string | null;
+  outcome: string | null;
   // Dual impact lenses: direct effect on the company vs. pass-through effect
   // on the company's customers. Short (1-3 sentence) fields.
   impactOnUs: string | null;
@@ -175,6 +191,25 @@ export interface Entry {
   parentShortName?: string | null;
   parentRelationshipKind?: string | null;
   children?: Entry[];
+  // Anchor/satellite classification (plan §2.1-2.2). Populated by the list
+  // endpoint. `anchorRole` distinguishes compliance-surface anchors from the
+  // satellites that hang off them; `satelliteActivity` summarises an anchor's
+  // linked satellites for the anchor-centric list row.
+  anchorRole?: AnchorRole;
+  satelliteActivity?: SatelliteActivity | null;
+  // Soft validation flag (§2.1): a satellite with no anchor link. Advisory only.
+  missingAnchor?: boolean;
+}
+
+export type AnchorRole = "anchor" | "satellite";
+
+// Roll-up of an anchor's linked satellites, for the anchor-centric list row.
+export interface SatelliteActivity {
+  total: number;
+  inFlightAmendments: number; // `amends` satellites not yet in_force
+  guidanceCount: number; // `interprets` satellites
+  latestUpdatedAt: string | null;
+  line: string; // e.g. "1 bill in flight · guidance updated 3d ago"
 }
 
 // What kind of action a dated milestone demands (Horizon typing, Jul 2026):
@@ -245,6 +280,7 @@ export interface SourceDocument {
   fileType: string | null;
   charCount: number | null;
   addedBy: string;
+  role: SourceDocumentRole | null;
   sourceAuthority: SourceAuthority | null;
   verifiedUrl: boolean;
   lastUrlCheck: string | null;
@@ -255,6 +291,22 @@ export interface SourceDocument {
   extractor: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+// 'primary_text' = the instrument itself (ground-truth legal text, one per
+// entry); 'supporting' = memoranda, guidance, analysis, news.
+export type SourceDocumentRole = "primary_text" | "supporting";
+
+export interface SourceDocumentVersion {
+  id: string;
+  sourceDocId: string;
+  entryId: string;
+  contentHash: string | null;
+  fullText: string | null;
+  charCount: number | null;
+  retrievedAt: string | null;
+  trigger: "refresh" | "amendment";
+  createdAt: string;
 }
 
 export type SourceDocumentFetchStatus = "ok" | "no_text" | "fetch_failed" | "manual";

@@ -9,7 +9,7 @@ import { relativeTime, formatDate } from "@/lib/utils";
 import { updateEntry } from "@/hooks/use-entries";
 import type { Entry } from "@/lib/types";
 import { computeTrustBadges } from "@/lib/trust-badges";
-import { Flag, Clock, CornerDownRight, ChevronRight, ArrowUpRight, BookOpen, Replace, Link2, SearchX } from "lucide-react";
+import { Flag, Clock, CornerDownRight, ChevronRight, ArrowUpRight, BookOpen, Replace, Link2, SearchX, GitBranch } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 
 // Lookups built once per render module-load.
@@ -242,6 +242,13 @@ export function EntriesTable({
           <p className="text-[12px] text-fg-3 leading-relaxed line-clamp-2">
             {entry.summary || entry.fullName}
           </p>
+          {/* Satellite activity line (anchor-centric view, §2.2). */}
+          {entry.satelliteActivity && (
+            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-accent-text">
+              <GitBranch className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{entry.satelliteActivity.line}</span>
+            </div>
+          )}
           {/* Meta line — type, authority, category and regulator read as plain
               text; only "binding" authority keeps a colored emphasis. Trust
               badges and the subordinate-instruments toggle live here too, so

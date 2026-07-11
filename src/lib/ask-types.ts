@@ -4,6 +4,27 @@ export interface AskArgusAction {
   href?: string;
 }
 
+// Which of the three evidence realms a citation draws on (plan §3.3, mirrors
+// Legora's three-realm pattern):
+//   analysis   — an Argus entry's own analysis fields
+//   instrument — a passage of the primary instrument text
+//   web        — a live web source
+export type CitationRealm = "analysis" | "instrument" | "web";
+
+// The evidentiary pin nested beneath an entry citation (plan §3.1/§3.2): the
+// exact passage of the instrument that grounds the claim. Entry-first, pin
+// second — never a bare source-doc citation.
+export interface AskCitationPin {
+  sourceDocumentId: string;
+  sectionRef?: string | null;
+  quote: string;
+  quoteVerified: boolean;
+  // Character offsets into the source doc's fullText, when the quote was
+  // located verbatim — lets the tracker deep-link highlight the exact range.
+  quoteStart?: number | null;
+  quoteEnd?: number | null;
+}
+
 export interface AskArgusCitation {
   id: string;
   kind: "tracker" | "digest" | "signal" | "knowledge" | "web";
@@ -12,6 +33,16 @@ export interface AskArgusCitation {
   meta: string;
   sourceLabel: string;
   externalUrl?: string;
+  // §3.3 — realm + authority tier for transparency and ordering. Optional so
+  // older serialized answers still parse.
+  realm?: CitationRealm;
+  tier?: string; // e.g. "primary_legislation", "regulator", "commentary", "web"
+  // §3.4 — copy-as-citation payload. formalCitation is the entry's lawyer-style
+  // citation; pinpoint is the section ref of the pin, if any.
+  formalCitation?: string | null;
+  // §3.1/§3.2 — the instrument-text evidence pin, when the claim was grounded in
+  // the actual instrument rather than only the entry's analysis fields.
+  pin?: AskCitationPin | null;
 }
 
 /** A single turn in a multi-turn Ask conversation. */

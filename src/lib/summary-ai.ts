@@ -144,6 +144,10 @@ interface DraftCitation {
   sectionRef?: string | null;
   groundingType?: string | null;
   note?: string | null;
+  quote?: string | null;
+  quoteStart?: number | null;
+  quoteEnd?: number | null;
+  quoteVerified?: boolean | null;
 }
 
 interface DraftClaim {
@@ -213,6 +217,47 @@ interface VerificationResult {
   status: VerificationStatus;
   evidence: string | null;
   reasoning: string | null;
+  // Exact-quote anchoring (P1.2). Populated when the returned evidence quote
+  // was located verbatim in the source's fullText.
+  quote?: string | null;
+  quoteStart?: number | null;
+  quoteEnd?: number | null;
+  quoteVerified?: boolean;
+}
+
+/**
+ * Locate a quoted passage in the source text and return its real character
+ * offsets. Tries an exact match first, then a whitespace-tolerant regex so
+ * that newline/indentation differences between the model's quote and the
+ * stored text don't defeat an otherwise-verbatim match. Returns the offsets of
+ * the ACTUAL matched substring in `fullText` (not the normalized form), so the
+ * highlight lands on real characters. null when no confident match exists.
+ */
+export function locateQuoteOffsets(
+  fullText: string,
+  quote: string
+): { start: number; end: number; matched: string } | null {
+  const q = quote.trim();
+  if (q.length < 8) return null; // too short to anchor safely
+
+  const exact = fullText.indexOf(q);
+  if (exact >= 0) return { start: exact, end: exact + q.length, matched: q };
+
+  // Whitespace-tolerant fallback: any run of whitespace in the quote matches
+  // any run of whitespace in the source.
+  const escaped = q
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\s+/g, "\\s+");
+  try {
+    const re = new RegExp(escaped);
+    const m = re.exec(fullText);
+    if (m && m.index >= 0) {
+      return { start: m.index, end: m.index + m[0].length, matched: m[0] };
+    }
+  } catch {
+    /* pathological quote — fall through to no-match */
+  }
+  return null;
 }
 
 // --------------------------------------------------------------------------
@@ -451,6 +496,104 @@ Return ONLY valid JSON:
 }
 
 A section can be set to null at the top level if you don't have enough knowledge to say anything useful — e.g. { "exemptions": null }. Don't fabricate.`;
+}
+
+// --------------------------------------------------------------------------
+// Satellite delta analysis (plan §2.3). A satellite entry (amending act,
+// interpretive guidance, enforcement, court decision) does NOT re-describe the
+// anchor's obligations. It carries only the delta it introduces, in the field
+// matching its relationship to the anchor.
+// --------------------------------------------------------------------------
+export type SatelliteDeltaKind = "whatItChanges" | "whatItClarifies" | "outcome";
+
+export interface SatelliteDeltaResult {
+  formalCitation: string | null;
+  summary: string;
+  /** The delta prose, destined for the field named by deltaKind. */
+  delta: string | null;
+  deltaKind: SatelliteDeltaKind;
+  impactOnUs: string | null;
+  impactOnCustomers: string | null;
+}
+
+const DELTA_BRIEF: Record<SatelliteDeltaKind, { field: string; ask: string }> = {
+  whatItChanges: {
+    field: "What this changes",
+    ask: "what this amending instrument actually changes, inserts, repeals, or commences in the principal instrument — the operative delta, not a restatement of the principal's obligations",
+  },
+  whatItClarifies: {
+    field: "What this clarifies",
+    ask: "what this guidance clarifies, interprets, or expects about the anchor instrument — the interpretive delta a compliance reader needs, not a second copy of the underlying rule",
+  },
+  outcome: {
+    field: "Outcome",
+    ask: "the outcome — holding, penalty, order, or enforcement result — and what it signals for how the anchor instrument is applied in practice",
+  },
+};
+
+export async function generateSatelliteDelta(
+  input: SummaryInput,
+  ctx: { anchorName: string | null; deltaKind: SatelliteDeltaKind }
+): Promise<SatelliteDeltaResult> {
+  const profileContext = await getProfileContext();
+  const brief = DELTA_BRIEF[ctx.deltaKind];
+  const hasSourceDocs = input.sourceDocuments.length > 0;
+  const sources = hasSourceDocs
+    ? buildSourcesBlock(input.sourceDocuments, input.definedTerms, input.comparators)
+    : "";
+  const timingBlock = buildTimingBlock(input.currentDate, input.keyDates);
+
+  const instructions = `You are a senior legal intelligence analyst. The entry below is a SATELLITE of a principal instrument${
+    ctx.anchorName ? ` ("${ctx.anchorName}")` : ""
+  } — it does not carry its own full analysis. Produce a tight DELTA: ${brief.ask}.
+
+${profileContext ? `USER CONTEXT:\n${profileContext}\n\n` : ""}ENTRY DETAILS:
+- Name: ${input.shortName}
+- Full name: ${input.fullName}
+- Jurisdiction: ${input.jurisdiction}
+- Category: ${input.category}
+- Type: ${input.type}
+- Status: ${input.status}
+${ctx.anchorName ? `- Anchor instrument: ${ctx.anchorName}` : ""}
+${input.regulator ? `- Regulator: ${input.regulator}` : ""}${timingBlock}
+${hasSourceDocs ? "\nPrimary source text is provided above — treat it as ground truth and ground the delta in it.\n" : "\nNo source text is attached — write from model knowledge and keep the delta appropriately hedged.\n"}
+Rules:
+- The "${brief.field}" delta is the point. Be specific and scannable (2–5 sentences or short bullets). Never restate the whole underlying regime.
+- "summary" is one sentence orienting the reader to what this satellite is.
+- Keep impact lenses to 1–2 sentences each; null if not clearly applicable.
+
+Return ONLY valid JSON:
+{
+  "formalCitation": "<lawyer-style citation, or null>",
+  "summary": "<one sentence>",
+  "delta": "<the ${brief.field} delta prose, or null if genuinely nothing to say>",
+  "impactOnUs": "<direct effect on the user's company, or null>",
+  "impactOnCustomers": "<pass-through effect on the company's customers, or null>"
+}`;
+
+  const response = await callCached({
+    sources,
+    instructions,
+    maxTokens: 6000,
+    thinking: false,
+  });
+
+  const raw = parseDraftJson(response) as {
+    formalCitation?: unknown;
+    summary?: unknown;
+    delta?: unknown;
+    impactOnUs?: unknown;
+    impactOnCustomers?: unknown;
+  };
+
+  return {
+    formalCitation: nullableString(raw.formalCitation),
+    summary: nullableString(raw.summary) ?? "",
+    delta: nullableString(raw.delta),
+    deltaKind: ctx.deltaKind,
+    impactOnUs: nullableString(raw.impactOnUs),
+    impactOnCustomers: nullableString(raw.impactOnCustomers),
+  };
 }
 
 // --------------------------------------------------------------------------
@@ -957,11 +1100,25 @@ Return ONLY valid JSON, one object per claim, in this exact shape:
   return refs.map((ref, i) => {
     const r = results.find((x) => x.claimNumber === i + 1) ?? results[i];
     const status = normalizeVerificationStatus(r?.status);
+    const evidence = nullableString(r?.evidence);
+
+    // Anchor the evidence quote to real offsets in the stored full text so the
+    // UI can guarantee a pinpoint highlight (P1.2). Only meaningful when the
+    // claim was verified/partial — a not_found/unsupported claim has no quote.
+    let located: ReturnType<typeof locateQuoteOffsets> = null;
+    if (evidence && (status === "verified" || status === "partial")) {
+      located = locateQuoteOffsets(doc.fullText, evidence);
+    }
+
     return {
       claimKey: claimKey(ref.sectionKey, ref.claimIndex),
       status,
-      evidence: nullableString(r?.evidence),
+      evidence,
       reasoning: nullableString(r?.reasoning),
+      quote: located?.matched ?? null,
+      quoteStart: located?.start ?? null,
+      quoteEnd: located?.end ?? null,
+      quoteVerified: !!located,
     };
   });
 }
@@ -994,6 +1151,21 @@ function applyVerificationResults(
       const result = verifications.get(claimKey(sectionKey, claimIndex));
       if (!result) return claim;
       const newCitation: DraftCitation = { ...(claim.citation ?? {}) };
+      const claimedDirectQuote =
+        normalizeGroundingType(newCitation.groundingType) === "direct_quote";
+
+      // Attach exact-quote anchoring whenever the evidence was located verbatim.
+      if (result.quoteVerified && result.quote) {
+        newCitation.quote = result.quote;
+        newCitation.quoteStart = result.quoteStart ?? null;
+        newCitation.quoteEnd = result.quoteEnd ?? null;
+        newCitation.quoteVerified = true;
+      } else if (claimedDirectQuote) {
+        // A direct_quote claim whose quote couldn't be located verbatim is not
+        // actually a quote — downgrade so we never show an unbacked badge.
+        newCitation.groundingType = "paraphrase";
+        newCitation.quoteVerified = false;
+      }
 
       switch (result.status) {
         case "verified":
@@ -1005,6 +1177,11 @@ function applyVerificationResults(
           break;
         case "partial":
           newCitation.groundingType = "inference";
+          // The claim overstates the source — don't badge it as a verified quote.
+          newCitation.quote = null;
+          newCitation.quoteStart = null;
+          newCitation.quoteEnd = null;
+          newCitation.quoteVerified = false;
           newCitation.note = result.evidence
             ? `Partially supported. Source quote: "${truncate(result.evidence, 180)}". ${result.reasoning ?? ""}`.trim()
             : `Partially supported. ${result.reasoning ?? ""}`.trim();
@@ -1012,6 +1189,10 @@ function applyVerificationResults(
         case "unsupported":
           newCitation.groundingType = "ai_knowledge";
           newCitation.sectionRef = null;
+          newCitation.quote = null;
+          newCitation.quoteStart = null;
+          newCitation.quoteEnd = null;
+          newCitation.quoteVerified = false;
           newCitation.note =
             `Unsupported by cited section. ${result.reasoning ?? ""}`.trim();
           break;
@@ -1220,7 +1401,14 @@ function normalizeCitation(
   const note = nullableString(raw.note);
   const groundingType = normalizeGroundingType(raw.groundingType);
 
-  if (!doc && !sectionRef && !note && !groundingType) return null;
+  const quote = nullableString(raw.quote);
+  const quoteVerified = raw.quoteVerified === true;
+  const quoteStart =
+    quoteVerified && typeof raw.quoteStart === "number" ? raw.quoteStart : null;
+  const quoteEnd =
+    quoteVerified && typeof raw.quoteEnd === "number" ? raw.quoteEnd : null;
+
+  if (!doc && !sectionRef && !note && !groundingType && !quote) return null;
 
   return {
     sourceDocumentId: doc?.id ?? null,
@@ -1229,6 +1417,10 @@ function normalizeCitation(
     sectionRef,
     groundingType,
     note,
+    quote: quoteVerified ? quote : null,
+    quoteStart,
+    quoteEnd,
+    quoteVerified,
   };
 }
 

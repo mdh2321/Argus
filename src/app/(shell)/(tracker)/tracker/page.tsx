@@ -8,7 +8,7 @@ import { EntriesTable } from "@/components/tracker/entries-table";
 import { EntriesKanban } from "@/components/tracker/entries-kanban";
 import { EntriesGrid } from "@/components/tracker/entries-grid";
 import { ScanButton } from "@/components/tracker/scan-button";
-import { ChevronLeft, ChevronRight, CalendarClock, Sparkles, Database, Rows3, List, LayoutGrid, KanbanSquare, Table as TableIcon, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarClock, Sparkles, Database, Rows3, List, LayoutGrid, KanbanSquare, Table as TableIcon, ArrowUpDown, ArrowUp, ArrowDown, GitBranch } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { SkeletonList } from "@/components/ui/skeleton";
 
@@ -31,6 +31,8 @@ function TrackerContent() {
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [viewMode, setViewMode] = useState<"list" | "table" | "kanban">("list");
   const [listDensity, setListDensity] = useState<"default" | "condensed">("default");
+  // Anchor-centric view (§2.2) — opt-in; flat list stays the default.
+  const [anchoredView, setAnchoredView] = useState(false);
   const [sortField, setSortField] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
@@ -43,6 +45,7 @@ function TrackerContent() {
     limit: "50",
   };
   if (search) params.search = search;
+  if (anchoredView) params.anchored = "1";
   Object.keys(params).forEach((k) => { if (!params[k]) delete params[k]; });
 
   // Flat list — every entry (parent or subordinate instrument) gets its own
@@ -137,6 +140,20 @@ function TrackerContent() {
                 <List className="w-3.5 h-3.5" />
               </button>
             </div>
+          )}
+          {viewMode === "list" && (
+            <button
+              onClick={() => { setAnchoredView((v) => !v); setPage(1); }}
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors mr-1 ${
+                anchoredView
+                  ? "bg-accent text-white border-accent"
+                  : "border-border text-fg-3 hover:text-fg-2 hover:bg-hover"
+              }`}
+              title="Anchor-centric view — show principal instruments only, with satellite activity"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              Anchors
+            </button>
           )}
           <ScanButton />
           <ButtonLink href="/tracker/horizon" variant="secondary">

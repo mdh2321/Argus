@@ -19,7 +19,7 @@ import { askAnswerToMarkdown } from "@/lib/markdown-export";
 import { toast } from "sonner";
 import {
   ArrowRight,
-  Bot,
+  Eye,
   ExternalLink,
   LoaderCircle,
   FileText,
@@ -42,6 +42,9 @@ import {
   BookOpen,
   Radio,
   FolderKanban,
+  Quote,
+  Copy,
+  Check,
 } from "lucide-react";
 
 type Mode = "quick" | "deep_report";
@@ -515,7 +518,7 @@ export default function AskPage() {
         <div className="mx-auto flex min-h-[72vh] max-w-3xl flex-col items-center justify-center py-8">
           <div className="grid-pattern relative mb-8 w-full py-6 text-center">
             <div className="relative z-10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-accent bg-accent-bg">
-              <Bot className="h-6 w-6" style={{ color: "var(--accent)" }} />
+              <Eye className="h-6 w-6" style={{ color: "var(--accent)" }} />
             </div>
             <h1 className="text-gradient relative z-10 text-[34px] font-bold leading-tight tracking-[-0.02em]">
               Ask Argus
@@ -573,7 +576,7 @@ export default function AskPage() {
         /* ===== Conversation ===== */
         <div className="mx-auto max-w-3xl">
           <div className="mb-5 flex items-center gap-2.5">
-            <Bot className="h-5 w-5" style={{ color: "var(--accent)" }} />
+            <Eye className="h-5 w-5" style={{ color: "var(--accent)" }} />
             <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-fg">Ask Argus</h1>
             <div className="ml-auto flex items-center gap-1.5">
               <button
@@ -1092,8 +1095,16 @@ function SourceRibbon({ sources }: { sources: AskArgusCitation[] }) {
   );
 }
 
+const REALM_LABEL: Record<string, string> = {
+  analysis: "Analysis",
+  instrument: "Instrument text",
+  web: "Web",
+};
+
 function SourceRow({ index, citation }: { index: number; citation: AskArgusCitation }) {
   const external = citation.externalUrl;
+  const [pinOpen, setPinOpen] = useState(false);
+  const pin = citation.pin;
   const inner = (
     <>
       {external ? (
@@ -1116,7 +1127,7 @@ function SourceRow({ index, citation }: { index: number; citation: AskArgusCitat
   const className =
     "group flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 transition-colors hover:border-border-hover hover:bg-hover";
 
-  return external ? (
+  const chip = external ? (
     <a href={external} target="_blank" rel="noopener noreferrer" className={className}>
       {inner}
     </a>
@@ -1124,6 +1135,94 @@ function SourceRow({ index, citation }: { index: number; citation: AskArgusCitat
     <Link href={citation.href} className={className}>
       {inner}
     </Link>
+  );
+
+  // Deep-link that opens the tracker entry and fires the reveal-source event on
+  // the pinned passage (§3.1).
+  const pinHref = pin
+    ? `${citation.href}?revealDoc=${encodeURIComponent(pin.sourceDocumentId)}${
+        typeof pin.quoteStart === "number" && typeof pin.quoteEnd === "number"
+          ? `&quoteStart=${pin.quoteStart}&quoteEnd=${pin.quoteEnd}`
+          : ""
+      }${pin.sectionRef ? `&sectionRef=${encodeURIComponent(pin.sectionRef)}` : ""}`
+    : null;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5">
+        <div className="min-w-0 flex-1">{chip}</div>
+        {citation.realm && (
+          <span
+            className={`flex-shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide ${
+              citation.realm === "instrument"
+                ? "bg-accent/10 text-accent"
+                : "bg-hover text-fg-3"
+            }`}
+            title={`Evidence realm: ${REALM_LABEL[citation.realm]}${citation.tier ? ` · ${citation.tier.replace(/_/g, " ")}` : ""}`}
+          >
+            {REALM_LABEL[citation.realm] ?? citation.realm}
+          </span>
+        )}
+        <CopyCitationButton citation={citation} />
+      </div>
+      {pin && (
+        <div className="ml-6">
+          <button
+            type="button"
+            onClick={() => setPinOpen((v) => !v)}
+            className="inline-flex items-center gap-1 text-[10px] text-fg-3 hover:text-accent transition-colors"
+          >
+            <Quote className="h-2.5 w-2.5" />
+            {pin.quoteVerified ? "Verified passage" : "Cited passage"}
+            {pin.sectionRef && <span className="font-mono">· {pin.sectionRef}</span>}
+          </button>
+          {pinOpen && (
+            <div className="mt-1 rounded-md border border-border bg-bg px-2.5 py-1.5">
+              <blockquote className="border-l-2 border-accent/40 pl-2 text-[11px] italic text-fg-2">
+                &ldquo;{pin.quote}&rdquo;
+              </blockquote>
+              {pinHref && (
+                <Link
+                  href={pinHref}
+                  className="mt-1 inline-flex items-center gap-1 text-[10px] text-accent hover:underline"
+                >
+                  <ExternalLink className="h-2.5 w-2.5" />
+                  View in source
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// One-click copy of the formal citation + pinpoint (§3.4).
+function CopyCitationButton({ citation }: { citation: AskArgusCitation }) {
+  const [copied, setCopied] = useState(false);
+  const formal = citation.formalCitation;
+  const pinpoint = citation.pin?.sectionRef;
+  if (!formal && !pinpoint) return null;
+  const text = [formal, pinpoint].filter(Boolean).join(" ");
+
+  return (
+    <button
+      type="button"
+      title={`Copy citation: ${text}`}
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        } catch {
+          /* clipboard unavailable */
+        }
+      }}
+      className="flex-shrink-0 rounded p-1 text-fg-3 hover:text-accent hover:bg-hover transition-colors"
+    >
+      {copied ? <Check className="h-3 w-3 text-[var(--green)]" /> : <Copy className="h-3 w-3" />}
+    </button>
   );
 }
 

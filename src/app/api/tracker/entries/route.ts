@@ -6,6 +6,12 @@ import { generateId, now, toJsonString } from "@/lib/utils";
 import { serializeEntry, syncDeadlines, computeNextKeyDate } from "@/lib/entry-helpers";
 import { normalizeSourceUrls } from "@/lib/source-tiers";
 import { kickOffSummaryGeneration } from "@/lib/summary-pipeline";
+import {
+  classifyEntry,
+  buildSatelliteActivity,
+  SATELLITE_ANCHOR_KINDS,
+  type AnchorSatellite,
+} from "@/lib/anchor-model";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -27,6 +33,9 @@ export async function GET(request: NextRequest) {
   // on when no filters or search are active; cross-cutting views (filtered,
   // searched, "commencing soon") stay flat so urgency doesn't get hidden.
   const nested = params.get("nested") === "1";
+  // Anchor-centric view (plan §2.2): return anchors only, each with a satellite
+  // activity roll-up. Opt-in — the flat view remains the default.
+  const anchored = params.get("anchored") === "1";
 
   const conditions = [eq(entries.archived, false)];
 
@@ -126,6 +135,69 @@ export async function GET(request: NextRequest) {
 
   const total = countResult.count;
   const offset = (page - 1) * limit;
+
+  // ── Anchor-centric mode (§2.2) ────────────────────────────────────────────
+  if (anchored) {
+    // Only ~dozens of entries — classify in memory rather than in SQL. Load the
+    // filtered set (unpaginated) plus every relationship to classify + roll up.
+    const filteredRows = await db.select().from(entries).where(where).orderBy(orderFn(sortCol));
+    const allRels = await db
+      .select({
+        fromEntryId: entryRelationships.fromEntryId,
+        toEntryId: entryRelationships.toEntryId,
+        kind: entryRelationships.kind,
+      })
+      .from(entryRelationships);
+    const liteRows = await db
+      .select({
+        id: entries.id,
+        type: entries.type,
+        status: entries.status,
+        updatedAt: entries.updatedAt,
+      })
+      .from(entries)
+      .where(eq(entries.archived, false));
+
+    const outgoing = new Map<string, string[]>();
+    for (const r of allRels) {
+      const arr = outgoing.get(r.fromEntryId) ?? [];
+      arr.push(r.kind);
+      outgoing.set(r.fromEntryId, arr);
+    }
+    const liteById = new Map(liteRows.map((r) => [r.id, r]));
+
+    // satellites grouped under the anchor they link to
+    const satsByAnchor = new Map<string, AnchorSatellite[]>();
+    for (const r of allRels) {
+      if (!SATELLITE_ANCHOR_KINDS.includes(r.kind as (typeof SATELLITE_ANCHOR_KINDS)[number])) continue;
+      const sat = liteById.get(r.fromEntryId);
+      if (!sat) continue;
+      if (classifyEntry(sat.type, outgoing.get(sat.id) ?? []) !== "satellite") continue;
+      const arr = satsByAnchor.get(r.toEntryId) ?? [];
+      arr.push({ type: sat.type, status: sat.status, updatedAt: sat.updatedAt, kind: r.kind });
+      satsByAnchor.set(r.toEntryId, arr);
+    }
+
+    const anchorRows = filteredRows.filter(
+      (row) => classifyEntry(row.type, outgoing.get(row.id) ?? []) === "anchor"
+    );
+    const totalAnchors = anchorRows.length;
+    const pageAnchors = anchorRows.slice(offset, offset + limit);
+
+    const anchorEntries = pageAnchors.map((row) => ({
+      ...serializeEntry(row),
+      anchorRole: "anchor" as const,
+      satelliteActivity: buildSatelliteActivity(satsByAnchor.get(row.id) ?? []),
+    }));
+
+    return NextResponse.json({
+      entries: anchorEntries,
+      total: totalAnchors,
+      page,
+      limit,
+      totalPages: Math.ceil(totalAnchors / limit),
+    });
+  }
 
   const rows = await db
     .select()

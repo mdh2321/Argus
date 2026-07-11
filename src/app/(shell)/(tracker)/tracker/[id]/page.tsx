@@ -33,7 +33,10 @@ import {
   AlertCircle,
   RefreshCw,
   Newspaper,
-  Bot,
+  Eye,
+  BookMarked,
+  History,
+  GitBranch,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type {
@@ -48,7 +51,7 @@ import type {
   ThresholdTest,
   ArtifactKind,
 } from "@/lib/types";
-import { useDocuments, addDocument, deleteDocument, refetchDocument } from "@/hooks/use-documents";
+import { useDocuments, addDocument, deleteDocument, refetchDocument, setDocumentRole, useDocumentVersions } from "@/hooks/use-documents";
 import useSWR from "swr";
 import { EntryTOC } from "@/components/tracker/entry-toc";
 import { EntryTimeline } from "@/components/tracker/entry-timeline";
@@ -85,10 +88,20 @@ const REVEAL_SOURCE_EVENT = "argus:reveal-source";
 interface RevealSourceDetail {
   docId: string;
   sectionRef: string | null;
+  // Exact-quote anchoring (P1.2). When present, the source panel highlights
+  // this precise character range instead of the best-effort section scroll.
+  quoteStart?: number | null;
+  quoteEnd?: number | null;
 }
-function revealClaimSource(docId: string, sectionRef: string | null) {
+function revealClaimSource(
+  docId: string,
+  sectionRef: string | null,
+  range?: { quoteStart?: number | null; quoteEnd?: number | null }
+) {
   window.dispatchEvent(
-    new CustomEvent<RevealSourceDetail>(REVEAL_SOURCE_EVENT, { detail: { docId, sectionRef } })
+    new CustomEvent<RevealSourceDetail>(REVEAL_SOURCE_EVENT, {
+      detail: { docId, sectionRef, quoteStart: range?.quoteStart ?? null, quoteEnd: range?.quoteEnd ?? null },
+    })
   );
 }
 
@@ -209,6 +222,29 @@ export default function EntryDetailPage() {
       url.searchParams.delete("suggestSources");
       window.history.replaceState({}, "", url.toString());
     }
+  }, [searchParams]);
+
+  // Deep-link from an Ask citation pin (§3.1): ?revealDoc=&quoteStart=&quoteEnd=
+  // opens the source doc and fires the reveal-source event on the pinned
+  // passage. Delayed so SourceDocRow has mounted its listener. Cleans the URL.
+  useEffect(() => {
+    const revealDoc = searchParams.get("revealDoc");
+    if (!revealDoc) return;
+    const qs = searchParams.get("quoteStart");
+    const qe = searchParams.get("quoteEnd");
+    const sectionRef = searchParams.get("sectionRef");
+    const range =
+      qs !== null && qe !== null
+        ? { quoteStart: Number(qs), quoteEnd: Number(qe) }
+        : undefined;
+    const t = setTimeout(() => {
+      document.getElementById(`doc-${revealDoc}`)?.scrollIntoView({ block: "center" });
+      revealClaimSource(revealDoc, sectionRef, range);
+    }, 400);
+    const url = new URL(window.location.href);
+    ["revealDoc", "quoteStart", "quoteEnd", "sectionRef"].forEach((k) => url.searchParams.delete(k));
+    window.history.replaceState({}, "", url.toString());
+    return () => clearTimeout(t);
   }, [searchParams]);
   const [docForm, setDocForm] = useState({ name: "", sourceUrl: "", fullText: "" });
   const [docUploading, setDocUploading] = useState(false);
@@ -592,7 +628,7 @@ export default function EntryDetailPage() {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
                 title="Ask Argus about this record, grounded in its source"
               >
-                <Bot className="w-3 h-3" />
+                <Eye className="w-3 h-3" />
                 Ask about this
               </Link>
               <button
@@ -657,6 +693,25 @@ export default function EntryDetailPage() {
           />
         )}
 
+        {/* Orphan-satellite soft warning (§2.1) — advisory only; this satellite
+            has no anchor link. Never blocks; existing orphans are grandfathered. */}
+        {!editing && entry.missingAnchor && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-[color:var(--amber)]/30 bg-amber-bg px-3 py-2.5">
+            <GitBranch className="w-4 h-4 text-amber-text flex-shrink-0 mt-0.5" />
+            <div className="text-[13px] leading-snug">
+              <span className="font-medium text-amber-text">Not linked to an anchor.</span>{" "}
+              <span className="text-fg-2">
+                This {entry.type.replace(/-/g, " ")} is a satellite but isn&rsquo;t
+                tied to a principal instrument. Add an{" "}
+                <span className="font-mono text-[12px]">amends</span> /{" "}
+                <span className="font-mono text-[12px]">interprets</span> /{" "}
+                <span className="font-mono text-[12px]">subordinate&nbsp;to</span> relationship so it
+                folds into the anchor&rsquo;s file.
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Scope-aware question chips (F2) — one tap into a cited, entry-scoped
             Ask answer. Shown once the entry has analytical content to ask about. */}
         {!editing && hasAnyContent && (
@@ -672,6 +727,25 @@ export default function EntryDetailPage() {
               claims={entry.sectionClaims?.summary}
               emptyState="Summary has not yet been prepared."
             />
+          </Section>
+        )}
+
+        {/* Satellite delta (§2.3) — a satellite carries the change it introduces,
+            not a second copy of the anchor's obligations. Exactly one of these
+            is populated, per the satellite's relationship to its anchor. */}
+        {!editing && entry.whatItChanges && (
+          <Section id="what-it-changes" variant="primary" title="What this changes" confidence={entry.sectionConfidence?.summary}>
+            <SectionText text={entry.whatItChanges} claims={undefined} emptyState={null} />
+          </Section>
+        )}
+        {!editing && entry.whatItClarifies && (
+          <Section id="what-it-clarifies" variant="primary" title="What this clarifies" confidence={entry.sectionConfidence?.summary}>
+            <SectionText text={entry.whatItClarifies} claims={undefined} emptyState={null} />
+          </Section>
+        )}
+        {!editing && entry.outcome && (
+          <Section id="outcome" variant="primary" title="Outcome" confidence={entry.sectionConfidence?.summary}>
+            <SectionText text={entry.outcome} claims={undefined} emptyState={null} />
           </Section>
         )}
 
@@ -1085,11 +1159,45 @@ export default function EntryDetailPage() {
           )}
 
           {docsData?.documents && docsData.documents.length > 0 ? (
-            <div className="space-y-1">
-              {docsData.documents.map((doc) => (
-                <SourceDocRow key={doc.id} doc={doc} entryId={id} onChange={mutateDocs} />
-              ))}
-            </div>
+            (() => {
+              // Anchor/satellite evidence split (P1.1): the instrument's own
+              // text sits above supporting materials.
+              const primary = docsData.documents.filter((d) => d.role === "primary_text");
+              const supporting = docsData.documents.filter((d) => d.role !== "primary_text");
+              return (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-[11px] font-medium uppercase tracking-wide text-fg-3 mb-1">
+                      The instrument
+                    </h4>
+                    {primary.length > 0 ? (
+                      <div className="space-y-1">
+                        {primary.map((doc) => (
+                          <SourceDocRow key={doc.id} doc={doc} entryId={id} onChange={mutateDocs} />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-fg-3 py-1">
+                        No primary text designated. Use &ldquo;Set as instrument&rdquo; on the
+                        official legislation text below so analysis grounds in the instrument itself.
+                      </p>
+                    )}
+                  </div>
+                  {supporting.length > 0 && (
+                    <div>
+                      <h4 className="text-[11px] font-medium uppercase tracking-wide text-fg-3 mb-1">
+                        Supporting materials
+                      </h4>
+                      <div className="space-y-1">
+                        {supporting.map((doc) => (
+                          <SourceDocRow key={doc.id} doc={doc} entryId={id} onChange={mutateDocs} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
           ) : (
             !showDocForm && (
               <EmptyState
@@ -1960,7 +2068,10 @@ function CitationFootnote({ claim, index }: { claim: EntryClaim; index: number }
             // Scroll-into-view of the doc row happens via the hash anchor;
             // additionally reveal the doc's text at the cited section (C3).
             if (cite.sourceDocumentId) {
-              revealClaimSource(cite.sourceDocumentId, cite.sectionRef ?? null);
+              revealClaimSource(cite.sourceDocumentId, cite.sectionRef ?? null, {
+                quoteStart: cite.quoteStart,
+                quoteEnd: cite.quoteEnd,
+              });
             }
           }}
         >
@@ -2001,6 +2112,17 @@ function CitationPopover({ claim }: { claim: EntryClaim }) {
       )}
       {cite.sectionRef && (
         <div className="mt-0.5 font-mono text-[10px] text-fg-3">{cite.sectionRef}</div>
+      )}
+      {cite.quoteVerified && cite.quote && (
+        <div className="mt-1.5 pt-1.5 border-t border-border/50">
+          <span className="inline-flex items-center gap-1 text-[10px] text-[var(--green)] font-medium">
+            <ShieldCheck className="w-3 h-3" />
+            Quote verified
+          </span>
+          <blockquote className="mt-1 pl-2 border-l-2 border-[color:var(--green)]/40 text-fg-2 italic">
+            &ldquo;{cite.quote}&rdquo;
+          </blockquote>
+        </div>
       )}
       {groundingLabel && (
         <div className="mt-1 text-[10px] text-fg-3">
@@ -2292,26 +2414,46 @@ function SourceDocRow({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [highlight, setHighlight] = useState(false);
+  // Exact character range to highlight (P1.2). Null falls back to the
+  // best-effort section scroll for legacy citations without anchored quotes.
+  const [range, setRange] = useState<{ start: number; end: number } | null>(null);
+  const [showVersions, setShowVersions] = useState(false);
+  const [promoting, setPromoting] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
+  const markRef = useRef<HTMLElement>(null);
   const hasText = !!doc.fullText;
+  const isPrimary = doc.role === "primary_text";
 
   useEffect(() => {
     function onReveal(e: Event) {
       const detail = (e as CustomEvent<RevealSourceDetail>).detail;
       if (!detail || detail.docId !== doc.id) return;
       if (!hasText) return;
+      const full = doc.fullText ?? "";
+
+      // Prefer the guaranteed pinpoint range when the citation carries verified
+      // quote offsets; otherwise fall back to the section-scroll heuristic.
+      const hasRange =
+        typeof detail.quoteStart === "number" &&
+        typeof detail.quoteEnd === "number" &&
+        detail.quoteEnd > detail.quoteStart &&
+        detail.quoteEnd <= full.length;
+      setRange(hasRange ? { start: detail.quoteStart!, end: detail.quoteEnd! } : null);
       setExpanded(true);
-      // Wait for the text container to render, then scroll to the section.
+
       setTimeout(() => {
-        const container = textRef.current;
-        const full = doc.fullText ?? "";
-        if (container && detail.sectionRef && full) {
-          const offset = findSectionOffset(full, detail.sectionRef);
-          if (offset >= 0 && full.length > 0) {
-            container.scrollTop = Math.max(
-              0,
-              (offset / full.length) * container.scrollHeight - 40
-            );
+        if (hasRange && markRef.current) {
+          markRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
+        } else {
+          const container = textRef.current;
+          if (container && detail.sectionRef && full) {
+            const offset = findSectionOffset(full, detail.sectionRef);
+            if (offset >= 0 && full.length > 0) {
+              container.scrollTop = Math.max(
+                0,
+                (offset / full.length) * container.scrollHeight - 40
+              );
+            }
           }
         }
         setHighlight(true);
@@ -2321,6 +2463,16 @@ function SourceDocRow({
     window.addEventListener(REVEAL_SOURCE_EVENT, onReveal);
     return () => window.removeEventListener(REVEAL_SOURCE_EVENT, onReveal);
   }, [doc.id, doc.fullText, hasText]);
+
+  async function promote() {
+    setPromoting(true);
+    try {
+      await setDocumentRole(entryId, doc.id, "primary_text");
+      onChange();
+    } finally {
+      setPromoting(false);
+    }
+  }
 
   return (
     <div
@@ -2332,6 +2484,12 @@ function SourceDocRow({
         <div className="flex-1 min-w-0">
           <span className="text-[13px] font-medium text-fg truncate block">{doc.name}</span>
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            {isPrimary && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-accent font-medium px-1.5 py-px rounded bg-accent/10">
+                <BookMarked className="w-3 h-3" />
+                Instrument
+              </span>
+            )}
             {doc.charCount && (
               <span className="text-[11px] text-fg-3 font-mono">
                 {doc.charCount.toLocaleString()} chars
@@ -2375,7 +2533,32 @@ function SourceDocRow({
                 {expanded ? "Hide text" : "Show text"}
               </button>
             )}
+            {!isPrimary && hasText && (
+              <button
+                type="button"
+                disabled={promoting}
+                onClick={promote}
+                className="inline-flex items-center gap-0.5 text-[11px] text-fg-3 hover:text-accent transition-colors disabled:opacity-40"
+                title="Designate this document as the entry's primary instrument text"
+              >
+                <BookMarked className="w-2.5 h-2.5" />
+                {promoting ? "Setting…" : "Set as instrument"}
+              </button>
+            )}
+            {isPrimary && (
+              <button
+                type="button"
+                onClick={() => setShowVersions((v) => !v)}
+                className="inline-flex items-center gap-0.5 text-[11px] text-fg-3 hover:text-accent transition-colors"
+              >
+                <History className="w-2.5 h-2.5" />
+                {showVersions ? "Hide history" : "Compilation history"}
+              </button>
+            )}
           </div>
+          {isPrimary && showVersions && (
+            <CompilationHistory entryId={entryId} doc={doc} />
+          )}
           <FetchFailureRow doc={doc} entryId={entryId} onChange={onChange} />
         </div>
         <button
@@ -2397,8 +2580,76 @@ function SourceDocRow({
             highlight ? "border-accent ring-1 ring-accent" : "border-border"
           }`}
         >
-          {doc.fullText}
+          {range && doc.fullText ? (
+            <>
+              {doc.fullText.slice(0, range.start)}
+              <mark
+                ref={markRef}
+                className={`rounded-sm px-0.5 transition-colors ${
+                  highlight
+                    ? "bg-accent/30 text-fg"
+                    : "bg-accent/15 text-fg"
+                }`}
+              >
+                {doc.fullText.slice(range.start, range.end)}
+              </mark>
+              {doc.fullText.slice(range.end)}
+            </>
+          ) : (
+            doc.fullText
+          )}
         </div>
+      )}
+    </div>
+  );
+}
+
+// Compilation history for a primary-text doc (P1.3). Lists point-in-time
+// snapshots captured when the upstream instrument changed, so the reader can
+// see "what did this say when we assessed it".
+function CompilationHistory({
+  entryId,
+  doc,
+}: {
+  entryId: string;
+  doc: import("@/lib/types").SourceDocument;
+}) {
+  const { data } = useDocumentVersions(entryId, doc.id);
+  const versions = data?.versions ?? [];
+
+  return (
+    <div className="mt-1.5 rounded-md border border-border/60 bg-bg px-2.5 py-2">
+      <div className="flex items-center gap-1.5 text-[11px] text-fg-3">
+        <History className="w-3 h-3" />
+        <span>
+          Compilation as retrieved{" "}
+          <span className="text-fg-2">
+            {doc.retrievedAt ? formatDate(doc.retrievedAt) : "unknown date"}
+          </span>{" "}
+          (current)
+        </span>
+      </div>
+      {versions.length === 0 ? (
+        <p className="mt-1 text-[11px] text-fg-3">
+          No earlier compilations recorded. Snapshots are captured automatically
+          when a source check detects the instrument text has changed.
+        </p>
+      ) : (
+        <ul className="mt-1.5 space-y-1 border-l border-border/60 pl-2.5">
+          {versions.map((v) => (
+            <li key={v.id} className="text-[11px] text-fg-3">
+              <span className="text-fg-2">
+                {v.retrievedAt ? formatDate(v.retrievedAt) : formatDate(v.createdAt)}
+              </span>
+              {typeof v.charCount === "number" && (
+                <span className="ml-1.5 font-mono">{v.charCount.toLocaleString()} chars</span>
+              )}
+              <span className="ml-1.5 px-1 py-px rounded bg-hover text-fg-3">
+                {v.trigger === "amendment" ? "amendment" : "source change"}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

@@ -6,10 +6,12 @@ import {
   buildCorpus,
   fetchSourceContents,
   getStoredDocTexts,
+  getPrimaryTextDocs,
   type CorpusItem,
 } from "@/lib/ask-corpus";
-import { retrieveCorpus, retrieveChunks } from "@/lib/ask-retrieval";
+import { retrieveCorpus, retrieveChunks, type TextChunk } from "@/lib/ask-retrieval";
 import { resolveScopes, type ScopedSource } from "@/lib/ask-scope";
+import { locateQuoteOffsets } from "@/lib/summary-ai";
 import type {
   AskConversationalAnswer,
   AskMessage,
@@ -17,6 +19,7 @@ import type {
   AskArgusAction,
   AskArgusAnswer,
   AskArgusCitation,
+  AskCitationPin,
   DeepReportSection,
 } from "@/lib/ask-types";
 
@@ -354,7 +357,119 @@ function buildCitations(items: CorpusItem[]): AskArgusCitation[] {
     meta: item.meta,
     sourceLabel: item.sourceLabel,
     externalUrl: item.externalUrl,
+    // §3.3 — realm defaults to the entry's analysis fields; pin enrichment may
+    // promote it to "instrument" when the claim grounds in the instrument text.
+    realm: "analysis",
+    tier: item.authorityTier,
+    formalCitation: item.formalCitation ?? null,
   }));
+}
+
+// Authority-first ordering (§3.3): primary legislation → regulator → commentary
+// → web. Ties keep their retrieval order (stable sort).
+const TIER_RANK: Record<string, number> = {
+  primary_legislation: 0,
+  regulator: 1,
+  legal_commentary: 2,
+  commentary: 2,
+  industry: 3,
+  media: 4,
+  web: 5,
+};
+function orderCitationsByAuthority(citations: AskArgusCitation[]): AskArgusCitation[] {
+  return citations
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => {
+      const ra = TIER_RANK[a.c.tier ?? (a.c.realm === "web" ? "web" : "commentary")] ?? 3;
+      const rb = TIER_RANK[b.c.tier ?? (b.c.realm === "web" ? "web" : "commentary")] ?? 3;
+      return ra - rb || a.i - b.i;
+    })
+    .map((x) => x.c);
+}
+
+/**
+ * Attach instrument-text evidence pins to tracker citations (§3.1/§3.2). For
+ * each cited entry that has a primary-text document, retrieve the best-matching
+ * passage for the query, verify a representative quote against the stored text,
+ * and pin it beneath the entry citation — promoting the citation's realm to
+ * "instrument". Entry-first, pin second; never a bare source-doc citation.
+ */
+async function enrichCitationsWithPins(
+  citations: AskArgusCitation[],
+  query: string
+): Promise<AskArgusCitation[]> {
+  const trackerIds = citations.filter((c) => c.kind === "tracker").map((c) => c.id);
+  const primaryDocs = await getPrimaryTextDocs(trackerIds);
+  if (primaryDocs.size === 0) return citations;
+
+  return citations.map((c) => {
+    const doc = c.kind === "tracker" ? primaryDocs.get(c.id) : undefined;
+    if (!doc) return c;
+
+    const chunks = chunkDocText(doc.docId, doc.fullText);
+    const best = retrieveChunks(chunks, query, 1)[0];
+    if (!best) return c;
+
+    // Pull a representative sentence from the passage and anchor it to real
+    // offsets in the full text so the tracker deep-link can pinpoint it.
+    const quote = representativeSentence(best.text);
+    if (!quote) return c;
+    const located = locateQuoteOffsets(doc.fullText, quote);
+
+    const pin: AskCitationPin = {
+      sourceDocumentId: doc.docId,
+      sectionRef: guessSectionRef(quote),
+      quote: located?.matched ?? quote,
+      quoteVerified: !!located,
+      quoteStart: located?.start ?? null,
+      quoteEnd: located?.end ?? null,
+    };
+    return { ...c, realm: "instrument", pin };
+  });
+}
+
+// Split a document into ~1500-char passages on paragraph boundaries for
+// passage retrieval. Mirrors the scoped-Ask chunking budget.
+function chunkDocText(docId: string, fullText: string): TextChunk[] {
+  const CHUNK = 1500;
+  const paras = fullText.split(/\n{2,}/);
+  const chunks: TextChunk[] = [];
+  let buf = "";
+  let idx = 0;
+  const flush = () => {
+    const text = buf.trim();
+    if (text) chunks.push({ id: `${docId}:${idx}`, index: idx, text });
+    idx++;
+    buf = "";
+  };
+  for (const p of paras) {
+    if ((buf + "\n\n" + p).length > CHUNK && buf) flush();
+    buf += (buf ? "\n\n" : "") + p;
+  }
+  flush();
+  return chunks;
+}
+
+// The most substantial sentence in a passage — long enough to anchor, short
+// enough to quote. Falls back to a trimmed prefix.
+function representativeSentence(passage: string): string | null {
+  const sentences = passage
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.;:])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 40 && s.length <= 240);
+  if (sentences.length > 0) {
+    return sentences.sort((a, b) => b.length - a.length)[0];
+  }
+  const trimmed = passage.replace(/\s+/g, " ").trim();
+  return trimmed.length >= 20 ? trimmed.slice(0, 200) : null;
+}
+
+// Best-effort section reference from a quote (e.g. "s 13G", "Article 4",
+// "Part 3"). Null when nothing recognisable is present.
+function guessSectionRef(quote: string): string | null {
+  const m = quote.match(/\b(?:s(?:ection)?|art(?:icle)?|reg(?:ulation)?|part|sched(?:ule)?)\.?\s*\d+[A-Za-z]?(?:\([^)]*\))?/i);
+  return m ? m[0].replace(/\s+/g, " ").trim() : null;
 }
 
 function buildContext(
@@ -422,9 +537,14 @@ async function assembleGlobalContext(
     top.filter((i) => i.kind === "tracker").map((i) => i.id).slice(0, opts.fetchCount)
   );
 
+  // §3.2/§3.3 — pin instrument-text passages beneath entry citations, then
+  // order authority-first (primary legislation before regulator before
+  // commentary before web).
+  const pinned = await enrichCitationsWithPins(buildCitations(used), retrievalQuery(query, history));
+
   return {
     context: buildContext(used, sourceContents, storedDocs, { bodyLen: opts.bodyLen, sourceLen: opts.sourceLen }),
-    citations: buildCitations(used),
+    citations: orderCitationsByAuthority(pinned),
     validIds: new Set(used.map((i) => i.id)),
     matchedCount: matches.length,
     hasSourceContent: sourceContents.size > 0 || storedDocs.size > 0,
@@ -726,6 +846,8 @@ function extractWebCitations(
       meta: hostOf(c.url),
       sourceLabel: hostOf(c.url),
       externalUrl: c.url,
+      realm: "web",
+      tier: "web",
     });
   }
 

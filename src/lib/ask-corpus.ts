@@ -28,6 +28,10 @@ export interface CorpusItem {
   actions: AskArgusAction[];
   externalUrl?: string;
   sourceUrls?: string[];
+  // §3.3/§3.4 — authority tier for ordering + the entry's formal citation for
+  // copy-as-citation. Populated for tracker entries only.
+  authorityTier?: string;
+  formalCitation?: string | null;
 }
 
 export async function buildCorpus(): Promise<CorpusItem[]> {
@@ -152,7 +156,40 @@ function entryToCorpusItem(entry: Entry, docSnippets?: string[]): CorpusItem {
     actions,
     externalUrl: entry.sourceUrls?.[0]?.url,
     sourceUrls: entry.sourceUrls?.map((s) => s.url) || undefined,
+    authorityTier: entryAuthorityTier(entry.type),
+    formalCitation: entry.formalCitation ?? null,
   };
+}
+
+// Coarse authority tier for a tracker entry, for authority-first citation
+// ordering (§3.3). Mirrors source-tiers' vocabulary.
+export function entryAuthorityTier(type: string): string {
+  if (["legislation", "amending-act", "bill"].includes(type)) return "primary_legislation";
+  if (["regulation", "binding-guidance"].includes(type)) return "regulator";
+  return "commentary";
+}
+
+/**
+ * Primary-text source documents keyed by entry id (§3.2). Only docs designated
+ * as the instrument's primary text with usable full text — these are the
+ * passages global Ask grounds instrument-level claims in.
+ */
+export async function getPrimaryTextDocs(
+  entryIds: string[]
+): Promise<Map<string, { docId: string; fullText: string }>> {
+  const out = new Map<string, { docId: string; fullText: string }>();
+  if (entryIds.length === 0) return out;
+  const idSet = new Set(entryIds);
+  const docs = await db
+    .select()
+    .from(sourceDocuments)
+    .where(eq(sourceDocuments.role, "primary_text"));
+  for (const doc of docs) {
+    if (!doc.fullText || !idSet.has(doc.entryId)) continue;
+    // One primary text per entry — first wins.
+    if (!out.has(doc.entryId)) out.set(doc.entryId, { docId: doc.id, fullText: doc.fullText });
+  }
+  return out;
 }
 
 function digestStoryToCorpusItem(

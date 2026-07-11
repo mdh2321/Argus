@@ -76,6 +76,7 @@ export async function logChanges(
     "exemptions", "penalties",
     "maxPenaltyValue", "maxPenaltyCurrency", "impactScore", "regulator",
     "notes", "flagged", "openQuestions", "relatedContext",
+    "whatItChanges", "whatItClarifies", "outcome",
   ];
 
   const dbFieldMap: Record<string, string> = {
@@ -85,6 +86,7 @@ export async function logChanges(
     complianceImplications: "compliance_implications", maxPenaltyValue: "max_penalty_value",
     maxPenaltyCurrency: "max_penalty_currency", impactScore: "impact_score", exemptions: "exemptions",
     openQuestions: "open_questions", relatedContext: "related_context",
+    whatItChanges: "what_it_changes", whatItClarifies: "what_it_clarifies", outcome: "outcome",
   };
 
   for (const field of fieldsToTrack) {

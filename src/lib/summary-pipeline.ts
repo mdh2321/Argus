@@ -5,10 +5,16 @@ import { entries, sourceDocuments, definedTerms, entryRelationships } from "@/db
 import { and, eq, inArray } from "drizzle-orm";
 import { logChanges } from "@/lib/entry-helpers";
 import { now, toJsonString } from "@/lib/utils";
-import { generateEntrySummary, generatePreliminarySummary } from "@/lib/summary-ai";
+import {
+  generateEntrySummary,
+  generatePreliminarySummary,
+  generateSatelliteDelta,
+  type SatelliteDeltaKind,
+} from "@/lib/summary-ai";
 import type { SummaryDepth } from "@/lib/types";
 import { logAgentRun } from "@/lib/agent-runs";
 import { refreshSourceDocument } from "@/lib/source-refresher";
+import { classifyEntry } from "@/lib/anchor-model";
 
 // Background-job pipeline for the entry-summary workflow. Lifted out of the
 // /generate-summary route so creation paths (manual create, capture, ingest,
@@ -57,6 +63,16 @@ export async function kickOffSummaryGeneration(id: string): Promise<KickoffResul
   });
 
   return { status: "running", startedAt };
+}
+
+// Map a satellite's type + relationships to the delta field it should carry.
+function pickDeltaKind(type: string, outgoingKinds: string[]): SatelliteDeltaKind {
+  if (type === "enforcement" || type === "court-decision") return "outcome";
+  if (type === "interpretive-guidance" || type === "policy" || outgoingKinds.includes("interprets")) {
+    return "whatItClarifies";
+  }
+  // amending-act, bills that amend, or anything with an `amends` link.
+  return "whatItChanges";
 }
 
 export async function runSummaryPipeline(id: string) {
@@ -136,6 +152,40 @@ export async function runSummaryPipeline(id: string) {
             sourceUrl: d.sourceUrl,
             fullText: d.fullText as string,
             sourceAuthority: d.sourceAuthority,
+          });
+        }
+      }
+
+      // §2.5 — guidance grounding pool. Source documents of guidance that
+      // `interprets` this anchor join the anchor's grounding pool (regulator
+      // tier), labelled so the model treats them as interpretive material, not
+      // as the primary instrument. This is the concrete payoff of rule 5:
+      // interpretive guidance is both a satellite (on the timeline) AND a
+      // source (feeding the anchor's analysis).
+      const guidanceRels = await db
+        .select({ fromEntryId: entryRelationships.fromEntryId })
+        .from(entryRelationships)
+        .where(and(eq(entryRelationships.toEntryId, id), eq(entryRelationships.kind, "interprets")));
+      const guidanceIds = guidanceRels.map((r) => r.fromEntryId);
+      if (guidanceIds.length > 0) {
+        const guidanceEntries = await db
+          .select({ id: entries.id, shortName: entries.shortName })
+          .from(entries)
+          .where(inArray(entries.id, guidanceIds));
+        const guidanceNameById = new Map(guidanceEntries.map((e) => [e.id, e.shortName]));
+        const guidanceDocs = await db
+          .select()
+          .from(sourceDocuments)
+          .where(inArray(sourceDocuments.entryId, guidanceIds));
+        for (const d of guidanceDocs) {
+          if (!d.fullText) continue;
+          groundedDocs.push({
+            id: d.id,
+            name: `[Interpretive guidance — ${guidanceNameById.get(d.entryId) ?? "guidance"}] ${d.name}`,
+            sourceUrl: d.sourceUrl,
+            fullText: d.fullText as string,
+            // Guidance is regulator-tier authority, not the primary instrument.
+            sourceAuthority: d.sourceAuthority ?? "official_regulator",
           });
         }
       }
@@ -230,6 +280,82 @@ export async function runSummaryPipeline(id: string) {
     const keyDates = row.keyDates
       ? (JSON.parse(row.keyDates) as { date: string; label: string }[])
       : undefined;
+
+    // ── Satellite delta branch (§2.3) ──────────────────────────────────────
+    // If this entry is a satellite (amending act, guidance, enforcement, court
+    // decision), it carries a delta, not full analysis. Determine the delta
+    // kind and anchor, generate just the delta, and return early.
+    const outgoingRels = await db
+      .select({ toEntryId: entryRelationships.toEntryId, kind: entryRelationships.kind })
+      .from(entryRelationships)
+      .where(eq(entryRelationships.fromEntryId, id));
+    const outgoingKinds = outgoingRels.map((r) => r.kind);
+
+    if (classifyEntry(row.type, outgoingKinds) === "satellite") {
+      const deltaKind = pickDeltaKind(row.type, outgoingKinds);
+
+      // Anchor = the `to` entry of the first anchoring relationship.
+      const anchorRel = outgoingRels.find((r) =>
+        ["amends", "interprets", "implements", "subordinate_to"].includes(r.kind)
+      );
+      let anchorName: string | null = null;
+      if (anchorRel) {
+        const [anchor] = await db
+          .select({ shortName: entries.shortName })
+          .from(entries)
+          .where(eq(entries.id, anchorRel.toEntryId));
+        anchorName = anchor?.shortName ?? null;
+      }
+
+      const delta = await generateSatelliteDelta(
+        {
+          shortName: row.shortName,
+          fullName: row.fullName,
+          jurisdiction: row.jurisdiction,
+          category: row.category,
+          type: row.type,
+          status: row.status,
+          regulator: row.regulator,
+          existingSummary: row.summary,
+          existingNotes: row.notes,
+          sourceDocuments: groundedDocs,
+          definedTerms: termsForPrompt,
+          comparators,
+          currentDate: new Date().toISOString().slice(0, 10),
+          keyDates,
+          relatedEntryNames,
+        },
+        { anchorName, deltaKind }
+      );
+
+      const ts = now();
+      const deltaUpdates: Record<string, unknown> = {
+        summary: delta.summary || row.summary,
+        // Write only the delta field for this kind; clear the others so a
+        // reclassified satellite doesn't show a stale delta of the wrong kind.
+        whatItChanges: deltaKind === "whatItChanges" ? delta.delta : null,
+        whatItClarifies: deltaKind === "whatItClarifies" ? delta.delta : null,
+        outcome: deltaKind === "outcome" ? delta.delta : null,
+        aiGenerated: true,
+        summaryDepth: groundedDocs.length === 0 ? "preliminary" : "full",
+        updatedAt: ts,
+        summaryStatus: "idle",
+        summaryError: null,
+      };
+      // Impact roll-up (decision): in-flight amendments keep their own impact
+      // score; guidance rolls up to the anchor, so clear its score.
+      if (deltaKind === "whatItClarifies") {
+        deltaUpdates.impactScore = null;
+      }
+      if (delta.formalCitation) deltaUpdates.formalCitation = delta.formalCitation;
+      if (delta.impactOnUs) deltaUpdates.impactOnUs = delta.impactOnUs;
+      if (delta.impactOnCustomers) deltaUpdates.impactOnCustomers = delta.impactOnCustomers;
+
+      await logChanges(id, row, deltaUpdates, "ai");
+      await db.update(entries).set(deltaUpdates).where(eq(entries.id, id));
+      await logAgentRun({ workflow: "summary", modelUsed: "claude-sonnet-4-6", entriesUpdated: 1 });
+      return;
+    }
 
     // Branch on source-doc presence. With docs: full 4-stage adversarial
     // pipeline. Without docs: single-shot preliminary sketch.

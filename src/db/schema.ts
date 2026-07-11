@@ -75,6 +75,16 @@ export const entries = sqliteTable("entries", {
   // for most entries but stored explicitly so exceptions are expressible.
   // Values: 'binding' | 'expected' | 'interpretive' | 'informational'.
   authorityLevel: text("authority_level"),
+  // Satellite delta analysis (plan §2.3). Satellites carry the delta they
+  // introduce rather than a second copy of the anchor's obligations:
+  //   whatItChanges   — amending acts / bills that amend
+  //   whatItClarifies — interpretive guidance / policy
+  //   outcome         — enforcement actions / court decisions
+  // Only the field matching the satellite's relationship is populated; anchors
+  // leave all three null.
+  whatItChanges: text("what_it_changes"),
+  whatItClarifies: text("what_it_clarifies"),
+  outcome: text("outcome"),
   aiGenerated: integer("ai_generated", { mode: "boolean" }).default(false),
   archived: integer("archived", { mode: "boolean" }).default(false),
   lastReviewed: text("last_reviewed"),
@@ -114,6 +124,12 @@ export const sourceDocuments = sqliteTable("source_documents", {
   fileType: text("file_type"), // pdf, txt, html, etc.
   charCount: integer("char_count"), // for quick size reference
   addedBy: text("added_by").notNull().default("manual"), // "manual" | "ai"
+  // Anchor/satellite evidence role. 'primary_text' = the instrument itself (the
+  // ground-truth legal text — exactly one per instrument entry); 'supporting' =
+  // explanatory memoranda, regulator guidance, analysis, news. Null on legacy
+  // rows until backfilled or manually promoted. Drives the Sources panel split
+  // ("The instrument" vs "Supporting materials") and instrument-text retrieval.
+  role: text("role"), // 'primary_text' | 'supporting'
   // Trust layer
   sourceAuthority: text("source_authority"), // official_legislation, official_regulator, law_firm_analysis, news, academic, unknown
   verifiedUrl: integer("verified_url", { mode: "boolean" }).default(false),
@@ -131,6 +147,28 @@ export const sourceDocuments = sqliteTable("source_documents", {
   extractor: text("extractor"), // "exa" | "direct-html" | "direct-pdf" | "direct-text" | null
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
+});
+
+// Point-in-time snapshots of a source document's full text. When
+// `source-refresher` detects that an upstream instrument changed (content hash
+// differs), it snapshots the OUTGOING text here before overwriting, so we can
+// answer "what did this instrument say when we assessed it" and show a
+// compilation timeline on the primary text. Only primary_text docs are worth
+// versioning in practice, but the table isn't restricted — any doc can snapshot.
+export const sourceDocumentVersions = sqliteTable("source_document_versions", {
+  id: text("id").primaryKey(),
+  sourceDocId: text("source_doc_id").notNull().references(() => sourceDocuments.id, { onDelete: "cascade" }),
+  entryId: text("entry_id").notNull().references(() => entries.id),
+  contentHash: text("content_hash"), // SHA256 of the snapshotted fullText
+  fullText: text("full_text"), // the text as it read at retrievedAt
+  charCount: integer("char_count"),
+  // When this text was originally retrieved from source (the doc's retrievedAt
+  // at snapshot time), not when the snapshot row was written.
+  retrievedAt: text("retrieved_at"),
+  // What caused the snapshot: 'refresh' (periodic/manual source check detected a
+  // change) | 'amendment' (an amending instrument commenced — P2.4).
+  trigger: text("trigger").notNull().default("refresh"),
+  createdAt: text("created_at").notNull(),
 });
 
 // Defined terms extracted from a source document's definitions section. Most

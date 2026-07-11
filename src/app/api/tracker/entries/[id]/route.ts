@@ -5,6 +5,8 @@ import { eq, desc, or, inArray, and } from "drizzle-orm";
 import { now, toJsonString, generateId } from "@/lib/utils";
 import { serializeEntry, logChanges, syncDeadlines, computeNextKeyDate } from "@/lib/entry-helpers";
 import { normalizeSourceUrls } from "@/lib/source-tiers";
+import { classifyEntry, satelliteMissingAnchor } from "@/lib/anchor-model";
+import { refreshSourcesForEntry } from "@/lib/source-refresher";
 import type { RelatedEntryWithKind } from "@/lib/types";
 
 export async function GET(
@@ -171,8 +173,19 @@ export async function GET(
   supersededBy.sort(sortByDate);
   parentInstruments.sort(sortByDate);
 
+  // Anchor/satellite classification + soft validation (§2.1). Outgoing kinds
+  // are the relationships where this entry is the dependent (`from`) side.
+  const outgoingKinds = rels
+    .filter((r) => r.fromEntryId === id)
+    .map((r) => r.kind);
+  const anchorRole = classifyEntry(entry.type, outgoingKinds);
+
   return NextResponse.json({
-    entry: serializeEntry(entry),
+    entry: {
+      ...serializeEntry(entry),
+      anchorRole,
+      missingAnchor: satelliteMissingAnchor(entry.type, outgoingKinds),
+    },
     changes,
     proposedChanges,
     parentEntry,
@@ -288,6 +301,22 @@ export async function PATCH(
             .update(entries)
             .set({ analysisStaleReason: staleReason, updatedAt: staleTs })
             .where(eq(entries.id, t.toEntryId));
+        }
+
+        // §2.4 — on actual commencement, the anchor's compilation is now out of
+        // date. Re-fetch its primary text; the refresher snapshots the outgoing
+        // compilation (tagged `amendment`) before overwriting, preserving the
+        // pre-amendment text on the anchor's compilation timeline. Fire-and-
+        // forget — the fetch is slow and must not block the PATCH response. The
+        // staleness flag above + the entry's "Re-ground analysis" action
+        // complete the loop.
+        if (finalStatus === "in_force") {
+          void refreshSourcesForEntry(t.toEntryId, "amendment").catch((err) =>
+            console.error(
+              `[amendment-commence] source refresh failed for anchor ${t.toEntryId}:`,
+              err
+            )
+          );
         }
       }
     }

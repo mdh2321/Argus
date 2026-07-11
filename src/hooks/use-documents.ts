@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { SourceDocument } from "@/lib/types";
+import type { SourceDocument, SourceDocumentRole, SourceDocumentVersion } from "@/lib/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -31,6 +31,33 @@ export async function deleteDocument(entryId: string, docId: string) {
   });
   if (!res.ok) throw new Error("Failed to delete document");
   return res.json();
+}
+
+export async function setDocumentRole(
+  entryId: string,
+  docId: string,
+  role: SourceDocumentRole
+) {
+  const res = await fetch(
+    `/api/tracker/entries/${entryId}/documents/${docId}/role`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    }
+  );
+  if (!res.ok) throw new Error("Failed to update document role");
+  return res.json();
+}
+
+// Compilation history for a single source doc (P1.3).
+export function useDocumentVersions(entryId: string | null, docId: string | null) {
+  return useSWR<{ versions: SourceDocumentVersion[] }>(
+    entryId && docId
+      ? `/api/tracker/entries/${entryId}/documents/${docId}/versions`
+      : null,
+    fetcher
+  );
 }
 
 export async function refetchDocument(entryId: string, docId: string) {

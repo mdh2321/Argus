@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { sourceDocuments, entryChanges } from "@/db/schema";
+import { sourceDocuments, entryChanges, sourceDocumentVersions, entryRelationships, entries } from "@/db/schema";
 import { eq, lt, and, isNotNull, or, isNull } from "drizzle-orm";
 import { generateId, now } from "@/lib/utils";
 import { fetchAndExtract, deriveFetchStatus } from "@/lib/source-fetcher";
@@ -22,7 +22,10 @@ export interface RefreshOutcome {
  * The function is non-throwing — every failure mode is encoded in the
  * returned outcome so callers can summarize without try/catch.
  */
-export async function refreshSourceDocument(documentId: string): Promise<RefreshOutcome> {
+export async function refreshSourceDocument(
+  documentId: string,
+  trigger: "refresh" | "amendment" = "refresh"
+): Promise<RefreshOutcome> {
   const doc = db
     .select()
     .from(sourceDocuments)
@@ -127,6 +130,26 @@ export async function refreshSourceDocument(documentId: string): Promise<Refresh
     };
   }
 
+  // Text changed. Before overwriting, snapshot the OUTGOING compilation so we
+  // can answer "what did this say when we assessed it" (P1.3). Only snapshot
+  // when there's prior text and a prior hash — a first-ever fetch has nothing
+  // worth preserving.
+  if (oldHash !== null && doc.fullText) {
+    db.insert(sourceDocumentVersions)
+      .values({
+        id: generateId(),
+        sourceDocId: doc.id,
+        entryId: doc.entryId,
+        contentHash: oldHash,
+        fullText: doc.fullText,
+        charCount: doc.charCount ?? doc.fullText.length,
+        retrievedAt: doc.retrievedAt,
+        trigger,
+        createdAt: ts,
+      })
+      .run();
+  }
+
   // Text changed (or first time we have a hash). Persist new state and log it.
   db.update(sourceDocuments)
     .set({
@@ -163,6 +186,26 @@ export async function refreshSourceDocument(documentId: string): Promise<Refresh
       .run();
   }
 
+  // §2.5 — if this doc belongs to guidance that `interprets` one or more
+  // anchors, the anchors' grounding pool just changed. Bump each anchor's
+  // updatedAt so the passive "Needs Review" trust badge surfaces (it fires when
+  // an ai-generated entry's lastReviewed predates its updatedAt).
+  if (oldHash !== null) {
+    const interpretsRels = db
+      .select({ toEntryId: entryRelationships.toEntryId })
+      .from(entryRelationships)
+      .where(
+        and(
+          eq(entryRelationships.fromEntryId, doc.entryId),
+          eq(entryRelationships.kind, "interprets")
+        )
+      )
+      .all();
+    for (const rel of interpretsRels) {
+      db.update(entries).set({ updatedAt: ts }).where(eq(entries.id, rel.toEntryId)).run();
+    }
+  }
+
   // Source text changed → re-extract defined terms in the background so the
   // statutory dictionary stays in sync with the upstream legislation.
   if (fetched.fullText && fetched.fullText.length > 200) {
@@ -186,7 +229,10 @@ export async function refreshSourceDocument(documentId: string): Promise<Refresh
   };
 }
 
-export async function refreshSourcesForEntry(entryId: string): Promise<RefreshOutcome[]> {
+export async function refreshSourcesForEntry(
+  entryId: string,
+  trigger: "refresh" | "amendment" = "refresh"
+): Promise<RefreshOutcome[]> {
   const docs = db
     .select({ id: sourceDocuments.id })
     .from(sourceDocuments)
@@ -195,7 +241,7 @@ export async function refreshSourcesForEntry(entryId: string): Promise<RefreshOu
 
   const out: RefreshOutcome[] = [];
   for (const d of docs) {
-    out.push(await refreshSourceDocument(d.id));
+    out.push(await refreshSourceDocument(d.id, trigger));
   }
   return out;
 }

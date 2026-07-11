@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { sourceDocuments, entries } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { generateId, now } from "@/lib/utils";
 import { extractAndStoreTermsForDoc } from "@/lib/defined-terms-ai";
 import { fetchAndExtract, deriveFetchStatus } from "@/lib/source-fetcher";
+import { isPrimaryTextCandidate, PRIMARY_TEXT, SUPPORTING } from "@/lib/source-roles";
+import type { SourceDocumentRole } from "@/lib/types";
 
 export const maxDuration = 120;
 
@@ -82,6 +84,24 @@ export async function POST(
     }
   }
 
+  // Evidence role (plan §1.1). Designate this doc the instrument's primary text
+  // only if it reads like the instrument itself AND the entry has no primary
+  // text yet — an entry has at most one. Otherwise it's supporting material.
+  const entryHasPrimary = !!db
+    .select({ id: sourceDocuments.id })
+    .from(sourceDocuments)
+    .where(and(eq(sourceDocuments.entryId, id), eq(sourceDocuments.role, PRIMARY_TEXT)))
+    .get();
+  const role: SourceDocumentRole =
+    !entryHasPrimary &&
+    isPrimaryTextCandidate({
+      sourceUrl: resolvedUrl,
+      fullText: resolvedFullText,
+      sourceAuthority: null,
+    })
+      ? PRIMARY_TEXT
+      : SUPPORTING;
+
   const doc = {
     id: docId,
     entryId: id,
@@ -91,6 +111,7 @@ export async function POST(
     fileType: resolvedFileType,
     charCount: resolvedCharCount,
     addedBy: addedBy || "manual",
+    role,
     verifiedUrl,
     lastUrlCheck: resolvedUrl ? timestamp : null,
     contentHash,
