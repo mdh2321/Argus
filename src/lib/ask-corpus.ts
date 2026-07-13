@@ -3,8 +3,9 @@ import "server-only";
 import { db } from "@/db";
 import { entries, sourceDocuments, knowledgeItems, digestIssues, digestStories, signals } from "@/db/schema";
 import { serializeEntry } from "@/lib/entry-helpers";
-import { eq, ne } from "drizzle-orm";
-import { formatDate } from "@/lib/utils";
+import { and, eq, ne, inArray, isNotNull } from "drizzle-orm";
+import { formatDate, generateId, now } from "@/lib/utils";
+import { fetchAndExtract } from "@/lib/source-fetcher";
 import type { Entry } from "@/lib/types";
 import type { AskArgusAction } from "@/lib/ask-types";
 
@@ -40,7 +41,10 @@ export async function buildCorpus(): Promise<CorpusItem[]> {
     .from(entries)
     .where(eq(entries.archived, false));
 
-  const allDocs = await db.select().from(sourceDocuments);
+  const allDocs = await db
+    .select({ entryId: sourceDocuments.entryId, fullText: sourceDocuments.fullText })
+    .from(sourceDocuments)
+    .where(isNotNull(sourceDocuments.fullText));
   const docsByEntry = new Map<string, string[]>();
   for (const doc of allDocs) {
     if (!doc.fullText) continue;
@@ -179,13 +183,12 @@ export async function getPrimaryTextDocs(
 ): Promise<Map<string, { docId: string; fullText: string }>> {
   const out = new Map<string, { docId: string; fullText: string }>();
   if (entryIds.length === 0) return out;
-  const idSet = new Set(entryIds);
   const docs = await db
-    .select()
+    .select({ id: sourceDocuments.id, entryId: sourceDocuments.entryId, fullText: sourceDocuments.fullText })
     .from(sourceDocuments)
-    .where(eq(sourceDocuments.role, "primary_text"));
+    .where(and(eq(sourceDocuments.role, "primary_text"), inArray(sourceDocuments.entryId, entryIds)));
   for (const doc of docs) {
-    if (!doc.fullText || !idSet.has(doc.entryId)) continue;
+    if (!doc.fullText) continue;
     // One primary text per entry — first wins.
     if (!out.has(doc.entryId)) out.set(doc.entryId, { docId: doc.id, fullText: doc.fullText });
   }
@@ -236,79 +239,179 @@ function knowledgeToCorpusItem(ki: typeof knowledgeItems.$inferSelect): CorpusIt
   };
 }
 
+/** Outcome of the source-content fetch pass, including previously-silent failures. */
+export interface SourceFetchOutcome {
+  contents: Map<string, string>;
+  /** Items whose URL fetch produced no usable text (timeout, blocked, empty). */
+  failed: { id: string; url: string }[];
+  /** Item ids served from a fresh source_documents cache entry, no live fetch. */
+  cached: Set<string>;
+}
+
+// A cached ask-fetch is considered fresh for 7 days, then re-fetched.
+const FETCH_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// Hard ceiling on a live fetch inside the answer path — fetchAndExtract's own
+// direct-fallback timeout (30s) is fine for pipelines, too slow for Ask.
+const ASK_FETCH_TIMEOUT_MS = 12_000;
+
 /**
- * Fetch live page text for a set of corpus items that carry source URLs.
- * Uses the Readability-based fetcher with a basic fallback. Best-effort —
- * failures resolve to no content rather than throwing.
+ * Fetch page text for corpus items that carry source URLs — cache-first.
+ * Successful live fetches for tracker entries are written back to
+ * source_documents (role "supporting") so the next ask skips the fetch and
+ * the text becomes available to pins and verification. Best-effort — every
+ * failure mode is reported in the outcome instead of vanishing.
  */
-export async function fetchSourceContents(items: CorpusItem[]): Promise<Map<string, string>> {
+export async function fetchSourceContents(items: CorpusItem[]): Promise<SourceFetchOutcome> {
   const contents = new Map<string, string>();
-  const urlsToFetch: { id: string; url: string }[] = [];
+  const failed: { id: string; url: string }[] = [];
+  const cached = new Set<string>();
+
+  const toFetch: { id: string; url: string; entryId: string | null }[] = [];
 
   for (const item of items) {
-    if (item.sourceUrls && item.sourceUrls.length > 0) {
-      urlsToFetch.push({ id: item.id, url: item.sourceUrls[0] });
-    } else if (item.externalUrl) {
-      urlsToFetch.push({ id: item.id, url: item.externalUrl });
+    const url = item.sourceUrls?.[0] || item.externalUrl;
+    if (!url) continue;
+    // Knowledge items masquerade as kind "tracker" with a ki: prefix — they
+    // have no entries row, so never write cache rows for them.
+    const entryId = item.kind === "tracker" && !item.id.startsWith("ki:") ? item.id : null;
+
+    if (entryId) {
+      const hit = lookupCachedFetch(entryId, url);
+      if (hit) {
+        contents.set(item.id, hit.slice(0, 15000));
+        cached.add(item.id);
+        continue;
+      }
     }
+    toFetch.push({ id: item.id, url, entryId });
   }
 
   const results = await Promise.allSettled(
-    urlsToFetch.map(async ({ id, url }) => ({ id, text: (await fetchUrlText(url)).slice(0, 15000) }))
+    toFetch.map(async ({ id, url, entryId }) => {
+      const result = await withTimeout(fetchAndExtract(url), ASK_FETCH_TIMEOUT_MS);
+      if (!result?.extracted || !result.fullText) return { id, url, text: "" };
+      if (entryId) cacheFetchedDoc(entryId, url, result.fullText, result.title, result.extractor, result.contentHash);
+      return { id, url, text: result.fullText.slice(0, 15000) };
+    })
   );
 
-  for (const result of results) {
-    if (result.status === "fulfilled" && result.value.text) {
-      contents.set(result.value.id, result.value.text);
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r.status === "fulfilled" && r.value.text) {
+      contents.set(r.value.id, r.value.text);
+    } else {
+      failed.push({ id: toFetch[i].id, url: toFetch[i].url });
     }
   }
 
-  return contents;
+  return { contents, failed, cached };
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([p, new Promise<null>((resolve) => setTimeout(() => resolve(null), ms))]);
+}
+
+/** A fresh (≤7 day old) ask-cached or user-added doc for this entry+URL, if any. */
+function lookupCachedFetch(entryId: string, url: string): string | null {
+  const rows = db
+    .select({
+      fullText: sourceDocuments.fullText,
+      retrievedAt: sourceDocuments.retrievedAt,
+      addedBy: sourceDocuments.addedBy,
+    })
+    .from(sourceDocuments)
+    .where(and(eq(sourceDocuments.entryId, entryId), eq(sourceDocuments.sourceUrl, url), isNotNull(sourceDocuments.fullText)))
+    .all();
+  for (const row of rows) {
+    if (!row.fullText) continue;
+    // Manually-added docs never expire; ask-cached ones respect the TTL.
+    if (row.addedBy !== "ask-cache") return row.fullText;
+    const age = row.retrievedAt ? Date.now() - new Date(row.retrievedAt).getTime() : Infinity;
+    if (age < FETCH_CACHE_TTL_MS) return row.fullText;
+  }
+  return null;
+}
+
+/** Persist a successful ask-path fetch so subsequent asks read it as a stored doc. */
+function cacheFetchedDoc(
+  entryId: string,
+  url: string,
+  fullText: string,
+  title: string | null,
+  extractor: string | null,
+  contentHash: string | null
+): void {
+  try {
+    const ts = now();
+    // Refresh in place if we already hold an ask-cache row for this URL.
+    const [existing] = db
+      .select({ id: sourceDocuments.id })
+      .from(sourceDocuments)
+      .where(
+        and(
+          eq(sourceDocuments.entryId, entryId),
+          eq(sourceDocuments.sourceUrl, url),
+          eq(sourceDocuments.addedBy, "ask-cache")
+        )
+      )
+      .all();
+    if (existing) {
+      db.update(sourceDocuments)
+        .set({ fullText, charCount: fullText.length, contentHash, retrievedAt: ts, updatedAt: ts, fetchStatus: "ok", extractor })
+        .where(eq(sourceDocuments.id, existing.id))
+        .run();
+      return;
+    }
+    db.insert(sourceDocuments)
+      .values({
+        id: generateId(),
+        entryId,
+        name: title || `Fetched: ${new URL(url).hostname}`,
+        sourceUrl: url,
+        fullText,
+        fileType: "html",
+        charCount: fullText.length,
+        addedBy: "ask-cache",
+        role: "supporting",
+        sourceAuthority: "unknown",
+        fetchStatus: "ok",
+        extractor,
+        contentHash,
+        retrievedAt: ts,
+        createdAt: ts,
+        updatedAt: ts,
+      })
+      .run();
+  } catch (err) {
+    // Caching is an optimisation — never let it break the answer path.
+    console.error("Ask fetch-cache write failed:", err);
+  }
 }
 
 /**
  * Best-effort fetch + readable-text extraction for a single URL. Returns "" on
- * any failure (timeout, non-2xx, network) rather than throwing. Shared by the
- * corpus source-fetch and the scoped-Ask resolver.
+ * any failure (timeout, non-2xx, network) rather than throwing. Delegates to
+ * the Readability/Exa fetcher (the old regex tag-stripper polluted the budget
+ * with nav and cookie banners), capped for the answer path.
  */
 export async function fetchUrlText(url: string): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { "User-Agent": "Argus/1.0 (legal-intelligence)" },
-    });
-    if (!res.ok) return "";
-    const html = await res.text();
-    return extractTextFromHTML(html);
-  } catch {
-    return "";
-  } finally {
-    clearTimeout(timeout);
-  }
+  const result = await withTimeout(fetchAndExtract(url), ASK_FETCH_TIMEOUT_MS);
+  return result?.extracted && result.fullText ? result.fullText : "";
 }
 
 export async function getStoredDocTexts(entryIds: string[]): Promise<Map<string, string>> {
   const result = new Map<string, string>();
   if (entryIds.length === 0) return result;
 
-  const allDocs = await db.select().from(sourceDocuments);
-  for (const doc of allDocs) {
-    if (doc.fullText && entryIds.includes(doc.entryId)) {
-      const existing = result.get(doc.entryId) || "";
-      result.set(doc.entryId, (existing + "\n\n" + doc.fullText.slice(0, 20000)).trim());
-    }
+  const docs = await db
+    .select({ entryId: sourceDocuments.entryId, fullText: sourceDocuments.fullText })
+    .from(sourceDocuments)
+    .where(and(inArray(sourceDocuments.entryId, entryIds), isNotNull(sourceDocuments.fullText)));
+  for (const doc of docs) {
+    if (!doc.fullText) continue;
+    const existing = result.get(doc.entryId) || "";
+    result.set(doc.entryId, (existing + "\n\n" + doc.fullText.slice(0, 20000)).trim());
   }
   return result;
 }
 
-function extractTextFromHTML(html: string): string {
-  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
-  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-  text = text.replace(/<[^>]+>/g, " ");
-  text = text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
-  text = text.replace(/\s+/g, " ").trim();
-  return text;
-}

@@ -46,17 +46,18 @@ export async function loadHistory(sessionId: string): Promise<AskMessage[]> {
     .map((r) => ({ role: r.role, content: r.content }));
 }
 
-/** Append one turn to a session and bump its updatedAt. */
+/** Append one turn to a session and bump its updatedAt. Returns the message id. */
 export async function appendMessage(
   sessionId: string,
   role: "user" | "assistant",
   content: string,
   citedEntryIds?: string[],
   answerJson?: string
-): Promise<void> {
+): Promise<string> {
   const ts = now();
+  const id = generateId();
   await db.insert(queryMessages).values({
-    id: generateId(),
+    id,
     sessionId,
     role,
     content,
@@ -65,4 +66,26 @@ export async function appendMessage(
     createdAt: ts,
   });
   await db.update(querySessions).set({ updatedAt: ts }).where(eq(querySessions.id, sessionId));
+  return id;
+}
+
+/** Load one stored assistant message (for verification / feedback flows). */
+export async function getStoredMessage(
+  messageId: string
+): Promise<{ id: string; sessionId: string; answerJson: string | null } | null> {
+  const [row] = db
+    .select({
+      id: queryMessages.id,
+      sessionId: queryMessages.sessionId,
+      answerJson: queryMessages.answerJson,
+    })
+    .from(queryMessages)
+    .where(eq(queryMessages.id, messageId))
+    .all();
+  return row ?? null;
+}
+
+/** Overwrite a stored message's serialized answer (verification persistence). */
+export async function updateAnswerJson(messageId: string, answerJson: string): Promise<void> {
+  await db.update(queryMessages).set({ answerJson }).where(eq(queryMessages.id, messageId));
 }

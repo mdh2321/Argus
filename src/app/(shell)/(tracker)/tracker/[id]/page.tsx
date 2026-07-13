@@ -37,6 +37,7 @@ import {
   BookMarked,
   History,
   GitBranch,
+  Undo2,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import type {
@@ -249,6 +250,7 @@ export default function EntryDetailPage() {
   const [docForm, setDocForm] = useState({ name: "", sourceUrl: "", fullText: "" });
   const [docUploading, setDocUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [reversing, setReversing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // The "Generating..." spinner is driven by the entry's persisted summaryStatus,
@@ -373,6 +375,7 @@ export default function EntryDetailPage() {
   const inFlightAmendments: RelatedEntryWithKind[] = data.inFlightAmendments ?? [];
   const supersedes: RelatedEntryWithKind[] = data.supersedes ?? [];
   const supersededBy: RelatedEntryWithKind[] = data.supersededBy ?? [];
+  const relatedInstruments: RelatedEntryWithKind[] = data.relatedInstruments ?? [];
 
   // Outside edit mode, sections only render when they have something to
   // show. A section "has content" if its prose field is non-empty OR its
@@ -451,6 +454,8 @@ export default function EntryDetailPage() {
     tocSections.push({ id: "amendment-history", label: "Amendment history" });
   if (supersededBy.length > 0 || supersedes.length > 0)
     tocSections.push({ id: "version-chain", label: "Version chain" });
+  if (relatedInstruments.length > 0)
+    tocSections.push({ id: "related-instruments", label: "Related instruments" });
 
   const startEditing = () => {
     setEditData({
@@ -505,6 +510,33 @@ export default function EntryDetailPage() {
     if (!confirm("Archive this entry?")) return;
     await deleteEntry(id);
     router.push("/tracker");
+  };
+
+  // Undo a fold-in / supersede this entry caused: un-archives it, removes the
+  // provenance rows it wrote on parents, clears the stale flags it set, and
+  // un-retires anything it superseded. Non-destructive.
+  const reverseCommencement = async () => {
+    if (
+      !confirm(
+        "Reverse this commencement?\n\nThis un-archives the entry, undoes the fold-in on the instrument(s) it amended, and un-retires anything it superseded. Parent analyses are left intact."
+      )
+    )
+      return;
+    setReversing(true);
+    try {
+      const res = await fetch(`/api/tracker/entries/${id}/reverse-commencement`, { method: "POST" });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      const n = (json.restoredParents?.length ?? 0) + (json.restoredPredecessors?.length ?? 0);
+      toast.success("Commencement reversed", {
+        description: n ? `Restored ${n} affected instrument${n === 1 ? "" : "s"}.` : undefined,
+      });
+      mutate();
+    } catch (e) {
+      toast.error("Reverse failed", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setReversing(false);
+    }
   };
 
   return (
@@ -592,6 +624,25 @@ export default function EntryDetailPage() {
               {badge.label}
             </span>
           ))}
+          {/* Obligation axis — only shown when it adds signal (not the default
+              "own"): an amendment's obligations live in its parent; informative
+              items (guidance, enforcement, peers) create none. */}
+          {entry.obligationDisposition === "inherited" && (
+            <span
+              title="This instrument's obligations fold into the instrument it amends — read them there."
+              className="rounded-full border border-[color:var(--fg-3)]/20 bg-hover px-2 py-0.5 font-mono text-[10px] font-medium text-fg-3"
+            >
+              Obligations in parent
+            </span>
+          )}
+          {entry.obligationDisposition === "none" && (
+            <span
+              title="Informative — this record explains or reports on obligations rather than creating them."
+              className="rounded-full border border-[color:var(--fg-3)]/20 bg-hover px-2 py-0.5 font-mono text-[10px] font-medium text-fg-3"
+            >
+              Informative
+            </span>
+          )}
           {entry.flagged && (
             <span
               title="Flagged for review"
@@ -623,6 +674,17 @@ export default function EntryDetailPage() {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg text-fg-3 hover:bg-hover hover:text-fg transition-colors"
               />
               <CopyMarkdownButton getMarkdown={() => entryToMarkdown(entry)} />
+              {entry.canReverseCommencement && (
+                <button
+                  disabled={reversing}
+                  onClick={reverseCommencement}
+                  title="Undo this fold-in / supersede and restore the affected instruments"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg text-amber hover:bg-[var(--amber-bg)] transition-colors disabled:opacity-50"
+                >
+                  <Undo2 className={`w-3 h-3 ${reversing ? "animate-spin" : ""}`} />
+                  {reversing ? "Reversing…" : "Reverse commencement"}
+                </button>
+              )}
               <Link
                 href={`/ask?scopeKind=entry&scopeId=${entry.id}&scopeLabel=${encodeURIComponent(entry.shortName)}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium font-mono rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
@@ -1312,13 +1374,15 @@ export default function EntryDetailPage() {
             in the API response (subordinate instruments, guidance, amendments,
             version chain). Renders only when its group has items. */}
         {relatedSubordinates.length > 0 && (
-          <Section id="subordinate-instruments" title="Subordinate instruments" icon={<FileText className="w-3.5 h-3.5 text-fg-3" />}>
+          <Section id="subordinate-instruments" title="Made under this instrument" icon={<FileText className="w-3.5 h-3.5 text-fg-3" />}>
+            <p className="text-[12px] text-fg-3 mb-2">Delegated legislation (regulations, codes, rules) made under this instrument. Each is a standing instrument with its own obligations — read alongside, not folded in.</p>
             <RelatedEntryList items={relatedSubordinates} />
           </Section>
         )}
 
         {relatedGuidance.length > 0 && (
           <Section id="guidance" title="Guidance" icon={<FileText className="w-3.5 h-3.5 text-fg-3" />}>
+            <p className="text-[12px] text-fg-3 mb-2">Interpretive guidance about this instrument. Informative — it explains obligations rather than creating them.</p>
             <RelatedEntryList items={relatedGuidance} />
           </Section>
         )}
@@ -1351,6 +1415,13 @@ export default function EntryDetailPage() {
                 <RelatedEntryList items={supersedes} />
               </>
             )}
+          </Section>
+        )}
+
+        {relatedInstruments.length > 0 && (
+          <Section id="related-instruments" title="Related instruments" icon={<FileText className="w-3.5 h-3.5 text-fg-3" />}>
+            <p className="text-[12px] text-fg-3 mb-2">Independent instruments cross-referenced by this one — peers, not part of its hierarchy. Each carries its own obligations.</p>
+            <RelatedEntryList items={relatedInstruments} />
           </Section>
         )}
 

@@ -1,4 +1,4 @@
-import type { AskScope } from "@/lib/ask-types";
+import type { AskScope, AskWebMode } from "@/lib/ask-types";
 
 const SCOPE_KINDS: AskScope["kind"][] = ["entry", "story", "knowledge", "signal", "matter"];
 const MAX_SCOPES = 8;
@@ -46,4 +46,10 @@ export function parseScopes(body: Record<string, unknown> | null | undefined): A
 /** True when the working set is non-empty and made up entirely of news stories. */
 export function isNewsConversation(scopes: AskScope[]): boolean {
   return scopes.length > 0 && scopes.every((s) => s.kind === "story");
+}
+
+/** Validate the untrusted `web` field into a web mode. Defaults to "off". */
+export function parseWebMode(body: Record<string, unknown> | null | undefined): AskWebMode {
+  const raw = body?.web;
+  return raw === "on" || raw === "auto" || raw === "off" ? raw : "off";
 }

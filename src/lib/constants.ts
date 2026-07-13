@@ -90,9 +90,20 @@ export const STATUSES = [
   { value: "consultation", label: "Consultation", color: "#06b6d4" },
   { value: "bill_introduced", label: "Bill Introduced", color: "#a855f7" },
   { value: "passed", label: "Passed", color: "#f59e0b" },
+  // Some provisions have commenced, others have not. An amendment in this state
+  // flags its parent(s) as partially amended but stays live until full
+  // commencement (staged-commencement handling).
+  { value: "partially_in_force", label: "Partially In Force", color: "#84cc16" },
   { value: "in_force", label: "In Force", color: "#22c55e" },
   { value: "amended", label: "Amended", color: "#22c55e" },
+  // An in-flight bill / amendment / consultation that was withdrawn or died
+  // before commencing. Terminal — any staleness it imposed on a parent is
+  // cleared and it leaves the active watchlist.
+  { value: "lapsed", label: "Lapsed", color: "#57534e" },
   { value: "repealed", label: "Repealed", color: "#374151" },
+  // Retired because a newer instrument replaced it (repeal-and-replace). Kept
+  // for history / point-in-time; not a live compliance surface.
+  { value: "superseded", label: "Superseded", color: "#44403c" },
   { value: "enforcement", label: "Enforcement", color: "#ef4444" },
 ] as const;
 

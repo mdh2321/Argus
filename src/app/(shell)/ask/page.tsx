@@ -3,12 +3,25 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type {
+  AskAnswerTrace,
   AskConversationalAnswer,
   AskScope,
   AskArgusAnswer,
   AskArgusCitation,
   AskSourceOption,
+  AskWebMode,
 } from "@/lib/ask-types";
+import {
+  ConfidenceBanner,
+  ConfidenceChip,
+  DegradationChips,
+  FeedbackBar,
+  ParagraphList,
+  TraceExpander,
+  VerificationChip,
+  VerifyButton,
+  WebBadge,
+} from "@/components/ask/answer-extras";
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SourceFavicon } from "@/components/ui/source-favicon";
@@ -45,6 +58,7 @@ import {
   Quote,
   Copy,
   Check,
+  Globe,
 } from "lucide-react";
 
 type Mode = "quick" | "deep_report";
@@ -151,6 +165,12 @@ interface Turn {
   error?: string;
   progressTokens: number;
   answeredAt?: string;
+  /** Current pipeline stage while streaming ("Searching the web", …). */
+  stageName?: string;
+  /** Stored message id (feedback + verification for conversational turns). */
+  messageId?: string;
+  /** Answer trace for conversational turns (structured turns carry it on answer). */
+  trace?: AskAnswerTrace;
 }
 
 /** One stored message returned by GET /api/ask/sessions/[id]. */
@@ -190,6 +210,7 @@ async function fetchSources(q: string): Promise<AskSourceOption[]> {
 export default function AskPage() {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("quick");
+  const [web, setWeb] = useState<AskWebMode>("off");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [scopes, setScopes] = useState<AskScope[]>([]);
@@ -274,16 +295,18 @@ export default function AskPage() {
   }
 
   // ── streaming: deep report (structured) ──
-  async function streamStructured(id: string, question: string) {
+  async function streamStructured(id: string, question: string, webOverride?: AskWebMode) {
     const res = await fetch("/api/ask/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: question, sessionId, ...scopeBody() }),
+      body: JSON.stringify({ query: question, sessionId, web: webOverride ?? web, ...scopeBody() }),
     });
     if (!res.ok || !res.body) throw new Error("stream failed");
 
     await readSSE(res.body, (evt) => {
-      if (evt.type === "sources") {
+      if (evt.type === "stage") {
+        patchTurn(id, { stageName: evt.name });
+      } else if (evt.type === "sources") {
         patchTurn(id, { sources: evt.sources });
       } else if (evt.type === "progress") {
         patchTurn(id, { progressTokens: Math.round(evt.chars / 4) });
@@ -297,11 +320,17 @@ export default function AskPage() {
   }
 
   // ── streaming: conversational news Q&A ──
-  async function streamConversational(id: string, question: string) {
+  async function streamConversational(id: string, question: string, webOverride?: AskWebMode) {
     const res = await fetch("/api/ask/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: question, sessionId, ...scopeBody() }),
+      // News chat defaults to web-on unless the toggle says otherwise.
+      body: JSON.stringify({
+        query: question,
+        sessionId,
+        web: webOverride ?? (web === "off" ? "off" : "on"),
+        ...scopeBody(),
+      }),
     });
     if (!res.ok || !res.body) throw new Error("stream failed");
 
@@ -317,6 +346,8 @@ export default function AskPage() {
           text: evt.answer.content || acc,
           citations: evt.answer.citations || [],
           answeredAt: new Date().toISOString(),
+          messageId: evt.answer.messageId,
+          trace: evt.answer.trace,
         });
       } else if (evt.type === "error") {
         patchTurn(id, { status: "error", error: evt.message });
@@ -324,11 +355,11 @@ export default function AskPage() {
     });
   }
 
-  async function runQuick(id: string, question: string) {
+  async function runQuick(id: string, question: string, webOverride?: AskWebMode) {
     const res = await fetch("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: question, sessionId, ...scopeBody() }),
+      body: JSON.stringify({ query: question, sessionId, web: webOverride ?? web, ...scopeBody() }),
     });
     if (!res.ok) throw new Error("ask failed");
     const data = (await res.json()) as AskArgusAnswer;
@@ -336,7 +367,7 @@ export default function AskPage() {
     patchTurn(id, { status: "done", answer: data, answeredAt: new Date().toISOString() });
   }
 
-  async function submit(raw: string, overrideMode?: Mode) {
+  async function submit(raw: string, overrideMode?: Mode, webOverride?: AskWebMode) {
     const question = raw.trim();
     if (!question || busy) return;
 
@@ -363,9 +394,9 @@ export default function AskPage() {
     ]);
 
     try {
-      if (kind === "conversational") await streamConversational(id, question);
-      else if (turnMode === "deep_report") await streamStructured(id, question);
-      else await runQuick(id, question);
+      if (kind === "conversational") await streamConversational(id, question, webOverride);
+      else if (turnMode === "deep_report") await streamStructured(id, question, webOverride);
+      else await runQuick(id, question, webOverride);
     } catch {
       patchTurn(id, { status: "error", error: "Argus could not complete that request." });
     } finally {
@@ -447,6 +478,8 @@ export default function AskPage() {
             citations: ans?.citations ?? [],
             answeredAt: m.createdAt,
             progressTokens: 0,
+            messageId: ans?.messageId,
+            trace: ans?.trace,
           });
         }
         question = "";
@@ -492,6 +525,8 @@ export default function AskPage() {
       setInput={setInput}
       mode={mode}
       setMode={setMode}
+      web={web}
+      setWeb={setWeb}
       busy={busy}
       hideMode={isNews}
       onSubmit={handleSubmit}
@@ -610,7 +645,15 @@ export default function AskPage() {
 
           <div className="space-y-6">
             {turns.map((turn) => (
-              <TurnView key={turn.id} turn={turn} onRelated={(q) => void submit(q)} onFork={() => void forkSession()} />
+              <TurnView
+                key={turn.id}
+                turn={turn}
+                sessionId={sessionId}
+                onRelated={(q) => void submit(q)}
+                onFork={() => void forkSession()}
+                onAnswerUpdate={(a) => patchTurn(turn.id, { answer: a })}
+                onWebRetry={(q) => void submit(q, turn.mode, "on")}
+              />
             ))}
           </div>
 
@@ -803,12 +846,39 @@ function SourceResultList({
   );
 }
 
+// Web toggle (Phase 3): three explicit states, cycled by click. Off is the
+// default — the corpus is the product; web is an explicit escalation.
+const WEB_META: Record<AskWebMode, { label: string; blurb: string; className: string }> = {
+  off: { label: "Web off", blurb: "Corpus only", className: "border-border text-fg-3" },
+  auto: { label: "Web auto", blurb: "Offers web when grounding is weak", className: "border-border-hover text-fg-2" },
+  on: { label: "Web on", blurb: "Live web research, cited & tiered", className: "border-border-accent text-accent" },
+};
+const WEB_CYCLE: Record<AskWebMode, AskWebMode> = { off: "auto", auto: "on", on: "off" };
+
+function WebToggle({ web, setWeb, disabled }: { web: AskWebMode; setWeb: (w: AskWebMode) => void; disabled: boolean }) {
+  const meta = WEB_META[web];
+  return (
+    <button
+      type="button"
+      onClick={() => setWeb(WEB_CYCLE[web])}
+      disabled={disabled}
+      title={`${meta.blurb} — click to switch`}
+      className={`inline-flex items-center gap-1.5 rounded-xl border bg-surface px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] transition-colors hover:border-border-accent disabled:opacity-50 ${meta.className}`}
+    >
+      <Globe className="h-3 w-3" />
+      {meta.label}
+    </button>
+  );
+}
+
 function Composer({
   large,
   input,
   setInput,
   mode,
   setMode,
+  web,
+  setWeb,
   busy,
   hideMode,
   onSubmit,
@@ -821,6 +891,8 @@ function Composer({
   setInput: (v: string) => void;
   mode: Mode;
   setMode: (m: Mode) => void;
+  web: AskWebMode;
+  setWeb: (w: AskWebMode) => void;
   busy: boolean;
   hideMode: boolean;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
@@ -906,13 +978,14 @@ function Composer({
               })}
             />
           )}
+          <WebToggle web={web} setWeb={setWeb} disabled={busy} />
           {large && !hideMode && (
             <span className="hidden text-[12px] text-fg-3 sm:inline">{MODE_META[mode].blurb}</span>
           )}
           {hideMode && (
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-accent">
               <Newspaper className="h-3 w-3" />
-              News chat · web-grounded
+              News chat{web !== "off" ? " · web-grounded" : " · story only"}
             </span>
           )}
         </div>
@@ -977,7 +1050,21 @@ function StarterCard({
   );
 }
 
-function TurnView({ turn, onRelated, onFork }: { turn: Turn; onRelated: (q: string) => void; onFork: () => void }) {
+function TurnView({
+  turn,
+  sessionId,
+  onRelated,
+  onFork,
+  onAnswerUpdate,
+  onWebRetry,
+}: {
+  turn: Turn;
+  sessionId: string | null;
+  onRelated: (q: string) => void;
+  onFork: () => void;
+  onAnswerUpdate: (answer: AskArgusAnswer) => void;
+  onWebRetry: (query: string) => void;
+}) {
   return (
     <div className="space-y-3">
       {/* Question */}
@@ -989,9 +1076,17 @@ function TurnView({ turn, onRelated, onFork }: { turn: Turn; onRelated: (q: stri
 
       {/* Answer / status */}
       {turn.kind === "conversational" ? (
-        <ConversationalAnswer turn={turn} />
+        <ConversationalAnswer turn={turn} sessionId={sessionId} />
       ) : turn.status === "done" && turn.answer ? (
-        <AnswerCard answer={turn.answer} answeredAt={turn.answeredAt ?? null} onRelated={onRelated} onFork={onFork} />
+        <AnswerCard
+          answer={turn.answer}
+          answeredAt={turn.answeredAt ?? null}
+          sessionId={sessionId}
+          onRelated={onRelated}
+          onFork={onFork}
+          onAnswerUpdate={onAnswerUpdate}
+          onWebRetry={onWebRetry}
+        />
       ) : turn.status === "error" ? (
         <div className="rounded-xl border border-red/20 bg-red-bg px-4 py-3 text-[13px] text-red">
           {turn.error || "Something went wrong."}
@@ -1007,7 +1102,7 @@ function TurnView({ turn, onRelated, onFork }: { turn: Turn; onRelated: (q: stri
 }
 
 /** Text-message-style answer bubble for news-story chat, with checkable sources. */
-function ConversationalAnswer({ turn }: { turn: Turn }) {
+function ConversationalAnswer({ turn, sessionId }: { turn: Turn; sessionId: string | null }) {
   if (turn.status === "error") {
     return (
       <div className="rounded-xl border border-red/20 bg-red-bg px-4 py-3 text-[13px] text-red">
@@ -1037,6 +1132,12 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
         {streaming && turn.text && <span className="stream-cursor" aria-hidden="true" />}
       </div>
 
+      {turn.status === "done" && turn.trace && turn.trace.degraded.length > 0 && (
+        <div className="max-w-[85%]">
+          <DegradationChips trace={turn.trace} />
+        </div>
+      )}
+
       {turn.status === "done" && turn.citations.length > 0 && (
         <div className="max-w-[85%]">
           <div className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
@@ -1048,6 +1149,13 @@ function ConversationalAnswer({ turn }: { turn: Turn }) {
               <SourceRow key={`${c.id}-${i}`} index={i + 1} citation={c} />
             ))}
           </div>
+        </div>
+      )}
+
+      {turn.status === "done" && (
+        <div className="flex max-w-[85%] items-center gap-3">
+          <WebBadge trace={turn.trace} />
+          <FeedbackBar messageId={turn.messageId} sessionId={sessionId} query={turn.question} />
         </div>
       )}
     </div>
@@ -1259,13 +1367,19 @@ function PendingCard({ mode, progressTokens }: { mode: Mode; progressTokens: num
 function AnswerCard({
   answer,
   answeredAt,
+  sessionId,
   onRelated,
   onFork,
+  onAnswerUpdate,
+  onWebRetry,
 }: {
   answer: AskArgusAnswer;
   answeredAt: string | null;
+  sessionId: string | null;
   onRelated: (q: string) => void;
   onFork: () => void;
+  onAnswerUpdate: (answer: AskArgusAnswer) => void;
+  onWebRetry: (query: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
 
@@ -1298,25 +1412,41 @@ function AnswerCard({
           )}
           <span>{answer.answerMode}</span>
           <span className="opacity-30">·</span>
-          <span className="text-accent-text">{answer.confidence} confidence</span>
+          <ConfidenceBanner answer={answer} />
           <span className="opacity-30">·</span>
           <span>{answer.matchedCount} records</span>
-          {answer.groundingMetrics && (
-            <>
-              <span className="opacity-30">·</span>
-              <span className="text-green-text">
-                {Math.round(answer.groundingMetrics.groundingRatio * 100)}% grounded
-              </span>
-            </>
-          )}
+          <span className="opacity-30">·</span>
+          <WebBadge trace={answer.trace} />
           <div className="ml-auto flex items-center gap-1.5">
             <CopyMarkdownButton getMarkdown={() => askAnswerToMarkdown(answer)} />
             <AgentBadge workflow="ask" timestamp={answeredAt} />
           </div>
         </div>
 
+        {/* Phase 0.2 — surface every degradation the trace recorded. */}
+        {answer.trace && answer.trace.degraded.length > 0 && (
+          <div className="mb-4">
+            <DegradationChips trace={answer.trace} />
+          </div>
+        )}
+
+        {/* Phase 3.4 — Auto mode found weak grounding: offer a web re-run. */}
+        {answer.webSuggested && (
+          <button
+            onClick={() => onWebRetry(answer.query)}
+            className="mb-4 inline-flex items-center gap-1.5 rounded-xl border border-cyan/30 bg-cyan-bg px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-cyan-text transition-colors hover:border-cyan/50"
+          >
+            <Globe className="h-3.5 w-3.5" />
+            Search the web and re-answer
+          </button>
+        )}
+
         <Section title="Executive summary">
-          <p className="text-[15px] leading-relaxed text-fg-2">{answer.summary}</p>
+          {answer.paragraphs && answer.paragraphs.length > 0 ? (
+            <ParagraphList paragraphs={answer.paragraphs} citations={answer.citations} />
+          ) : (
+            <p className="text-[15px] leading-relaxed text-fg-2">{answer.summary}</p>
+          )}
         </Section>
 
         {answer.whyItMatters && (
@@ -1365,7 +1495,18 @@ function AnswerCard({
             <GitBranch className="h-3.5 w-3.5" />
             Fork
           </button>
+          <VerifyButton messageId={answer.messageId} verifiedAt={answer.verifiedAt} onVerified={onAnswerUpdate} />
+          <div className="ml-auto">
+            <FeedbackBar messageId={answer.messageId} sessionId={sessionId} query={answer.query} />
+          </div>
         </div>
+
+        {/* Phase 0.2 — the full trace, one expandable row. */}
+        {answer.trace && (
+          <div className="mt-3">
+            <TraceExpander trace={answer.trace} />
+          </div>
+        )}
       </div>
 
       {answer.citations.length > 0 && (
@@ -1405,6 +1546,28 @@ function AnswerCard({
               ))}
             </div>
           </Section>
+        </div>
+      )}
+
+      {/* Phase 0.3 — retrieved but uncited: honest, still useful as leads. */}
+      {answer.alsoConsulted && answer.alsoConsulted.length > 0 && (
+        <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-card)]">
+          <div className="label-mono mb-2 flex items-center gap-1.5">
+            <FileText className="h-3 w-3" />
+            Also consulted — not cited in this answer
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {answer.alsoConsulted.map((c) => (
+              <Link
+                key={c.id}
+                href={c.href}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg px-2 py-1 text-[11px] text-fg-3 transition-colors hover:border-border-hover hover:text-fg-2"
+              >
+                {c.externalUrl && <SourceFavicon url={c.externalUrl} size={13} />}
+                <span className="max-w-[220px] truncate">{c.title}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
@@ -1527,7 +1690,8 @@ function ReportSection({ section }: { section: NonNullable<AskArgusAnswer["repor
                       >
                         {claim.groundingType.replace("_", " ")}
                       </span>
-                      <span className="font-mono text-[10px] text-fg-3">{claim.confidence}</span>
+                      <ConfidenceChip confidence={claim.confidence} />
+                      <VerificationChip verification={claim.verification} />
                     </div>
                   </div>
                 </div>

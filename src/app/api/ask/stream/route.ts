@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { streamDeepReport, streamConversationalAnswer } from "@/lib/ask-server";
-import { parseScopes, isNewsConversation } from "@/lib/ask-request";
-import { ensureSession, loadHistory, appendMessage } from "@/lib/ask-sessions";
+import { streamDeepReport, streamConversationalAnswer, MODEL_QUICK, MODEL_DEEP } from "@/lib/ask-server";
+import { parseScopes, parseWebMode, isNewsConversation } from "@/lib/ask-request";
+import { ensureSession, loadHistory, appendMessage, updateAnswerJson } from "@/lib/ask-sessions";
 import { logAgentRun } from "@/lib/agent-runs";
 
 export const runtime = "nodejs";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Server-Sent Events endpoint for streamed Ask answers. Two shapes:
- *   • deep reports — `progress` events while the model writes, then `done`.
+ *   • deep reports — `stage` + `progress` events while the model works, then `done`.
  *   • news-story conversational Q&A — `delta` text events as it streams, then
  *     `done` with the web-grounded answer + checkable source links.
  * Both keep the UI live while the model works.
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
   const query = typeof body?.query === "string" ? body.query.trim() : "";
   const incomingSession = typeof body?.sessionId === "string" ? body.sessionId : null;
   const scopes = parseScopes(body);
+  const web = parseWebMode(body);
   const conversational = isNewsConversation(scopes);
 
   if (!query) {
@@ -39,34 +40,40 @@ export async function POST(request: NextRequest) {
 
       try {
         if (conversational) {
-          for await (const event of streamConversationalAnswer(query, { history, scopes })) {
+          for await (const event of streamConversationalAnswer(query, { history, scopes, web })) {
             if (event.type === "done") {
               event.answer.sessionId = sessionId;
               await appendMessage(sessionId, "user", query);
-              await appendMessage(
+              const messageId = await appendMessage(
                 sessionId,
                 "assistant",
                 event.answer.content,
                 event.answer.citations.map((c) => c.id),
                 JSON.stringify(event.answer)
               );
-              await logAgentRun({ workflow: "ask", modelUsed: "claude-sonnet-4-6" });
+              // The stored copy must carry its own id so verification and
+              // feedback can key off it after a history reload.
+              event.answer.messageId = messageId;
+              await updateAnswerJson(messageId, JSON.stringify(event.answer));
+              await logAgentRun({ workflow: "ask", modelUsed: MODEL_QUICK });
             }
             send(event);
           }
         } else {
-          for await (const event of streamDeepReport(query, { history, scopes })) {
+          for await (const event of streamDeepReport(query, { history, scopes, web })) {
             if (event.type === "done") {
               event.answer.sessionId = sessionId;
               await appendMessage(sessionId, "user", query);
-              await appendMessage(
+              const messageId = await appendMessage(
                 sessionId,
                 "assistant",
                 event.answer.summary,
                 event.answer.citations.map((c) => c.id),
                 JSON.stringify(event.answer)
               );
-              await logAgentRun({ workflow: "ask", modelUsed: "claude-sonnet-4-6" });
+              event.answer.messageId = messageId;
+              await updateAnswerJson(messageId, JSON.stringify(event.answer));
+              await logAgentRun({ workflow: "ask", modelUsed: MODEL_DEEP });
             }
             send(event);
           }

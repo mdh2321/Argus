@@ -6,6 +6,7 @@ import type {
 
 /** SSE events emitted by /api/ask/stream (deep report + conversational). */
 export type StreamEvent =
+  | { type: "stage"; name: string }
   | { type: "sources"; sources: AskArgusCitation[] }
   | { type: "progress"; chars: number }
   | { type: "delta"; text: string }

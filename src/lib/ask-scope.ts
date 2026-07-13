@@ -75,17 +75,43 @@ export async function resolveScope(scope: AskScope): Promise<ScopedSource | null
   }
 }
 
+export interface ScopeResolution {
+  resolved: ScopedSource[];
+  /** Labels/ids of requested scopes that could not be found — surfaced in the
+   *  answer trace instead of being silently dropped. */
+  dropped: string[];
+}
+
 /**
- * Resolve every scope in a working set, dropping any that can't be found.
+ * Resolve every scope in a working set, reporting any that can't be found.
  * A matter scope expands to its bundled items (each resolved as its own
  * source) plus a "matter brief" source carrying the matter's description and
  * working instructions, so the whole workstream grounds one conversation.
  */
-export async function resolveScopes(scopes: AskScope[]): Promise<ScopedSource[]> {
-  const resolved = await Promise.all(
-    scopes.map((s) => (s.kind === "matter" ? resolveMatter(s.id) : resolveScope(s)))
+export async function resolveScopes(scopes: AskScope[]): Promise<ScopeResolution> {
+  const resolved: ScopedSource[] = [];
+  const dropped: string[] = [];
+
+  const results = await Promise.all(
+    scopes.map(async (s) => ({
+      scope: s,
+      sources: s.kind === "matter" ? await resolveMatter(s.id) : [await resolveScope(s)],
+    }))
   );
-  return resolved.flat().filter((r): r is ScopedSource => r !== null);
+
+  for (const { scope, sources } of results) {
+    const found = sources.filter((r): r is ScopedSource => r !== null);
+    if (found.length === 0) {
+      dropped.push(scope.label || `${scope.kind}:${scope.id}`);
+      continue;
+    }
+    // A matter with missing bundled items still resolves; note the misses.
+    const missing = sources.length - found.length;
+    if (missing > 0) dropped.push(`${missing} item${missing === 1 ? "" : "s"} in ${scope.label || "matter"}`);
+    resolved.push(...found);
+  }
+
+  return { resolved, dropped };
 }
 
 // Budget guard: assembleScopedContext splits its passage/char budget across

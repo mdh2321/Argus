@@ -13,13 +13,23 @@ export interface ScoredItem {
 // so none of these ever reach the parser as syntax.
 const FTS_TOKEN = /[a-z0-9]+/g;
 
-function toMatchExpression(query: string): string {
-  const tokens = (query.toLowerCase().match(FTS_TOKEN) || []).filter((t) => t.length > 1);
+function toMatchExpression(query: string, extraTerms: string[] = []): string {
+  const raw = `${query} ${extraTerms.join(" ")}`;
+  const tokens = [...new Set((raw.toLowerCase().match(FTS_TOKEN) || []).filter((t) => t.length > 1))];
   if (tokens.length === 0) return "";
   // Prefix-match each term (OR) so "breach" matches "breaches",
   // "notification" matches "notifications", etc. This is the cheap stemming
   // win the audit asked for — real relevance without embeddings.
   return tokens.map((t) => `"${t}"*`).join(" OR ");
+}
+
+/** Result of a corpus retrieval, including which path produced it — the
+ *  impact fallback used to swap in silently; the trace surfaces it now. */
+export interface CorpusRetrieval {
+  matches: ScoredItem[];
+  mode: "fts" | "impact_fallback";
+  /** Total lexical hits before the limit was applied. */
+  totalHits: number;
 }
 
 /**
@@ -33,9 +43,16 @@ function toMatchExpression(query: string): string {
  * substring matching). Returns BM25-ranked matches, or an impact/urgency
  * fallback when the query yields no lexical hits.
  */
-export function retrieveCorpus(corpus: CorpusItem[], query: string, limit: number): ScoredItem[] {
-  const match = toMatchExpression(query);
-  if (!match || corpus.length === 0) return fallbackMatches(corpus).slice(0, limit);
+export function retrieveCorpus(
+  corpus: CorpusItem[],
+  query: string,
+  limit: number,
+  extraTerms: string[] = []
+): CorpusRetrieval {
+  const match = toMatchExpression(query, extraTerms);
+  if (!match || corpus.length === 0) {
+    return { matches: fallbackMatches(corpus).slice(0, limit), mode: "impact_fallback", totalHits: 0 };
+  }
 
   const fts = new Database(":memory:");
   try {
@@ -63,7 +80,9 @@ export function retrieveCorpus(corpus: CorpusItem[], query: string, limit: numbe
       )
       .all(match) as { id: string; rank: number }[];
 
-    if (rows.length === 0) return fallbackMatches(corpus).slice(0, limit);
+    if (rows.length === 0) {
+      return { matches: fallbackMatches(corpus).slice(0, limit), mode: "impact_fallback", totalHits: 0 };
+    }
 
     const byId = new Map(corpus.map((c) => [c.id, c]));
     const scored: ScoredItem[] = [];
@@ -78,7 +97,7 @@ export function retrieveCorpus(corpus: CorpusItem[], query: string, limit: numbe
     }
 
     scored.sort((a, b) => b.score - a.score || b.item.date.localeCompare(a.item.date));
-    return scored.slice(0, limit);
+    return { matches: scored.slice(0, limit), mode: "fts", totalHits: scored.length };
   } finally {
     fts.close();
   }

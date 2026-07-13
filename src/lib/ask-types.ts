@@ -51,6 +51,79 @@ export interface AskMessage {
   content: string;
 }
 
+// ── Web access mode (Phase 3) ───────────────────────────────────
+// off  — corpus only (default). on — always run the web research stage.
+// auto — corpus first; when grounding is weak the answer *offers* a web
+// re-run instead of silently searching.
+export type AskWebMode = "off" | "on" | "auto";
+
+// ── Answer trace (Phase 0) ──────────────────────────────────────
+// Everything Argus did to assemble an answer, including every degradation
+// that used to be silent. Rendered as warning chips + the "How Argus
+// answered this" expander, and persisted inside answerJson.
+
+export interface AskTraceSource {
+  id: string;
+  label: string;
+  /** How this source was grounded: stored instrument/doc text, a cached or
+   *  live URL fetch, or only the record's own metadata. */
+  grounding: "stored_doc" | "cached_fetch" | "live_fetch" | "record_only";
+  fetchFailed?: boolean;
+}
+
+export interface AskAnswerTrace {
+  retrieval: {
+    /** fts — normal lexical match; fts_expanded — Haiku query expansion ran;
+     *  impact_fallback — no lexical hits, highest-impact records substituted. */
+    mode: "fts" | "fts_expanded" | "impact_fallback" | "scoped";
+    matched: number;
+    considered: number;
+  };
+  sources: AskTraceSource[];
+  /** Requested scopes that could not be resolved (deleted/missing records). */
+  scopesDropped: string[];
+  webMode: AskWebMode;
+  webUsed: boolean;
+  webSearches: number;
+  /** True when generation hit the output-token cap (answer may be cut short). */
+  truncated: boolean;
+  /** Human-readable degradation notices — each renders as a warning chip. */
+  degraded: string[];
+  stages: { name: string; ms: number }[];
+  models: { synthesis: string; research?: string };
+}
+
+// ── Paragraph-level grounding (Phase 2) ─────────────────────────
+
+export type AskGroundingType = "direct_quote" | "paraphrase" | "inference" | "ai_knowledge";
+export type AskConfidence = "high" | "medium" | "low";
+
+export type AskVerificationVerdict =
+  | "supported"
+  | "partially_supported"
+  | "unsupported"
+  | "contradicted"
+  | "unverifiable";
+
+export interface AskVerification {
+  verdict: AskVerificationVerdict;
+  reason?: string;
+}
+
+/** One paragraph of a quick answer, with its own grounding + citations. */
+export interface AskParagraph {
+  text: string;
+  /** Ids of the context records this paragraph draws on ([] = general knowledge). */
+  sourceIds: string[];
+  groundingType: AskGroundingType;
+  /** Computed from the D1 matrix (grounding × authority tier), never self-reported. */
+  confidence: AskConfidence;
+  /** Instrument-text pin retrieved with the paragraph's own text as the query. */
+  pin?: (AskCitationPin & { entryId: string }) | null;
+  /** Present after a "Verify sources" pass. */
+  verification?: AskVerification;
+}
+
 /**
  * Constrains an Ask conversation to one or more source records (tracked
  * entries, digest stories, knowledge items, signals) instead of the whole
@@ -71,6 +144,9 @@ export interface AskSourceOption {
   id: string;
   title: string;
   meta: string;
+  /** Pre-flight grounding state (entries only): what a scoped ask would
+   *  actually read — the instrument text, supporting docs, or summary only. */
+  grounding?: "instrument" | "docs" | "record_only";
 }
 
 /**
@@ -82,26 +158,42 @@ export interface AskSourceOption {
 export interface AskConversationalAnswer {
   query: string;
   sessionId?: string;
+  /** Stored message id for this answer — feedback + verification key off it. */
+  messageId?: string;
   /** Free-form markdown-ish prose. */
   content: string;
   citations: AskArgusCitation[];
   /** The story (or stories) the conversation is scoped to. */
   scopeLabel?: string;
+  trace?: AskAnswerTrace;
 }
 
 export interface AskArgusAnswer {
   query: string;
   /** Conversation this answer belongs to. Set by the server on the first turn. */
   sessionId?: string;
+  /** Stored message id for this answer — feedback + verification key off it. */
+  messageId?: string;
   mode: "quick" | "deep_report";
-  answerMode: "briefing" | "comparison" | "deadlines";
-  confidence: "high" | "medium" | "low";
+  /** Legacy field from the old regex mode-detector; optional so old answers parse. */
+  answerMode?: "briefing" | "comparison" | "deadlines";
+  confidence: AskConfidence;
   summary: string;
   whyItMatters: string;
   actions: AskArgusAction[];
   citations: AskArgusCitation[];
+  /** Retrieved but not cited by any paragraph — shown as "Also consulted". */
+  alsoConsulted?: AskArgusCitation[];
   relatedQuestions: string[];
   matchedCount: number;
+  /** Paragraph blocks with per-paragraph grounding (quick answers, Phase 2).
+   *  `summary` remains the joined text for storage/export back-compat. */
+  paragraphs?: AskParagraph[];
+  /** Auto web mode found weak grounding — offer a one-click web re-run. */
+  webSuggested?: boolean;
+  trace?: AskAnswerTrace;
+  /** Set after a "Verify sources" pass. */
+  verifiedAt?: string;
   // Deep report fields (only present when mode === "deep_report")
   reportSections?: DeepReportSection[];
   groundingMetrics?: {
@@ -120,7 +212,29 @@ export interface DeepReportSection {
 export interface DeepReportClaim {
   text: string;
   sourceId?: string;
-  sourceType?: "tracker" | "digest" | "knowledge" | "signal";
-  groundingType: "direct_quote" | "paraphrase" | "inference" | "ai_knowledge";
-  confidence: "high" | "medium" | "low";
+  sourceType?: "tracker" | "digest" | "knowledge" | "signal" | "web";
+  groundingType: AskGroundingType;
+  confidence: AskConfidence;
+  /** Instrument-text pin retrieved with the claim's own text as the query. */
+  pin?: (AskCitationPin & { entryId: string }) | null;
+  verification?: AskVerification;
+}
+
+// ── Feedback (Phase 6) ──────────────────────────────────────────
+
+export type AskFeedbackReason =
+  | "wrong_sources"
+  | "missed_source"
+  | "too_long"
+  | "tone"
+  | "outdated"
+  | "hallucination";
+
+export interface AskFeedbackInput {
+  messageId: string;
+  sessionId?: string;
+  rating: "up" | "down";
+  reasons?: AskFeedbackReason[];
+  comment?: string;
+  query?: string;
 }

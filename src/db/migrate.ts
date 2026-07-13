@@ -96,6 +96,20 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS ask_feedback (
+    id TEXT PRIMARY KEY,
+    message_id TEXT NOT NULL,
+    session_id TEXT,
+    rating TEXT NOT NULL,
+    reasons TEXT,
+    comment TEXT,
+    query TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_ask_feedback_message ON ask_feedback(message_id);
+  CREATE INDEX IF NOT EXISTS idx_ask_feedback_created ON ask_feedback(created_at);
+
   CREATE INDEX IF NOT EXISTS idx_entries_jurisdiction ON entries(jurisdiction);
   CREATE INDEX IF NOT EXISTS idx_entries_category ON entries(category);
   CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status);

@@ -199,6 +199,13 @@ export interface Entry {
   satelliteActivity?: SatelliteActivity | null;
   // Soft validation flag (§2.1): a satellite with no anchor link. Advisory only.
   missingAnchor?: boolean;
+  // Obligation axis (two-axis model): does this entry carry its OWN obligations,
+  // does it INHERIT them into a parent (an amendment), or is it informative
+  // (guidance / enforcement / peer)? Populated by the entry GET endpoint.
+  obligationDisposition?: "own" | "inherited" | "none";
+  // True when this entry is an archived amendment/successor whose commencement
+  // can be reversed (has an outgoing amends/supersedes link + is archived).
+  canReverseCommencement?: boolean;
 }
 
 export type AnchorRole = "anchor" | "satellite";
@@ -526,6 +533,8 @@ export interface EntryDetailResponse {
   supersededBy: RelatedEntryWithKind[]; // newer version that replaced this (incoming supersedes)
   // What this entry depends on (outgoing relationships).
   parentInstruments: RelatedEntryWithKind[]; // outgoing subordinate_to / amends / interprets / implements
+  // Peer instruments cross-referenced by this one (references, either direction).
+  relatedInstruments: RelatedEntryWithKind[];
 }
 
 export interface DeadlinesResponse {

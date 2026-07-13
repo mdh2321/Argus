@@ -461,6 +461,20 @@ export const queryMessages = sqliteTable("query_messages", {
   createdAt: text("created_at").notNull(),
 });
 
+// Per-answer feedback (Phase 6). Ratings key off the stored assistant message
+// so the answer, its trace, and the user's judgement stay joined. 👎 rows also
+// append an eval case (evals/ask/cases.jsonl) for regression testing.
+export const askFeedback = sqliteTable("ask_feedback", {
+  id: text("id").primaryKey(),
+  messageId: text("message_id").notNull(),
+  sessionId: text("session_id"),
+  rating: text("rating").notNull(), // "up" | "down"
+  reasons: text("reasons"), // JSON array of AskFeedbackReason
+  comment: text("comment"),
+  query: text("query"),
+  createdAt: text("created_at").notNull(),
+});
+
 // ── Matters (workstream bundles) ────────────────────────────────
 // A Matter bundles tracker entries, digest stories, Ask threads and briefings
 // around one workstream (e.g. "EU AI Act readiness"), with matter-specific

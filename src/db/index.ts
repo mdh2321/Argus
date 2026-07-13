@@ -4,7 +4,9 @@ import * as schema from "./schema";
 import path from "path";
 import fs from "fs";
 
-const dbPath = path.join(process.cwd(), "data", "sentinel.db");
+// Path override lets migrations, scripts, and tests point at a throwaway copy
+// without touching the production file. Falls back to the canonical location.
+const dbPath = process.env.ARGUS_DB_PATH || path.join(process.cwd(), "data", "sentinel.db");
 
 // Ensure data directory exists
 const dataDir = path.dirname(dbPath);

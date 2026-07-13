@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { entries, entryChanges, entryRelationships } from "@/db/schema";
 import { eq, desc, or, inArray, and } from "drizzle-orm";
-import { now, toJsonString, generateId } from "@/lib/utils";
+import { now, toJsonString } from "@/lib/utils";
 import { serializeEntry, logChanges, syncDeadlines, computeNextKeyDate } from "@/lib/entry-helpers";
 import { normalizeSourceUrls } from "@/lib/source-tiers";
-import { classifyEntry, satelliteMissingAnchor } from "@/lib/anchor-model";
-import { refreshSourcesForEntry } from "@/lib/source-refresher";
+import { classifyEntry, satelliteMissingAnchor, obligationDisposition } from "@/lib/anchor-model";
+import { applyLifecycleTransition } from "@/lib/lifecycle";
 import type { RelatedEntryWithKind } from "@/lib/types";
 
 export async function GET(
@@ -107,6 +107,9 @@ export async function GET(
   const supersedes: RelatedEntryWithKind[] = [];
   const supersededBy: RelatedEntryWithKind[] = [];
   const parentInstruments: RelatedEntryWithKind[] = [];
+  // Peer instruments — `references` cross-links between independent anchors (no
+  // hierarchy). Shown together regardless of direction.
+  const relatedInstruments: RelatedEntryWithKind[] = [];
 
   for (const rel of rels) {
     const direction: "outgoing" | "incoming" = rel.fromEntryId === id ? "outgoing" : "incoming";
@@ -130,6 +133,7 @@ export async function GET(
     if (direction === "incoming") {
       switch (rel.kind) {
         case "subordinate_to":
+        case "implements": // delegated instrument made under this one
           relatedSubordinates.push(item);
           break;
         case "interprets":
@@ -144,8 +148,9 @@ export async function GET(
         case "supersedes":
           supersededBy.push(item); // someone else supersedes me → I was superseded
           break;
-        // implements / references → fall through (could surface in a generic
-        // "Related" section later; not split out yet to keep noise down).
+        case "references":
+          relatedInstruments.push(item);
+          break;
       }
     } else {
       // outgoing — what this entry depends on / refers to
@@ -158,6 +163,9 @@ export async function GET(
           break;
         case "supersedes":
           supersedes.push(item); // I supersede some older entry
+          break;
+        case "references":
+          relatedInstruments.push(item);
           break;
       }
     }
@@ -172,6 +180,7 @@ export async function GET(
   supersedes.sort(sortByDate);
   supersededBy.sort(sortByDate);
   parentInstruments.sort(sortByDate);
+  relatedInstruments.sort(sortByDate);
 
   // Anchor/satellite classification + soft validation (§2.1). Outgoing kinds
   // are the relationships where this entry is the dependent (`from`) side.
@@ -179,12 +188,19 @@ export async function GET(
     .filter((r) => r.fromEntryId === id)
     .map((r) => r.kind);
   const anchorRole = classifyEntry(entry.type, outgoingKinds);
+  // Reversible when this entry is an archived amendment/successor — its
+  // commencement folded into / retired something and can be undone.
+  const canReverseCommencement =
+    !!entry.archived &&
+    outgoingKinds.some((k) => k === "amends" || k === "supersedes");
 
   return NextResponse.json({
     entry: {
       ...serializeEntry(entry),
       anchorRole,
       missingAnchor: satelliteMissingAnchor(entry.type, outgoingKinds),
+      obligationDisposition: obligationDisposition(entry.type, entry.authorityLevel, outgoingKinds),
+      canReverseCommencement,
     },
     changes,
     proposedChanges,
@@ -197,6 +213,7 @@ export async function GET(
     supersedes,
     supersededBy,
     parentInstruments,
+    relatedInstruments,
   });
 }
 
@@ -265,100 +282,23 @@ export async function PATCH(
     await syncDeadlines(id, updates.keyDates as string);
   }
 
-  const finalType = (updates.type ?? existing.type) as string;
   const finalStatus = (updates.status ?? existing.status) as string;
-  const wasInForce = existing.status === "in_force";
-  const isAmendingAct = finalType === "amending-act";
-  const amendingShortName = (updates.shortName ?? existing.shortName) as string;
 
-  // ── A2: amendment staleness propagation ─────────────────────────────────
-  // When an amending instrument transitions to `passed` or `in_force`, the
-  // principals it amends now have analysis that predates it. Flag each
-  // principal that has an analysis so the reader knows to regenerate.
-  const becameActive =
-    (finalStatus === "passed" || finalStatus === "in_force") &&
-    existing.status !== finalStatus;
-  if (becameActive) {
-    const amendsTargets = await db
-      .select({ toEntryId: entryRelationships.toEntryId })
-      .from(entryRelationships)
-      .where(
-        and(eq(entryRelationships.fromEntryId, id), eq(entryRelationships.kind, "amends"))
-      );
-    if (amendsTargets.length > 0) {
-      const staleReason = `Analysis predates ${amendingShortName}, which ${
-        finalStatus === "in_force" ? "is now in force" : "has passed"
-      }. Regenerate for an up-to-date grounded analysis.`;
-      const staleTs = now();
-      for (const t of amendsTargets) {
-        // Only stale a principal that actually has an analysis to invalidate.
-        const [principal] = await db
-          .select({ summaryDepth: entries.summaryDepth })
-          .from(entries)
-          .where(eq(entries.id, t.toEntryId));
-        if (principal?.summaryDepth) {
-          await db
-            .update(entries)
-            .set({ analysisStaleReason: staleReason, updatedAt: staleTs })
-            .where(eq(entries.id, t.toEntryId));
-        }
-
-        // §2.4 — on actual commencement, the anchor's compilation is now out of
-        // date. Re-fetch its primary text; the refresher snapshots the outgoing
-        // compilation (tagged `amendment`) before overwriting, preserving the
-        // pre-amendment text on the anchor's compilation timeline. Fire-and-
-        // forget — the fetch is slow and must not block the PATCH response. The
-        // staleness flag above + the entry's "Re-ground analysis" action
-        // complete the loop.
-        if (finalStatus === "in_force") {
-          void refreshSourcesForEntry(t.toEntryId, "amendment").catch((err) =>
-            console.error(
-              `[amendment-commence] source refresh failed for anchor ${t.toEntryId}:`,
-              err
-            )
-          );
-        }
-      }
-    }
-  }
-
-  // ── Lifecycle: amending-act commencement ────────────────────────────────
-  // When an amending act flips to `in_force`, its operative effect is folded
-  // into the parent. We auto-archive it (so it disappears from the active
-  // tracker list) and write an EntryChange on each `amends` target so the
-  // parent's amendment-history timeline records the commencement.
-  if (isAmendingAct && finalStatus === "in_force" && !wasInForce && !existing.archived) {
-    const archiveTimestamp = now();
-    await db
-      .update(entries)
-      .set({ archived: true, updatedAt: archiveTimestamp })
-      .where(eq(entries.id, id));
-
-    const amendsRels = await db
-      .select({ toEntryId: entryRelationships.toEntryId })
-      .from(entryRelationships)
-      .where(
-        and(
-          eq(entryRelationships.fromEntryId, id),
-          eq(entryRelationships.kind, "amends")
-        )
-      );
-
-    for (const rel of amendsRels) {
-      await db.insert(entryChanges).values({
-        id: generateId(),
-        entryId: rel.toEntryId,
-        fieldChanged: "amendment_commenced",
-        oldValue: null,
-        newValue: amendingShortName,
-        changeSummary: `${amendingShortName} commenced and is now part of this Act`,
-        changedBy: "system",
-        sourceUrl: null,
-        sectionRef: null,
-        sourceSnapshotId: null,
-        changedAt: archiveTimestamp,
-      });
-    }
+  // ── Lifecycle transitions ────────────────────────────────────────────────
+  // A status change can mean: an amendment folds into its parent(s) on full
+  // commencement (Gaps 3/4), commences in stages (Gap 2), replaces a predecessor
+  // (Gap 1), or lapses before force (Gap 7). resolveLifecycle() decides which;
+  // applyLifecycleTransition() runs the side-effects (stale flags, provenance
+  // rows, archive, source re-fetch). See src/lib/lifecycle.ts.
+  if (finalStatus !== existing.status) {
+    await applyLifecycleTransition({
+      entryId: id,
+      entryShortName: (updates.shortName ?? existing.shortName) as string,
+      entryWhatItChanges: (updates.whatItChanges ?? existing.whatItChanges) as string | null,
+      prevStatus: existing.status as string,
+      nextStatus: finalStatus,
+      alreadyArchived: !!existing.archived,
+    });
   }
 
   const [updated] = await db.select().from(entries).where(eq(entries.id, id));
