@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "digest": "tsx scripts/run-digest.ts",
-    "digest:dry": "tsx scripts/run-digest.ts --dry-run",
+    "digest": "tsx --conditions=react-server scripts/run-digest.ts",
+    "digest:dry": "tsx --conditions=react-server scripts/run-digest.ts --dry-run",
     "digest:ensure": "tsx --conditions=react-server scripts/ensure-digest.ts",
     "ground": "tsx --conditions=react-server scripts/ground-entries.ts"
   },
