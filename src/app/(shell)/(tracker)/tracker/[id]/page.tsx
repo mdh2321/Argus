@@ -58,6 +58,7 @@ import { EntryTOC } from "@/components/tracker/entry-toc";
 import { EntryTimeline } from "@/components/tracker/entry-timeline";
 import { QuickFacts } from "@/components/tracker/quick-facts";
 import { SourceSuggestionPanel } from "@/components/tracker/source-suggestion-panel";
+import { IntakePanel } from "@/components/tracker/intake-panel";
 import { ProposedChangesPanel } from "@/components/tracker/proposed-changes-panel";
 import { EntryQuestionChips } from "@/components/tracker/entry-question-chips";
 import { toast } from "sonner";
@@ -726,6 +727,19 @@ export default function EntryDetailPage() {
           hide sections that have nothing to show, so a thin entry doesn't
           drown the reader in "no X recorded yet" placeholders. */}
       <div className="space-y-8 text-[14px] leading-relaxed text-fg-2">
+        {/* Intake panel — live pipeline timeline + source provenance + held
+            candidates for entries created through the intake redesign. Renders
+            nothing for pre-redesign entries (no intake state). */}
+        {!editing && (
+          <IntakePanel
+            entryId={id}
+            onChanged={() => {
+              mutate();
+              mutateDocs();
+            }}
+          />
+        )}
+
         {/* Preliminary-summary banner — flagged when the most recent summary
             ran without source documents, so the analysis is AI-knowledge
             only. Offers the two paths to upgrade: add docs (then regenerate)

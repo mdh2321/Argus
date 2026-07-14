@@ -2,14 +2,14 @@ import { db } from "@/db";
 import { entries, sourceDocuments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateId, now } from "@/lib/utils";
-import { fetchAndExtract, deriveFetchStatus } from "@/lib/source-fetcher";
+import { fetchAndExtract, deriveFetchStatus, type FetchResult } from "@/lib/source-fetcher";
 import { inferSourceTier } from "@/lib/source-tiers";
 import { extractAndStoreTermsForDoc } from "@/lib/defined-terms-ai";
 
-// Shared by the approve-sources route and the grounding script: fetch each
-// URL, store it as a source_document on the entry, and kick off background
-// term extraction. Idempotent — URLs already attached are reported, not
-// re-fetched.
+// Shared by the approve-sources route, the intake pipeline and the grounding
+// script: fetch each URL, store it as a source_document on the entry, and kick
+// off background term extraction. Idempotent — URLs already attached are
+// reported, not re-fetched.
 
 export interface AttachResult {
   url: string;
@@ -21,6 +21,73 @@ export interface AttachResult {
   byteCount: number | null;
   title: string | null;
   error: string | null;
+}
+
+// Store an already-fetched document on an entry. Split out so callers that
+// have a FetchResult in hand (the intake pipeline fetches once for the match
+// check) don't pay for a second fetch.
+export async function attachFetchedDocument(
+  entryId: string,
+  fetched: FetchResult,
+  opts: {
+    role?: "primary_text" | "supporting" | null;
+    awaitTermExtraction?: boolean;
+  } = {}
+): Promise<AttachResult> {
+  const ts = now();
+  const tier = inferSourceTier(fetched.url).tier;
+  const docId = generateId();
+  const docName = fetched.title?.slice(0, 200) || fetched.url;
+
+  db.insert(sourceDocuments)
+    .values({
+      id: docId,
+      entryId,
+      name: docName,
+      sourceUrl: fetched.url,
+      fullText: fetched.fullText,
+      fileType: fetched.extractor === "direct-pdf" ? "pdf" : guessFileType(fetched.url),
+      charCount: fetched.fullText ? fetched.fullText.length : null,
+      addedBy: "ai",
+      role: opts.role ?? null,
+      sourceAuthority: tier,
+      verifiedUrl: fetched.ok,
+      lastUrlCheck: ts,
+      contentHash: fetched.contentHash,
+      retrievedAt: fetched.fetchedAt,
+      fetchStatus: deriveFetchStatus(fetched),
+      fetchError: fetched.error,
+      extractor: fetched.extractor,
+      createdAt: ts,
+      updatedAt: ts,
+    })
+    .run();
+
+  if (fetched.fullText && fetched.fullText.length > 200) {
+    const extraction = extractAndStoreTermsForDoc(entryId, {
+      id: docId,
+      name: docName,
+      fullText: fetched.fullText,
+    }).catch((err) =>
+      console.error(`Background term extraction failed for attached doc ${docId}:`, err)
+    );
+    if (opts.awaitTermExtraction) await extraction;
+    else void extraction;
+  }
+
+  db.update(entries).set({ updatedAt: ts }).where(eq(entries.id, entryId)).run();
+
+  return {
+    url: fetched.url,
+    documentId: docId,
+    tier,
+    ok: fetched.ok,
+    extracted: fetched.extracted,
+    truncated: fetched.truncated,
+    byteCount: fetched.byteCount,
+    title: fetched.title,
+    error: fetched.error,
+  };
 }
 
 export async function attachSourcesToEntry(
@@ -58,57 +125,11 @@ export async function attachSourcesToEntry(
     }
 
     const fetched = await fetchAndExtract(url);
-    const tier = inferSourceTier(fetched.url).tier;
-    const docId = generateId();
-
-    const docName = fetched.title?.slice(0, 200) || url;
-
-    db.insert(sourceDocuments)
-      .values({
-        id: docId,
-        entryId,
-        name: docName,
-        sourceUrl: fetched.url,
-        fullText: fetched.fullText,
-        fileType: fetched.extractor === "direct-pdf" ? "pdf" : guessFileType(fetched.url),
-        charCount: fetched.fullText ? fetched.fullText.length : null,
-        addedBy: "ai",
-        sourceAuthority: tier,
-        verifiedUrl: fetched.ok,
-        lastUrlCheck: ts,
-        contentHash: fetched.contentHash,
-        retrievedAt: fetched.fetchedAt,
-        fetchStatus: deriveFetchStatus(fetched),
-        fetchError: fetched.error,
-        extractor: fetched.extractor,
-        createdAt: ts,
-        updatedAt: ts,
+    results.push(
+      await attachFetchedDocument(entryId, fetched, {
+        awaitTermExtraction: opts.awaitTermExtraction,
       })
-      .run();
-
-    if (fetched.fullText && fetched.fullText.length > 200) {
-      const extraction = extractAndStoreTermsForDoc(entryId, {
-        id: docId,
-        name: docName,
-        fullText: fetched.fullText,
-      }).catch((err) =>
-        console.error(`Background term extraction failed for approved doc ${docId}:`, err)
-      );
-      if (opts.awaitTermExtraction) await extraction;
-      else void extraction;
-    }
-
-    results.push({
-      url: fetched.url,
-      documentId: docId,
-      tier,
-      ok: fetched.ok,
-      extracted: fetched.extracted,
-      truncated: fetched.truncated,
-      byteCount: fetched.byteCount,
-      title: fetched.title,
-      error: fetched.error,
-    });
+    );
   }
 
   db.update(entries).set({ updatedAt: ts }).where(eq(entries.id, entryId)).run();

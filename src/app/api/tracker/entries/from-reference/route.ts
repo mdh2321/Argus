@@ -8,7 +8,7 @@ import { generateId, now, toJsonString } from "@/lib/utils";
 import { getProfileContext } from "@/lib/profile-context";
 import { TRACKABLE_ENTRY_TYPES } from "@/lib/constants";
 import { computeNextKeyDate } from "@/lib/entry-helpers";
-import { kickOffSummaryGeneration } from "@/lib/summary-pipeline";
+import { kickOffIntake } from "@/lib/intake-pipeline";
 
 export const maxDuration = 60;
 
@@ -147,13 +147,12 @@ export async function POST(request: NextRequest) {
     .where(eq(storyReferences.id, ref.id))
     .run();
 
-  // Auto-kick a preliminary summary if the Haiku-drafted summary is empty
-  // (the draft model can return blank when the story is too thin).
-  if (!drafted.summary) {
-    void kickOffSummaryGeneration(entryId).catch((err) => {
-      console.error(`[from-reference] auto-kickoff failed for ${entryId}:`, err);
-    });
-  }
+  // Intake pipeline: resolve the instrument's source documents (the digest
+  // story URL is the first candidate), verify, auto-attach what checks out,
+  // and run the analysis at the depth the evidence supports.
+  void kickOffIntake(entryId).catch((err) => {
+    console.error(`[from-reference] intake kickoff failed for ${entryId}:`, err);
+  });
 
   return NextResponse.json(
     {

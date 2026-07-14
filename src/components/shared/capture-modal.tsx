@@ -66,7 +66,7 @@ export function CaptureModal() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      toast.success("Draft entry created — preliminary analysis in progress");
+      toast.success("Draft entry created — finding and verifying sources");
       setOpen(false);
       if (data.entry?.id) router.push(`/tracker/${data.entry.id}`);
     } catch (err) {

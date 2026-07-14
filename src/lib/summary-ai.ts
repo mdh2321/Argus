@@ -30,7 +30,10 @@ import type {
 // Cost: roughly +25% per analysis (one extra draft pass; cache reads cheap).
 // Defer until we see real cases where verified claims still slip through.
 
-const client = new Anthropic();
+// 30-min per-request timeout: the SDK default is 10 minutes, which single
+// stages of the 4-stage pipeline now exceed on large instruments (a 156KB Act
+// pushed stage calls past 15 min) — the abort surfaces as `terminated`.
+const client = new Anthropic({ timeout: 30 * 60 * 1000 });
 const MODEL = "claude-sonnet-4-6";
 
 // Per-document char cap. Sonnet 4.6 has a 1M context window so we can carry
@@ -399,17 +402,36 @@ export async function callCached(opts: {
   // non-streaming calls because the projected wall-clock would exceed its
   // 10-minute timeout. We collect the stream into a final Message so the
   // existing parser code is unchanged.
-  const stream = client.messages.stream({
-    model: MODEL,
-    max_tokens: opts.maxTokens,
-    // Bounded thinking budget — adaptive lets the model run for many minutes
-    // on a 200KB-context request, which stacked across 4 stages routinely
-    // exceeded the HTTP request lifetime. 4096 tokens is enough for the kind
-    // of legal reasoning we want without open-ended runs.
-    ...(opts.thinking ? { thinking: { type: "enabled" as const, budget_tokens: 4096 } } : {}),
-    messages: [{ role: "user", content }],
-  });
-  return stream.finalMessage();
+  //
+  // The SDK only retries failures that happen BEFORE the stream opens; a
+  // socket dropped mid-stream surfaces as `terminated` and kills the whole
+  // multi-stage run. One manual retry covers that gap — these are long
+  // (multi-minute) responses, so mid-stream drops are a matter of when,
+  // not if.
+  const attempt = () =>
+    client.messages
+      .stream({
+        model: MODEL,
+        max_tokens: opts.maxTokens,
+        // Bounded thinking budget — adaptive lets the model run for many minutes
+        // on a 200KB-context request, which stacked across 4 stages routinely
+        // exceeded the HTTP request lifetime. 4096 tokens is enough for the kind
+        // of legal reasoning we want without open-ended runs.
+        ...(opts.thinking ? { thinking: { type: "enabled" as const, budget_tokens: 4096 } } : {}),
+        messages: [{ role: "user", content }],
+      })
+      .finalMessage();
+
+  try {
+    return await attempt();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const retryable =
+      /terminated|ECONNRESET|socket|aborted|Connection error/i.test(message);
+    if (!retryable) throw err;
+    console.warn(`[summary-ai] stream dropped (${message.slice(0, 80)}) — retrying once`);
+    return await attempt();
+  }
 }
 
 // --------------------------------------------------------------------------

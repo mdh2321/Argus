@@ -88,6 +88,49 @@ export const entries = sqliteTable("entries", {
   aiGenerated: integer("ai_generated", { mode: "boolean" }).default(false),
   archived: integer("archived", { mode: "boolean" }).default(false),
   lastReviewed: text("last_reviewed"),
+  // Intake pipeline state (July 2026 intake redesign). After capture/digest-add,
+  // a background pipeline resolves candidate source documents, verifies each
+  // against the entry (match check), auto-attaches verified primaries and kicks
+  // the analysis. The UI polls this alongside summaryStatus to render the
+  // intake timeline. Values: null (never ran — pre-redesign entries) |
+  // 'resolving' | 'verifying' | 'done' | 'failed'.
+  intakeStatus: text("intake_status"),
+  intakeError: text("intake_error"),
+  intakeStartedAt: text("intake_started_at"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Per-candidate provenance for the intake pipeline. Every source URL the
+// pipeline considered gets a row recording where it came from, what the match
+// check concluded, and what happened to it — so the review gate can show
+// "attached these (evidence), rejected these (why), holding these for you"
+// instead of a bare list of links.
+//
+//   origin:   'capture' = URL surfaced during capture extraction;
+//             'search'  = found by the official-registry/Exa suggester
+//   verdict:  match-check outcome. 'verified' | 'rejected' | 'uncertain';
+//             null = not fetched/checked (low-confidence candidate left for
+//             the human to judge from title + snippet alone)
+//   status:   'attached'  = a source_documents row exists (documentId set)
+//             'held'      = awaiting human judgment
+//             'dismissed' = rejected by the match check or by the human
+//   decidedBy: who made the final status call — 'ai' | 'human' | null (held)
+export const intakeCandidates = sqliteTable("intake_candidates", {
+  id: text("id").primaryKey(),
+  entryId: text("entry_id").notNull().references(() => entries.id),
+  url: text("url").notNull(),
+  title: text("title"),
+  snippet: text("snippet"),
+  tier: text("tier"), // SourceTier of the URL's domain
+  origin: text("origin").notNull(), // 'capture' | 'search'
+  verdict: text("verdict"), // 'verified' | 'rejected' | 'uncertain' | null
+  evidence: text("evidence"), // one-line human-readable reason for the verdict
+  // Verifier's role suggestion for the document: 'primary_text' | 'supporting'.
+  suggestedRole: text("suggested_role"),
+  status: text("status").notNull().default("held"), // 'attached' | 'held' | 'dismissed'
+  decidedBy: text("decided_by"), // 'ai' | 'human' | null
+  documentId: text("document_id"), // source_documents.id once attached
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

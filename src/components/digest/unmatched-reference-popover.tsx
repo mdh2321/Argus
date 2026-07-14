@@ -40,10 +40,10 @@ export function UnmatchedReferencePopover({ reference, trigger }: Props) {
 
       const entryId = json.entryId;
       toast.success("Added to tracker", {
-        description: "Click View to find official sources.",
+        description: "Argus is finding and verifying official sources.",
         action: {
           label: "View",
-          onClick: () => router.push(`/tracker/${entryId}?suggestSources=1`),
+          onClick: () => router.push(`/tracker/${entryId}`),
         },
       });
       setOpen(false);

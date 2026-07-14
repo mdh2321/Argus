@@ -4,7 +4,7 @@ import { entries } from "@/db/schema";
 import { generateId, now, toJsonString } from "@/lib/utils";
 import { computeNextKeyDate, serializeEntry, syncDeadlines } from "@/lib/entry-helpers";
 import { extractFromUrl, extractFromDocument, searchAndExtract, type CapturedDraft } from "@/lib/capture-ai";
-import { kickOffSummaryGeneration } from "@/lib/summary-pipeline";
+import { kickOffIntake } from "@/lib/intake-pipeline";
 import { eq } from "drizzle-orm";
 
 export const maxDuration = 120;
@@ -93,14 +93,12 @@ export async function POST(request: NextRequest) {
 
   await syncDeadlines(id, keyDatesJson);
 
-  // Auto-kick a preliminary summary if the capture extraction didn't fill
-  // one in (URL fetches sometimes return only meta-fields). Skipped when
-  // the draft already contains summary content so we don't clobber it.
-  if (!draft.summary) {
-    void kickOffSummaryGeneration(id).catch((err) => {
-      console.error(`[capture] auto-kickoff failed for ${id}:`, err);
-    });
-  }
+  // Intake pipeline: resolve candidate sources, verify them against the
+  // entry, auto-attach verified official documents, then run the analysis at
+  // the depth the evidence supports. Replaces the old bare preliminary kick.
+  void kickOffIntake(id).catch((err) => {
+    console.error(`[capture] intake kickoff failed for ${id}:`, err);
+  });
 
   const [created] = await db.select().from(entries).where(eq(entries.id, id));
   return NextResponse.json({ entry: serializeEntry(created) }, { status: 201 });
