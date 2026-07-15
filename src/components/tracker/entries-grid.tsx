@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
+import { InstrumentTypeIcon } from "@/components/ui/instrument-type-icon";
 import { STATUSES, ENTRY_TYPES } from "@/lib/constants";
 import { formatDate, relativeTime } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
@@ -105,7 +106,10 @@ export function EntriesGrid({ entries }: EntriesGridProps) {
                 className="border-b border-border last:border-b-0 cursor-pointer transition-colors hover:bg-hover"
               >
                 <td className="px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 whitespace-nowrap">
-                  {typeLabel(entry.type)}
+                  <span className="inline-flex items-center gap-1.5">
+                    <InstrumentTypeIcon type={entry.type} className="w-3.5 h-3.5" title={typeLabel(entry.type)} />
+                    {typeLabel(entry.type)}
+                  </span>
                 </td>
                 <td className="px-3 py-2.5 whitespace-nowrap">
                   <JurisdictionBadge code={entry.jurisdiction} />

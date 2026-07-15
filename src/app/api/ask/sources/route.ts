@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       jurisdiction: entries.jurisdiction,
       category: entries.category,
       status: entries.status,
+      type: entries.type,
     })
     .from(entries)
     .where(q ? and(eq(entries.archived, false), like(entries.shortName, term)) : eq(entries.archived, false))
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
       kind: "entry",
       id: e.id,
       title: e.shortName,
+      type: e.type,
       meta: `Tracker · ${e.jurisdiction} · ${e.status.replaceAll("_", " ")}`,
       grounding: grounding.get(e.id) ?? "record_only",
     });

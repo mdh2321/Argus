@@ -1,6 +1,6 @@
 "use client";
 
-import { JURISDICTIONS, CATEGORIES, ENTRY_TYPES, STATUSES } from "@/lib/constants";
+import { JURISDICTIONS, CATEGORIES, ENTRY_TYPES, ENTRY_TYPE_GROUPS, STATUSES } from "@/lib/constants";
 import { Search, X, Clock } from "lucide-react";
 import { useState } from "react";
 
@@ -75,7 +75,13 @@ export function FilterBar({
           value={filters.type || ""}
           onChange={(v) => onFilterChange("type", v)}
           placeholder="Type"
-          options={ENTRY_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+          groups={ENTRY_TYPE_GROUPS.map((g) => ({
+            label: g.label,
+            options: g.types.map((value) => ({
+              value,
+              label: ENTRY_TYPES.find((t) => t.value === value)?.label ?? value,
+            })),
+          }))}
         />
         <Dropdown
           value={filters.status || ""}
@@ -126,11 +132,13 @@ function Dropdown({
   onChange,
   placeholder,
   options,
+  groups,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
-  options: { value: string; label: string }[];
+  options?: { value: string; label: string }[];
+  groups?: { label: string; options: { value: string; label: string }[] }[];
 }) {
   return (
     <select
@@ -141,8 +149,15 @@ function Dropdown({
       }`}
     >
       <option value="">{placeholder}</option>
-      {options.map((o) => (
+      {options?.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+      {groups?.map((g) => (
+        <optgroup key={g.label} label={g.label}>
+          {g.options.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </optgroup>
       ))}
     </select>
   );

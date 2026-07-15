@@ -25,10 +25,12 @@ import {
 import { AgentBadge } from "@/components/ui/agent-badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SourceFavicon } from "@/components/ui/source-favicon";
+import { InstrumentTypeIcon, instrumentTypeLabel } from "@/components/ui/instrument-type-icon";
 import { readSSE } from "@/lib/ask-sse";
 import { CopyMarkdownButton } from "@/components/shared/copy-markdown-button";
 import { HistoryDrawer } from "@/components/ask/history-drawer";
 import { askAnswerToMarkdown } from "@/lib/markdown-export";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -542,7 +544,11 @@ export default function AskPage() {
     />
   );
 
-  const scopeBar = scopes.length > 0 && (
+  // The Sources bar sits above the Ask card. It shows even with no sources
+  // selected so "Add sources" is always a discoverable, one-click affordance —
+  // typing "@" stays as a shortcut. Hidden in News mode, where scope is fixed
+  // to the story being discussed.
+  const sourceBar = (
     <SourceChips scopes={scopes} onRemove={removeScope} onAdd={addScope} disabled={busy} />
   );
 
@@ -563,11 +569,11 @@ export default function AskPage() {
                 ? "Chatting about a news story — quick, conversational answers grounded in the article, with live web search and checkable sources."
                 : scopes.length > 0
                   ? "Scoped to your selected sources — answers draw on these records, with passage-level grounding."
-                  : "Ask a legal-intelligence question and get a brief with linked citations across your tracked records. Pick a workflow below, add sources with @, or just start typing."}
+                  : "Ask a legal-intelligence question and get a brief with linked citations across your tracked records. Pick a workflow below, add sources from the Sources bar (or @), or just start typing."}
             </p>
           </div>
 
-          {scopeBar && <div className="mb-4 w-full">{scopeBar}</div>}
+          {!isNews && <div className="mb-4 w-full">{sourceBar}</div>}
 
           <div className="w-full">{composer}</div>
 
@@ -641,7 +647,7 @@ export default function AskPage() {
             </div>
           </div>
 
-          {scopeBar && <div className="mb-4">{scopeBar}</div>}
+          {scopes.length > 0 && <div className="mb-4">{sourceBar}</div>}
 
           <div className="space-y-6">
             {turns.map((turn) => (
@@ -765,9 +771,12 @@ function AddSourcesButton({
 function SourceSearchPanel({
   onPick,
   onClose,
+  placement = "down",
 }: {
   onPick: (opt: AskSourceOption) => void;
   onClose: () => void;
+  /** Open below (default) or above the trigger — the composer sits low. */
+  placement?: "up" | "down";
 }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<AskSourceOption[]>([]);
@@ -790,20 +799,29 @@ function SourceSearchPanel({
   }, [q]);
 
   return (
-    <div className="absolute left-0 top-full z-20 mt-1.5 w-[340px] rounded-xl border border-border bg-surface p-2 shadow-[var(--shadow-l)]">
-      <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border px-2 py-1.5">
-        <Search className="h-3.5 w-3.5 text-fg-3" />
-        <input
-          autoFocus
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === "Escape" && onClose()}
-          placeholder="Search entries, news, knowledge, signals…"
-          className="w-full bg-transparent text-[13px] text-fg outline-none placeholder:text-fg-3"
-        />
+    <>
+      {/* Click-catcher so tapping anywhere outside closes the picker. */}
+      <div className="fixed inset-0 z-10" onClick={onClose} aria-hidden="true" />
+      <div
+        className={cn(
+          "absolute left-0 z-20 w-[340px] rounded-xl border border-border bg-surface p-2 shadow-[var(--shadow-l)]",
+          placement === "up" ? "bottom-full mb-1.5" : "top-full mt-1.5"
+        )}
+      >
+        <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border px-2 py-1.5">
+          <Search className="h-3.5 w-3.5 text-fg-3" />
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
+            placeholder="Search entries, news, knowledge, signals…"
+            className="w-full bg-transparent text-[13px] text-fg outline-none placeholder:text-fg-3"
+          />
+        </div>
+        <SourceResultList results={results} loading={loading} onPick={onPick} />
       </div>
-      <SourceResultList results={results} loading={loading} onPick={onPick} />
-    </div>
+    </>
   );
 }
 
@@ -825,14 +843,18 @@ function SourceResultList({
   return (
     <div className="max-h-[280px] overflow-y-auto">
       {results.map((opt) => {
-        const Icon = KIND_META[opt.kind].icon;
+        const KindIcon = KIND_META[opt.kind].icon;
         return (
           <button
             key={`${opt.kind}:${opt.id}`}
             onClick={() => onPick(opt)}
             className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-hover"
           >
-            <Icon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-fg-3" />
+            {opt.kind === "entry" && opt.type ? (
+              <InstrumentTypeIcon type={opt.type} className="mt-0.5 h-3.5 w-3.5" title={instrumentTypeLabel(opt.type)} />
+            ) : (
+              <KindIcon className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-fg-3" />
+            )}
             <span className="min-w-0">
               <span className="block truncate text-[13px] text-fg">{opt.title}</span>
               <span className="block truncate font-mono text-[10px] uppercase tracking-[0.03em] text-fg-3">

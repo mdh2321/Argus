@@ -2,6 +2,7 @@
 
 import type { Entry } from "@/lib/types";
 import { ENTRY_TYPES, STATUSES, JURISDICTIONS } from "@/lib/constants";
+import { InstrumentTypeIcon } from "@/components/ui/instrument-type-icon";
 import { formatDate, relativeTime } from "@/lib/utils";
 
 // Compact key-value reference card for the right rail. Surfaces the formal
@@ -13,7 +14,15 @@ export function QuickFacts({ entry }: { entry: Entry }) {
   const facts: { label: string; value: React.ReactNode }[] = [];
 
   const typeLabel = ENTRY_TYPES.find((t) => t.value === entry.type)?.label ?? entry.type;
-  facts.push({ label: "Type", value: typeLabel });
+  facts.push({
+    label: "Type",
+    value: (
+      <span className="inline-flex items-center gap-1.5">
+        <InstrumentTypeIcon type={entry.type} className="w-3.5 h-3.5" title={typeLabel} />
+        {typeLabel}
+      </span>
+    ),
+  });
 
   const jurisdictionLabel =
     JURISDICTIONS.find((j) => j.code === entry.jurisdiction)?.name ?? entry.jurisdiction;

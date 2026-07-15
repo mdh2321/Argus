@@ -144,6 +144,8 @@ export interface AskSourceOption {
   id: string;
   title: string;
   meta: string;
+  /** Instrument type (entry kind only) — drives the type glyph in the picker. */
+  type?: string;
   /** Pre-flight grounding state (entries only): what a scoped ask would
    *  actually read — the instrument text, supporting docs, or summary only. */
   grounding?: "instrument" | "docs" | "record_only";

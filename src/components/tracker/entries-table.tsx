@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
+import { InstrumentTypeIcon } from "@/components/ui/instrument-type-icon";
 import { STATUSES, ENTRY_TYPES, RELATIONSHIP_KINDS } from "@/lib/constants";
 import { relativeTime, formatDate } from "@/lib/utils";
 import { updateEntry } from "@/hooks/use-entries";
@@ -254,7 +255,10 @@ export function EntriesTable({
               badges and the subordinate-instruments toggle live here too, so
               the title stays uncluttered. */}
           <div className="flex items-center gap-2 mt-2 flex-wrap font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
-            <span>{TYPE_LABEL[entry.type] ?? entry.type}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <InstrumentTypeIcon type={entry.type} className="w-3.5 h-3.5" title={TYPE_LABEL[entry.type] ?? entry.type} />
+              {TYPE_LABEL[entry.type] ?? entry.type}
+            </span>
             <span className="opacity-30">·</span>
             <span>{entry.category}</span>
             <span className="opacity-30">·</span>

@@ -4,7 +4,7 @@ export const entries = sqliteTable("entries", {
   id: text("id").primaryKey(),
   jurisdiction: text("jurisdiction").notNull(), // AU, NZ, SG, JP, HK, IN, PH
   category: text("category").notNull(),
-  type: text("type").notNull(), // legislation, bill, regulation, binding-guidance, interpretive-guidance, enforcement, court-decision, consultation, policy
+  type: text("type").notNull(), // legislation (Act), amending-act, bill, regulation (labelled "Subordinate legislation"), binding-guidance, interpretive-guidance, enforcement, court-decision, consultation, policy — see constants.ENTRY_TYPES / ENTRY_TYPE_GROUPS (authority derived via authorityForType)
   status: text("status").notNull(), // monitoring, proposed, consultation, bill_introduced, passed, in_force, amended, repealed, enforcement
   shortName: text("short_name").notNull(),
   fullName: text("full_name").notNull(),

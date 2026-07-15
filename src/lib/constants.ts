@@ -23,18 +23,45 @@ export const CATEGORIES = [
   "Data Security & Breach Notification",
 ] as const;
 
+// Instrument types. `value` is the stored key (never rename a value without a
+// data migration); `label` is display-only. Note: "regulation" is stored as-is
+// for back-compat but labelled "Subordinate legislation" — the umbrella term
+// (regulations, rules, orders, determinations, legislative instruments) that
+// reads correctly across the Commonwealth-style jurisdictions we cover. We
+// avoid "secondary legislation" because primary/secondary collides with the
+// primary-vs-secondary *source* distinction (that lives on the anchor/satellite
+// source role, not the instrument type).
 export const ENTRY_TYPES = [
-  { value: "legislation", label: "Legislation" },
+  { value: "legislation", label: "Act" },
   { value: "amending-act", label: "Amending Act" },
   { value: "bill", label: "Bill" },
-  { value: "regulation", label: "Regulation" },
+  { value: "regulation", label: "Subordinate legislation" },
   { value: "binding-guidance", label: "Binding Guidance" },
   { value: "interpretive-guidance", label: "Interpretive Guidance" },
-  { value: "enforcement", label: "Enforcement" },
+  { value: "enforcement", label: "Enforcement Action" },
   { value: "court-decision", label: "Court Decision" },
   { value: "consultation", label: "Consultation" },
   { value: "policy", label: "Policy" },
 ] as const;
+
+// Instrument types grouped by legal character. The group ordering is also the
+// canonical rank for "sort by type" and for rendering <optgroup>s. The grouping
+// deliberately encodes bindingness (statute/subordinate/binding-guidance/
+// decisions are binding; the rest are expected or informational) so a single
+// type axis carries the authority signal — no separate authority selector.
+export const ENTRY_TYPE_GROUPS = [
+  { key: "statute", label: "Statute", types: ["legislation", "amending-act", "bill"] },
+  { key: "subordinate", label: "Subordinate legislation", types: ["regulation"] },
+  { key: "regulator", label: "Regulator instruments", types: ["binding-guidance", "interpretive-guidance"] },
+  { key: "decisions", label: "Decisions & actions", types: ["court-decision", "enforcement"] },
+  { key: "predecisional", label: "Pre-decisional", types: ["consultation", "policy"] },
+] as const;
+
+// Flat rank derived from group order — instruments sort by legal weight, not
+// alphabetically. Lower = higher up the hierarchy.
+export const ENTRY_TYPE_RANK: Record<string, number> = Object.fromEntries(
+  ENTRY_TYPE_GROUPS.flatMap((g) => g.types).map((t, i) => [t, i])
+);
 
 // Subset of ENTRY_TYPES that can be tracker subjects on their own.
 // Court decisions, enforcement actions, and interpretive guidance are events
@@ -72,6 +99,18 @@ export const TYPE_DEFAULT_AUTHORITY: Record<string, AuthorityLevel> = {
   "bill": "informational",
   "consultation": "informational",
 };
+
+// Single source of truth for an instrument's authority. Authority is a pure
+// function of type (verified: no row in the corpus diverges from its type
+// default), so we derive it rather than storing/filtering it as an independent
+// axis. `stored` lets callers honour an explicit override if one is ever set,
+// but the type default is the norm.
+export function authorityForType(
+  type: string,
+  stored?: string | null
+): AuthorityLevel {
+  return (stored ?? TYPE_DEFAULT_AUTHORITY[type] ?? "informational") as AuthorityLevel;
+}
 
 // Typed relationship kinds. See schema.ts/entryRelationships for direction
 // semantics (from = dependent, to = principal).
