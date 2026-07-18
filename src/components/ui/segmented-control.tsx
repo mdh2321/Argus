@@ -1,15 +1,16 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * A segmented toggle whose selection is a single thumb that *slides* between
  * options rather than each segment restyling in place. Toggle physics are felt
  * disproportionately — the slide is what makes a two-state control read as
- * fluid. Segments are equal-width so the thumb can move by whole multiples of
- * its own width; the transform is GPU-composited and disabled under
- * prefers-reduced-motion.
+ * fluid. The thumb tracks the *measured* geometry of the active segment, so
+ * segments with unequal content widths (e.g. "Quick" vs "Deep Report") stay
+ * covered exactly and never let a neighbour's icon peek through the pill. The
+ * transform/width are GPU-composited and disabled under prefers-reduced-motion.
  */
 
 interface Segment<T extends string> {
@@ -35,10 +36,34 @@ export function SegmentedControl<T extends string>({
     0,
     options.findIndex((o) => o.value === value)
   );
-  const n = options.length;
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    function measure() {
+      const container = containerRef.current;
+      const btn = btnRefs.current[activeIndex];
+      if (!container || !btn) return;
+      // offsetLeft is already relative to the positioned container, so it
+      // accounts for the container's padding without extra bookkeeping.
+      setThumb({ left: btn.offsetLeft, width: btn.offsetWidth });
+    }
+    measure();
+
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === "undefined") return;
+    // Re-measure when the control resizes (font load, container reflow).
+    const ro = new ResizeObserver(measure);
+    ro.observe(container);
+    btnRefs.current.forEach((b) => b && ro.observe(b));
+    return () => ro.disconnect();
+  }, [activeIndex, options.length]);
 
   return (
     <div
+      ref={containerRef}
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
@@ -46,20 +71,28 @@ export function SegmentedControl<T extends string>({
         className
       )}
     >
-      {/* Sliding thumb — width of one segment, translated by whole segments. */}
+      {/* Sliding thumb — matches the measured geometry of the active segment. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0.5 left-0.5 rounded-[10px] bg-accent shadow-[var(--shadow-s)] transition-transform duration-200 ease-out motion-reduce:transition-none"
-        style={{
-          width: `calc((100% - 4px) / ${n})`,
-          transform: `translateX(${activeIndex * 100}%)`,
-        }}
+        className={cn(
+          "pointer-events-none absolute inset-y-0.5 left-0 rounded-[10px] bg-accent shadow-[var(--shadow-s)]",
+          "transition-[transform,width] duration-200 ease-out motion-reduce:transition-none",
+          thumb ? "opacity-100" : "opacity-0"
+        )}
+        style={
+          thumb
+            ? { width: thumb.width, transform: `translateX(${thumb.left}px)` }
+            : undefined
+        }
       />
-      {options.map((o) => {
+      {options.map((o, i) => {
         const active = o.value === value;
         return (
           <button
             key={o.value}
+            ref={(el) => {
+              btnRefs.current[i] = el;
+            }}
             type="button"
             role="tab"
             aria-selected={active}

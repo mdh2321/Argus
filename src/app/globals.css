@@ -129,13 +129,21 @@ body {
 /* ===== Selection ===== */
 ::selection { background: color-mix(in srgb, var(--accent) 25%, transparent); }
 
-/* ===== Keyboard focus — visible ring everywhere, never for mouse clicks ===== */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+/* ===== Keyboard focus — visible ring everywhere, never for mouse clicks =====
+   Scoped to @layer base so per-element `outline-none` utilities win as authored:
+   inputs that live inside a styled container (Ask Argus, search boxes, etc.)
+   present focus through that container's own focus-within ring, so the raw
+   control should stay outline-free. Standalone controls that don't opt out keep
+   this accessible ring. Without the layer this rule is unlayered and beats every
+   Tailwind utility, forcing a hard square ring inside otherwise-smooth fields. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* Elements that opt out of the browser default still get a ring for keyboards. */
+  *:focus:not(:focus-visible) { outline: none; }
 }
-/* Elements that opt out of the browser default still get a ring for keyboards. */
-*:focus:not(:focus-visible) { outline: none; }
 
 /* ===== Custom scrollbar ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
