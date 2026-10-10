@@ -6,6 +6,7 @@ import { generateId, now, toJsonString } from "@/lib/utils";
 import { serializeEntry, syncDeadlines, computeNextKeyDate } from "@/lib/entry-helpers";
 import { normalizeSourceUrls } from "@/lib/source-tiers";
 import { kickOffSummaryGeneration } from "@/lib/summary-pipeline";
+import { LIVE_ENTRY_STATUSES, UPCOMING_ENTRY_STATUSES } from "@/lib/constants";
 import {
   classifyEntry,
   buildSatelliteActivity,
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
   const category = params.get("category");
   const type = params.get("type");
   const status = params.get("status");
+  const lifecycle = params.get("lifecycle");
   const impactMin = params.get("impact_min");
   const impactMax = params.get("impact_max");
   const search = params.get("search");
@@ -79,6 +81,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  if (lifecycle === "live") {
+    conditions.push(inArray(entries.status, [...LIVE_ENTRY_STATUSES]));
+  } else if (lifecycle === "upcoming") {
+    conditions.push(inArray(entries.status, [...UPCOMING_ENTRY_STATUSES]));
+  }
+
   if (impactMin) conditions.push(gte(entries.impactScore, parseInt(impactMin)));
   if (impactMax) conditions.push(lte(entries.impactScore, parseInt(impactMax)));
   if (flagged === "true") conditions.push(eq(entries.flagged, true));
@@ -122,11 +130,32 @@ export async function GET(request: NextRequest) {
     next_key_date: entries.nextKeyDate,
     jurisdiction: entries.jurisdiction,
     short_name: entries.shortName,
+    status: entries.status,
+    type: entries.type,
   };
   const sortCol = sortMap[sortField] || entries.updatedAt;
   const orderFn = order === "asc" ? asc : desc;
 
   const where = and(...conditions);
+
+  const lifecycleRows = await db
+    .select({
+      status: entries.status,
+      count: sql<number>`count(*)`,
+    })
+    .from(entries)
+    .where(eq(entries.archived, false))
+    .groupBy(entries.status);
+  const countFor = (statuses: readonly string[]) =>
+    lifecycleRows.reduce(
+      (sum, row) => sum + (statuses.includes(row.status) ? row.count : 0),
+      0
+    );
+  const lifecycleCounts = {
+    all: lifecycleRows.reduce((sum, row) => sum + row.count, 0),
+    live: countFor(LIVE_ENTRY_STATUSES),
+    upcoming: countFor(UPCOMING_ENTRY_STATUSES),
+  };
 
   const [countResult] = await db
     .select({ count: sql<number>`count(*)` })
@@ -140,7 +169,15 @@ export async function GET(request: NextRequest) {
   if (anchored) {
     // Only ~dozens of entries — classify in memory rather than in SQL. Load the
     // filtered set (unpaginated) plus every relationship to classify + roll up.
-    const filteredRows = await db.select().from(entries).where(where).orderBy(orderFn(sortCol));
+    const filteredRows = await db
+      .select()
+      .from(entries)
+      .where(where)
+      .orderBy(
+        asc(sql`CASE WHEN ${sortCol} IS NULL THEN 1 ELSE 0 END`),
+        orderFn(sortCol),
+        asc(entries.shortName)
+      );
     const allRels = await db
       .select({
         fromEntryId: entryRelationships.fromEntryId,
@@ -196,6 +233,7 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       totalPages: Math.ceil(totalAnchors / limit),
+      lifecycleCounts,
     });
   }
 
@@ -203,7 +241,11 @@ export async function GET(request: NextRequest) {
     .select()
     .from(entries)
     .where(where)
-    .orderBy(orderFn(sortCol))
+    .orderBy(
+      asc(sql`CASE WHEN ${sortCol} IS NULL THEN 1 ELSE 0 END`),
+      orderFn(sortCol),
+      asc(entries.shortName)
+    )
     .limit(limit)
     .offset(offset);
 
@@ -290,6 +332,7 @@ export async function GET(request: NextRequest) {
     page,
     limit,
     totalPages: Math.ceil(total / limit),
+    lifecycleCounts,
   });
 }
 

@@ -13,7 +13,7 @@ export function SubNav({ links }: { links: SubNavLink[] }) {
   const pathname = usePathname();
 
   return (
-    <div className="mb-6 flex items-center gap-1 border-b border-border pb-2">
+    <nav aria-label="Tracker sections" className="mb-6 flex items-center gap-1 border-b border-border pb-2">
       {links.map((link) => {
         const active = link.exact
           ? pathname === link.href
@@ -23,9 +23,10 @@ export function SubNav({ links }: { links: SubNavLink[] }) {
           <Link
             key={link.href}
             href={link.href}
-            className={`px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 ${
+            aria-current={active ? "page" : undefined}
+            className={`inline-flex min-h-11 items-center rounded-lg px-3 text-[14px] font-medium transition-all duration-150 ${
               active
-                ? "text-fg bg-hover"
+                ? "text-fg shadow-[inset_0_-1px_0_var(--border-hover)]"
                 : "text-fg-3 hover:text-fg-2 hover:bg-hover"
             }`}
           >
@@ -33,6 +34,6 @@ export function SubNav({ links }: { links: SubNavLink[] }) {
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

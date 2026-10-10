@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { InstrumentTypeIcon } from "@/components/ui/instrument-type-icon";
@@ -65,7 +65,6 @@ export function EntriesTable({
   onMutate,
   viewMode = "default",
 }: EntriesTableProps) {
-  const router = useRouter();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggleExpanded = (id: string) => {
@@ -96,9 +95,8 @@ export function EntriesTable({
     const childCount = entry.children?.length ?? 0;
     const isExpanded = expanded.has(entry.id);
     return (
-      <div
-        onClick={() => router.push(`/tracker/${entry.id}`)}
-        className={`group flex items-center gap-3 py-2 cursor-pointer transition-colors duration-150 ${
+      <li
+        className={`group flex min-h-14 items-center gap-3 py-2 transition-colors duration-150 ${
           isChild
             ? `ml-10 pl-4 pr-2 border-l border-l-border hover:bg-surface/60 ${hasBorder ? "border-b border-b-border last:border-b-0" : ""}`
             : `-mx-2 px-2 rounded-lg hover:bg-surface hover:border-transparent ${hasBorder ? "border-b border-border last:border-0" : ""}`
@@ -111,7 +109,7 @@ export function EntriesTable({
         <ImpactIndicator score={entry.impactScore} />
         {!isChild && entry.parentShortName && (
           <span
-            className="flex items-center gap-1 font-mono text-[10px] tracking-[0.04em] uppercase text-fg-3 truncate flex-shrink min-w-0 max-w-[160px]"
+            className="flex items-center gap-1 text-[14px] text-fg-3 truncate flex-shrink min-w-0 max-w-[160px]"
             title={`${
               entry.parentRelationshipKind && KIND_VERB[entry.parentRelationshipKind]
                 ? KIND_VERB[entry.parentRelationshipKind]
@@ -122,11 +120,17 @@ export function EntriesTable({
             <span className="truncate">{entry.parentShortName}</span>
           </span>
         )}
-        <span className="text-[13px] font-medium text-fg group-hover:text-accent transition-colors duration-150 truncate flex-1 min-w-0">
+        <Link
+          href={`/tracker/${entry.id}`}
+          className="inline-flex min-h-11 flex-1 min-w-0 items-center truncate text-[15px] font-medium text-fg underline-offset-4 transition-colors duration-150 hover:text-accent-text hover:underline"
+        >
           {entry.shortName}
-        </span>
+        </Link>
         {entry.flagged && (
-          <Flag className="w-3 h-3 flex-shrink-0" style={{ color: "var(--amber)" }} fill="currentColor" />
+          <span className="inline-flex items-center" title="Flagged">
+            <Flag className="w-4 h-4 flex-shrink-0" style={{ color: "var(--amber)" }} fill="currentColor" aria-hidden="true" />
+            <span className="sr-only">Flagged</span>
+          </span>
         )}
         {childCount > 0 && (
           <button
@@ -135,7 +139,7 @@ export function EntriesTable({
               e.stopPropagation();
               toggleExpanded(entry.id);
             }}
-            className="flex-shrink-0 flex items-center gap-1 rounded-full bg-hover px-1.5 py-0.5 font-mono text-[10px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
+            className="flex min-h-11 flex-shrink-0 items-center gap-1.5 rounded-lg bg-hover px-3 text-[14px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
             title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
@@ -149,7 +153,7 @@ export function EntriesTable({
           if (days === null) return null;
           return (
             <span
-              className="flex-shrink-0 flex items-center gap-1 font-mono text-[10px] font-medium"
+              className="flex-shrink-0 flex items-center gap-1 text-[14px] font-medium"
               style={{ color: "var(--amber-text)" }}
               title={`Commences ${formatDate(entry.nextKeyDate)}`}
             >
@@ -158,14 +162,15 @@ export function EntriesTable({
             </span>
           );
         })()}
-        <span className="font-mono text-[10px] tracking-[0.04em] uppercase text-fg-3 flex-shrink-0">
+        <span className="text-[14px] text-fg-3 flex-shrink-0">
           {entry.category}
         </span>
-        <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-shrink-0">
           <select
             value={entry.status}
             onChange={(e) => handleStatusChange(entry, e.target.value)}
-            className="bg-transparent border-none text-[11px] font-medium cursor-pointer focus:outline-none rounded p-0 pr-4 appearance-none text-right"
+            aria-label={`Status for ${entry.shortName}`}
+            className="min-h-11 cursor-pointer rounded-lg border border-border-hover bg-surface px-3 text-[14px] font-medium text-fg"
             style={{
               color: STATUSES.find((s) => s.value === entry.status)?.color || "var(--fg-3)",
             }}
@@ -175,10 +180,10 @@ export function EntriesTable({
             ))}
           </select>
         </div>
-        <span className="font-mono text-[10px] tracking-[0.02em] text-fg-3 tabular-nums flex-shrink-0">
+        <span className="text-[14px] text-fg-3 tabular-nums flex-shrink-0">
           {formatDate(entry.nextKeyDate) !== "—" ? formatDate(entry.nextKeyDate) : relativeTime(entry.updatedAt)}
         </span>
-      </div>
+      </li>
     );
   }
 
@@ -186,19 +191,18 @@ export function EntriesTable({
     const childCount = entry.children?.length ?? 0;
     const isExpanded = expanded.has(entry.id);
     return (
-      <div
-        onClick={() => router.push(`/tracker/${entry.id}`)}
-        className={`group flex items-start gap-4 cursor-pointer transition-colors duration-200 ${
+      <li
+        className={`group flex flex-col gap-4 transition-colors duration-200 sm:flex-row sm:items-start ${
           isChild
-            ? `py-3 ml-10 pl-4 pr-2 border-l border-l-border hover:bg-surface/60 ${hasBorder ? "border-b border-b-border last:border-b-0" : ""}`
-            : `-mx-2 px-2 py-4 rounded-xl hover:bg-surface hover:shadow-[var(--shadow-card)] hover:border-transparent ${hasBorder ? "border-b border-border last:border-0" : ""}`
+            ? `ml-5 border-l-2 border-l-border bg-surface/40 py-4 pl-4 pr-3 sm:ml-10 ${hasBorder ? "border-b border-b-border last:border-b-0" : ""}`
+            : "rounded-xl border border-border bg-surface p-4 shadow-[var(--shadow-s)] hover:border-border-hover hover:shadow-[var(--shadow-card)]"
         }`}
       >
         {isChild && (
           <CornerDownRight className="w-4 h-4 flex-shrink-0 mt-1 text-fg-3" />
         )}
         {/* Left: jurisdiction + impact */}
-        <div className="flex flex-col items-center gap-2 pt-0.5 w-12 flex-shrink-0">
+        <div className="flex w-auto flex-shrink-0 items-center gap-3 pt-0.5 sm:w-24 sm:flex-col sm:gap-2">
           <JurisdictionBadge code={entry.jurisdiction} />
           <ImpactIndicator score={entry.impactScore} />
         </div>
@@ -207,7 +211,7 @@ export function EntriesTable({
         <div className="flex-1 min-w-0">
           {/* Typed parent breadcrumb — verb varies by relationship kind. */}
           {entry.parentShortName && (
-            <div className="flex items-center gap-1 mb-1 font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
+            <div className="mb-1 flex items-center gap-1 text-[14px] text-fg-3">
               <RelationshipIcon kind={entry.parentRelationshipKind} className="w-3 h-3" />
               <span>
                 {entry.parentRelationshipKind && KIND_VERB[entry.parentRelationshipKind]
@@ -219,19 +223,27 @@ export function EntriesTable({
           )}
           {/* Line 1 — the name leads; only a live urgency clock earns a place
               beside it. Everything else is demoted to the meta line below. */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[14px] font-medium text-fg group-hover:text-accent transition-colors duration-150 truncate">
-              {entry.shortName}
-            </span>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <h3 className="min-w-0 text-[17px] font-semibold leading-snug text-fg">
+              <Link
+                href={`/tracker/${entry.id}`}
+                className="inline-flex min-h-11 items-center underline-offset-4 transition-colors duration-150 hover:text-accent-text hover:underline"
+              >
+                {entry.shortName}
+              </Link>
+            </h3>
             {entry.flagged && (
-              <Flag className="w-3 h-3 flex-shrink-0" style={{ color: "var(--amber)" }} fill="currentColor" />
+              <span className="inline-flex items-center" title="Flagged">
+                <Flag className="w-4 h-4 flex-shrink-0" style={{ color: "var(--amber)" }} fill="currentColor" aria-hidden="true" />
+                <span className="sr-only">Flagged</span>
+              </span>
             )}
             {(() => {
               const days = commencingDays(entry);
               if (days === null) return null;
               return (
                 <span
-                  className="flex-shrink-0 flex items-center gap-1 rounded-full bg-amber-bg px-2 py-0.5 font-mono text-[10px] font-medium text-amber-text"
+                  className="flex min-h-[30px] flex-shrink-0 items-center gap-1.5 rounded-full bg-amber-bg px-2.5 py-1 text-[14px] font-medium text-amber-text"
                   title={`Commences ${formatDate(entry.nextKeyDate)}`}
                 >
                   <Clock className="w-2.5 h-2.5" />
@@ -240,12 +252,12 @@ export function EntriesTable({
               );
             })()}
           </div>
-          <p className="text-[12px] text-fg-3 leading-relaxed line-clamp-2">
+          <p className="text-[15px] text-fg-2 leading-relaxed line-clamp-2">
             {entry.summary || entry.fullName}
           </p>
           {/* Satellite activity line (anchor-centric view, §2.2). */}
           {entry.satelliteActivity && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-accent-text">
+            <div className="mt-1.5 flex items-center gap-1.5 text-[14px] text-accent-text">
               <GitBranch className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{entry.satelliteActivity.line}</span>
             </div>
@@ -254,7 +266,7 @@ export function EntriesTable({
               text; only "binding" authority keeps a colored emphasis. Trust
               badges and the subordinate-instruments toggle live here too, so
               the title stays uncluttered. */}
-          <div className="flex items-center gap-2 mt-2 flex-wrap font-mono text-[11px] tracking-[0.04em] uppercase text-fg-3">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] text-fg-3">
             <span className="inline-flex items-center gap-1.5">
               <InstrumentTypeIcon type={entry.type} className="w-3.5 h-3.5" title={TYPE_LABEL[entry.type] ?? entry.type} />
               {TYPE_LABEL[entry.type] ?? entry.type}
@@ -269,20 +281,20 @@ export function EntriesTable({
                 {entry.tags.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-hover px-2 py-0.5 text-[10px] normal-case text-fg-2"
+                    className="rounded-full bg-hover px-2.5 py-1 text-[13px] text-fg-2"
                   >
                     {tag}
                   </span>
                 ))}
                 {entry.tags.length > 2 && (
-                  <span className="text-[10px]">+{entry.tags.length - 2}</span>
+                  <span className="text-[13px]">+{entry.tags.length - 2}</span>
                 )}
               </>
             )}
             {computeTrustBadges(entry).map((badge) => (
               <span
                 key={badge.label}
-                className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.className}`}
+                className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${badge.className}`}
               >
                 {badge.label}
               </span>
@@ -294,7 +306,7 @@ export function EntriesTable({
                   e.stopPropagation();
                   toggleExpanded(entry.id);
                 }}
-                className="flex items-center gap-1 rounded-full bg-hover px-2 py-0.5 text-[10px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
+                className="flex min-h-11 items-center gap-1.5 rounded-lg bg-hover px-3 text-[14px] font-medium text-fg-3 hover:bg-active hover:text-fg transition-colors"
                 aria-expanded={isExpanded}
                 aria-label={`${isExpanded ? "Collapse" : "Expand"} ${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
                 title={`${childCount} subordinate instrument${childCount === 1 ? "" : "s"}`}
@@ -307,11 +319,12 @@ export function EntriesTable({
         </div>
 
         {/* Right: status + date */}
-        <div className="flex flex-col items-end gap-2 flex-shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 pt-0.5 sm:flex-col sm:items-end">
           <select
             value={entry.status}
             onChange={(e) => handleStatusChange(entry, e.target.value)}
-            className={`bg-transparent border-none text-[11px] font-medium cursor-pointer focus:outline-none rounded p-0 pr-4 appearance-none text-right`}
+            aria-label={`Status for ${entry.shortName}`}
+            className="min-h-11 cursor-pointer rounded-lg border border-border-hover bg-surface px-3 text-[14px] font-medium text-fg"
             style={{
               color: STATUSES.find((s) => s.value === entry.status)?.color || "var(--fg-3)",
             }}
@@ -320,18 +333,18 @@ export function EntriesTable({
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
-          <span className="font-mono text-[10px] tracking-[0.02em] text-fg-3 tabular-nums">
+          <span className="text-[14px] text-fg-3 tabular-nums">
             {formatDate(entry.nextKeyDate) !== "—" ? formatDate(entry.nextKeyDate) : relativeTime(entry.updatedAt)}
           </span>
         </div>
 
-      </div>
+      </li>
     );
   }
 
   if (viewMode === "condensed") {
     return (
-      <div className="stagger">
+      <ul className="stagger" aria-label="Tracker records">
         {entries.map((entry) => {
           const kids = entry.children ?? [];
           const showKids = expanded.has(entry.id) && kids.length > 0;
@@ -347,12 +360,12 @@ export function EntriesTable({
             </Fragment>
           );
         })}
-      </div>
+      </ul>
     );
   }
 
   return (
-    <div className="stagger">
+    <ul className="stagger space-y-3" aria-label="Tracker records">
       {entries.map((entry) => {
         const kids = entry.children ?? [];
         const showKids = expanded.has(entry.id) && kids.length > 0;
@@ -368,6 +381,6 @@ export function EntriesTable({
           </Fragment>
         );
       })}
-    </div>
+    </ul>
   );
 }

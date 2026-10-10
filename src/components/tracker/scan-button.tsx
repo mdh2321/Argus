@@ -122,13 +122,13 @@ export function ScanButton() {
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
-          className="flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-2 transition-colors hover:bg-hover"
+          className="flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-[14px] font-medium text-fg-2 transition-colors hover:border-border-hover hover:bg-hover hover:text-fg"
           title="Scan the regulatory landscape for missing entries"
         >
           {scanning ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Radar className="w-3.5 h-3.5" />
+            <Radar className="w-4 h-4" aria-hidden="true" />
           )}
           Scan
         </button>

@@ -94,7 +94,7 @@ interface ExtractedStory {
 
 // Slimmed June 2026 (refinement plan B1): the issue is executive brief +
 // stories only. The radar/cross-border/scorecard/region sections were cut —
-// radar content lives on the live Horizon page, thematic synthesis in
+// forward-looking legislation lives in the Tracker's Upcoming view, thematic synthesis in
 // Signals. The schema columns remain but are no longer populated.
 interface SynthesisOutput {
   duplicate_urls_to_remove?: string[];

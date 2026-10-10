@@ -15,13 +15,13 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md";
 
 const base =
-  "inline-flex items-center justify-center gap-1.5 font-mono uppercase font-medium " +
-  "tracking-[0.04em] rounded-xl transition-all duration-150 " +
+  "inline-flex min-h-11 items-center justify-center gap-2 font-medium " +
+  "rounded-xl transition-all duration-150 " +
   "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none";
 
 const sizes: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-[11px]",
-  md: "px-4 py-2 text-[11px]",
+  sm: "px-3 text-[14px]",
+  md: "px-4 text-[14px]",
 };
 
 const variants: Record<Variant, string> = {
@@ -85,7 +85,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg p-2 text-fg-3",
+        "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-fg-3",
         "transition-all duration-150 hover:bg-hover hover:text-fg-2",
         "disabled:cursor-not-allowed disabled:opacity-40",
         className

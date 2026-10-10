@@ -1,20 +1,43 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEntries } from "@/hooks/use-entries";
+import { List, Plus, Rows3 } from "lucide-react";
 import { FilterBar } from "@/components/tracker/filter-bar";
-import { EntriesTable } from "@/components/tracker/entries-table";
-import { EntriesKanban } from "@/components/tracker/entries-kanban";
-import { EntriesGrid } from "@/components/tracker/entries-grid";
-import { ScanButton } from "@/components/tracker/scan-button";
-import { ChevronLeft, ChevronRight, CalendarClock, Sparkles, Database, Rows3, List, LayoutGrid, KanbanSquare, Table as TableIcon, ArrowUpDown, ArrowUp, ArrowDown, GitBranch } from "lucide-react";
-import { ButtonLink } from "@/components/ui/button";
+import {
+  TrackerLibraryList,
+  type TrackerSortField,
+} from "@/components/tracker/tracker-library-list";
 import { SkeletonList } from "@/components/ui/skeleton";
+import { useEntries } from "@/hooks/use-entries";
+import {
+  LIVE_ENTRY_STATUSES,
+  UPCOMING_ENTRY_STATUSES,
+  type TrackerLifecycle,
+} from "@/lib/constants";
+
+type Density = "comfortable" | "compact";
+type SortOrder = "asc" | "desc";
+
+const SORT_FIELDS: TrackerSortField[] = [
+  "jurisdiction",
+  "short_name",
+  "status",
+  "next_key_date",
+  "type",
+  "impact_score",
+];
 
 export default function TrackerPage() {
   return (
-    <Suspense fallback={<div className="mt-8"><SkeletonList rows={8} /></div>}>
+    <Suspense
+      fallback={
+        <div className="mt-8" role="status" aria-label="Loading tracker records">
+          <SkeletonList rows={8} />
+        </div>
+      }
+    >
       <TrackerContent />
     </Suspense>
   );
@@ -22,41 +45,70 @@ export default function TrackerPage() {
 
 function TrackerContent() {
   const searchParams = useSearchParams();
+  const initialLifecycle = parseLifecycle(searchParams.get("lifecycle"));
+  const initialSort = parseSortField(searchParams.get("sort")) ??
+    (initialLifecycle === "upcoming" ? "next_key_date" : "short_name");
 
   const [filters, setFilters] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    searchParams.forEach((v, k) => { init[k] = v; });
-    return init;
+    const initial: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (!["search", "sort", "order", "page", "limit", "lifecycle", "anchored"].includes(key)) {
+        initial[key] = value;
+      }
+    });
+    return initial;
   });
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [viewMode, setViewMode] = useState<"list" | "table" | "kanban">("list");
-  const [listDensity, setListDensity] = useState<"default" | "condensed">("default");
-  // Anchor-centric view (§2.2) — opt-in; flat list stays the default.
-  const [anchoredView, setAnchoredView] = useState(false);
-  const [sortField, setSortField] = useState("updated_at");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(1);
+  const [lifecycle, setLifecycle] = useState<TrackerLifecycle>(initialLifecycle);
+  const [density, setDensity] = useState<Density>("comfortable");
+  const [sortField, setSortField] = useState<TrackerSortField>(initialSort);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(
+    searchParams.get("order") === "desc" ? "desc" : "asc"
+  );
+  const [page, setPage] = useState(
+    Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1)
+  );
 
   const params: Record<string, string> = {
     ...filters,
+    lifecycle: lifecycle === "all" ? "" : lifecycle,
     sort: sortField,
     order: sortOrder,
     page: String(page),
     limit: "50",
   };
   if (search) params.search = search;
-  if (anchoredView) params.anchored = "1";
-  Object.keys(params).forEach((k) => { if (!params[k]) delete params[k]; });
+  Object.keys(params).forEach((key) => {
+    if (!params[key]) delete params[key];
+  });
 
-  // Flat list — every entry (parent or subordinate instrument) gets its own
-  // row. Children carry a parentShortName breadcrumb for context.
+  const { data, isLoading } = useEntries(params);
 
-  const { data, mutate, isLoading } = useEntries(params);
-
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const changeLifecycle = useCallback((next: TrackerLifecycle) => {
+    setLifecycle(next);
+    setFilters((previous) => {
+      const status = previous.status;
+      if (!status || next === "all" || statusMatchesLifecycle(status, next)) return previous;
+      return { ...previous, status: "" };
+    });
+    setSortField(next === "upcoming" ? "next_key_date" : "short_name");
+    setSortOrder("asc");
     setPage(1);
   }, []);
+
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      setFilters((previous) => ({ ...previous, [key]: value }));
+      if (key === "status" && value && lifecycle !== "all" && !statusMatchesLifecycle(value, lifecycle)) {
+        const inferred = lifecycleForStatus(value);
+        setLifecycle(inferred);
+        setSortField(inferred === "upcoming" ? "next_key_date" : "short_name");
+        setSortOrder("asc");
+      }
+      setPage(1);
+    },
+    [lifecycle]
+  );
 
   const handleClearFilters = useCallback(() => {
     setFilters({});
@@ -64,195 +116,218 @@ function TrackerContent() {
     setPage(1);
   }, []);
 
+  const handleSort = useCallback(
+    (field: TrackerSortField) => {
+      if (field === sortField) {
+        setSortOrder((current) => (current === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortOrder("asc");
+      }
+      setPage(1);
+    },
+    [sortField]
+  );
+
+  const counts = data?.lifecycleCounts ?? { all: 0, live: 0, upcoming: 0 };
+
   return (
     <div className="anim-enter">
-      {/* Header */}
-      <div className="flex items-end justify-between mb-6">
-        <div className="relative grid-pattern py-4">
-          <div className="flex items-center gap-2.5 relative z-10">
-            <Database className="w-5 h-5" style={{ color: "var(--green)" }} />
-            <h1 className="text-gradient text-[28px] font-bold tracking-[-0.02em]">
-              Tracker
-            </h1>
-          </div>
-          <p className="text-[14px] text-fg-3 mt-1.5 relative z-10">
-            {data ? `${data.total} entries tracked across APAC` : "Loading..."}
-          </p>
+      <header className="flex items-center justify-between gap-4 pb-4">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.03em] text-fg">
+            Tracker
+          </h1>
+          <span className="text-[12px] tabular-nums text-fg-3">
+            {counts.all ? `${counts.all} legislation records` : "Loading records…"}
+          </span>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-xl border border-border overflow-hidden mr-1">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`flex items-center gap-1 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors ${
-                viewMode === "list"
-                  ? "bg-accent text-white"
-                  : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-              }`}
-              title="List view"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`flex items-center gap-1 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors border-l border-border ${
-                viewMode === "table"
-                  ? "bg-accent text-white"
-                  : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-              }`}
-              title="Table view"
-            >
-              <TableIcon className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-1 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors border-l border-border ${
-                viewMode === "kanban"
-                  ? "bg-accent text-white"
-                  : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-              }`}
-              title="Kanban view"
-            >
-              <KanbanSquare className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          {viewMode === "list" && (
-            <div className="flex items-center rounded-xl border border-border overflow-hidden mr-1">
-              <button
-                onClick={() => setListDensity("default")}
-                className={`flex items-center gap-1 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors ${
-                  listDensity === "default"
-                    ? "bg-surface text-fg"
-                    : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-                }`}
-                title="Default density"
-              >
-                <Rows3 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setListDensity("condensed")}
-                className={`flex items-center gap-1 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors border-l border-border ${
-                  listDensity === "condensed"
-                    ? "bg-surface text-fg"
-                    : "text-fg-3 hover:text-fg-2 hover:bg-hover"
-                }`}
-                title="Condensed density"
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-          {viewMode === "list" && (
-            <button
-              onClick={() => { setAnchoredView((v) => !v); setPage(1); }}
-              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.04em] transition-colors mr-1 ${
-                anchoredView
-                  ? "bg-accent text-white border-accent"
-                  : "border-border text-fg-3 hover:text-fg-2 hover:bg-hover"
-              }`}
-              title="Anchor-centric view — show principal instruments only, with satellite activity"
-            >
-              <GitBranch className="w-3.5 h-3.5" />
-              Anchors
-            </button>
-          )}
-          <ScanButton />
-          <ButtonLink href="/tracker/horizon" variant="secondary">
-            <CalendarClock className="w-3.5 h-3.5" />
-            Horizon
-          </ButtonLink>
-          <ButtonLink href="/tracker/new">
-            <Sparkles className="w-3.5 h-3.5" />
-            New Entry
-          </ButtonLink>
-        </div>
-      </div>
+        <Link
+          href="/tracker/new"
+          className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 text-[12px] font-medium text-white transition-colors hover:bg-accent-2"
+        >
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          New entry
+        </Link>
+      </header>
 
-      {/* Filters + search */}
       <FilterBar
         filters={filters}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
-        onSearch={setSearch}
+        onSearch={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
         searchValue={search}
       />
 
-      {/* Sort + View controls — only the list view uses the server-side sort.
-          Table view has its own column sort; Kanban groups by lifecycle. */}
-      {viewMode === "list" && (
-      <div className="flex items-center justify-between mt-5">
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="w-3.5 h-3.5 text-fg-3" />
-          <select
-            value={sortField}
-            onChange={(e) => { setSortField(e.target.value); setPage(1); }}
-            className="bg-transparent border border-border rounded-lg px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-2 cursor-pointer focus:outline-none focus:border-accent transition-colors appearance-none pr-7"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
-          >
-            <option value="updated_at">Last Updated</option>
-            <option value="impact_score">Impact</option>
-            <option value="next_key_date">Next Key Date</option>
-            <option value="short_name">Name</option>
-            <option value="jurisdiction">Jurisdiction</option>
-            <option value="created_at">Date Added</option>
-          </select>
-          <button
-            onClick={() => { setSortOrder((o) => o === "asc" ? "desc" : "asc"); setPage(1); }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 hover:text-fg-2 hover:bg-hover transition-colors"
-            title={sortOrder === "asc" ? "Ascending" : "Descending"}
-          >
-            {sortOrder === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
-            {sortOrder === "asc" ? "Asc" : "Desc"}
-          </button>
-        </div>
-      </div>
-      )}
-
-      {/* Results */}
-      <div className="mt-4">
-        {isLoading ? (
-          <SkeletonList rows={8} />
-        ) : (
-          <>
-            {viewMode === "list" && (
-              <EntriesTable
-                entries={data?.entries || []}
-                onMutate={() => mutate()}
-                viewMode={listDensity}
+      <section className="mt-3" aria-labelledby="tracker-library-heading" aria-busy={isLoading}>
+        <h2 id="tracker-library-heading" className="sr-only">Legislation library</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <fieldset className="inline-flex rounded-lg border border-border bg-hover p-0.5">
+              <legend className="sr-only">Lifecycle</legend>
+              <LifecycleButton
+                label="All"
+                count={counts.all}
+                selected={lifecycle === "all"}
+                onClick={() => changeLifecycle("all")}
               />
-            )}
-            {viewMode === "table" && (
-              <EntriesGrid entries={data?.entries || []} />
-            )}
-            {viewMode === "kanban" && (
-              <EntriesKanban entries={data?.entries || []} />
-            )}
+              <LifecycleButton
+                label="Live"
+                count={counts.live}
+                selected={lifecycle === "live"}
+                onClick={() => changeLifecycle("live")}
+              />
+              <LifecycleButton
+                label="Upcoming"
+                count={counts.upcoming}
+                selected={lifecycle === "upcoming"}
+                onClick={() => changeLifecycle("upcoming")}
+              />
+            </fieldset>
+            <span className="text-[12px] tabular-nums text-fg-3" aria-live="polite">
+              {isLoading
+                ? "Updating…"
+                : data?.total === 1
+                  ? "1 record"
+                  : `${data?.total ?? 0} records`}
+            </span>
+          </div>
 
-            {viewMode === "list" && data && data.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <span className="text-[12px] text-fg-3 tabular-nums">
-                  Page {data.page} of {data.totalPages}
-                </span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="p-2 rounded-lg text-fg-3 hover:text-fg-2 hover:bg-hover disabled:opacity-30 transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                    disabled={page === data.totalPages}
-                    className="p-2 rounded-lg text-fg-3 hover:text-fg-2 hover:bg-hover disabled:opacity-30 transition-colors"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
+          <fieldset className="inline-flex rounded-lg border border-border bg-hover p-0.5">
+            <legend className="sr-only">Record density</legend>
+            <DensityButton
+              label="Comfortable"
+              selected={density === "comfortable"}
+              onClick={() => setDensity("comfortable")}
+              Icon={Rows3}
+            />
+            <DensityButton
+              label="Compact"
+              selected={density === "compact"}
+              onClick={() => setDensity("compact")}
+              Icon={List}
+            />
+          </fieldset>
+        </div>
+
+        <div>
+          {isLoading ? (
+            <div className="mt-3" role="status" aria-label="Loading tracker records">
+              <SkeletonList rows={8} />
+            </div>
+          ) : (
+            <TrackerLibraryList
+              entries={data?.entries || []}
+              lifecycle={lifecycle}
+              density={density}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+            />
+          )}
+        </div>
+
+        {data && data.totalPages > 1 && (
+          <nav aria-label="Tracker pagination" className="mt-4 flex items-center justify-between">
+            <span className="text-[12px] tabular-nums text-fg-3">
+              Page {data.page} of {data.totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page === 1}
+                className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-[12px] font-medium text-fg-2 transition-colors hover:bg-hover hover:text-fg disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.min(data.totalPages, current + 1))}
+                disabled={page === data.totalPages}
+                className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-[12px] font-medium text-fg-2 transition-colors hover:bg-hover hover:text-fg disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </nav>
         )}
-      </div>
+      </section>
     </div>
   );
+}
+
+function LifecycleButton({
+  label,
+  count,
+  selected,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`inline-flex min-h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-medium transition-colors ${
+        selected ? "bg-surface text-fg shadow-sm" : "text-fg-3 hover:text-fg"
+      }`}
+    >
+      {label}
+      <span className="tabular-nums text-fg-3">{count}</span>
+    </button>
+  );
+}
+
+function DensityButton({
+  label,
+  selected,
+  onClick,
+  Icon,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+  Icon: typeof Rows3;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`inline-flex min-h-8 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium transition-colors ${
+        selected ? "bg-surface text-fg shadow-sm" : "text-fg-3 hover:text-fg"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      {label}
+    </button>
+  );
+}
+
+function parseLifecycle(value: string | null): TrackerLifecycle {
+  return value === "live" || value === "upcoming" ? value : "all";
+}
+
+function parseSortField(value: string | null): TrackerSortField | null {
+  return value && SORT_FIELDS.includes(value as TrackerSortField)
+    ? (value as TrackerSortField)
+    : null;
+}
+
+function lifecycleForStatus(status: string): TrackerLifecycle {
+  if ((LIVE_ENTRY_STATUSES as readonly string[]).includes(status)) return "live";
+  if ((UPCOMING_ENTRY_STATUSES as readonly string[]).includes(status)) return "upcoming";
+  return "all";
+}
+
+function statusMatchesLifecycle(status: string, lifecycle: TrackerLifecycle): boolean {
+  return lifecycle === "all" || lifecycleForStatus(status) === lifecycle;
 }

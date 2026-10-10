@@ -56,22 +56,31 @@ export function ActivityPopover() {
     prevInFlight.current = inFlight;
   }, [inFlight]);
 
-  // Close on outside click.
+  // Close on outside click or Escape.
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open]);
 
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-2.5 text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
         aria-label="Activity and cost"
+        aria-expanded={open}
+        aria-controls="activity-popover-content"
         title="Activity & AI spend"
       >
         {inFlight > 0 ? (
@@ -85,10 +94,10 @@ export function ActivityPopover() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-surface shadow-[var(--shadow-l)] z-[90] overflow-hidden">
+        <div id="activity-popover-content" className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-surface shadow-[var(--shadow-l)] z-[90] overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+              <span className="text-[14px] font-medium text-fg-3">
                 Spend · {data?.thisMonth ?? "—"}
               </span>
               <span className="text-[15px] font-semibold text-fg tabular-nums">
@@ -100,7 +109,7 @@ export function ActivityPopover() {
           {inFlight > 0 && (
             <div className="px-4 py-2.5 border-b border-border bg-accent/5">
               {data?.inFlight.map((e) => (
-                <div key={e.id} className="flex items-center gap-2 text-[12px] text-fg-2">
+                <div key={e.id} className="flex items-center gap-2 text-[14px] text-fg-2">
                   <Loader2 className="w-3 h-3 animate-spin text-accent" />
                   <span className="truncate">Analyzing {e.shortName}</span>
                 </div>
@@ -109,7 +118,7 @@ export function ActivityPopover() {
           )}
 
           <div className="max-h-72 overflow-y-auto">
-            <div className="px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+            <div className="px-4 py-2 text-[14px] font-medium text-fg-3">
               Recent runs
             </div>
             {data && data.recent.length > 0 ? (
@@ -119,18 +128,18 @@ export function ActivityPopover() {
                   className="flex items-center gap-3 px-4 py-2 border-t border-border/50 first:border-t-0"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-[12px] font-medium text-fg truncate">
+                    <div className="text-[14px] font-medium text-fg truncate">
                       {workflowLabel(r.workflow)}
                     </div>
-                    <div className="text-[11px] text-fg-3 tabular-nums">{relativeTime(r.runAt)}</div>
+                    <div className="text-[13px] text-fg-3 tabular-nums">{relativeTime(r.runAt)}</div>
                   </div>
-                  <span className="font-mono text-[11px] text-fg-3 tabular-nums flex-shrink-0">
+                  <span className="text-[13px] text-fg-3 tabular-nums flex-shrink-0">
                     {fmtUsd(r.costEstimate)}
                   </span>
                 </div>
               ))
             ) : (
-              <div className="px-4 py-4 text-center text-[12px] text-fg-3">No runs yet.</div>
+              <div className="px-4 py-4 text-center text-[14px] text-fg-3">No runs yet.</div>
             )}
           </div>
         </div>

@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { InstrumentTypeIcon } from "@/components/ui/instrument-type-icon";
-import { STATUSES, ENTRY_TYPES } from "@/lib/constants";
+import { ENTRY_TYPES } from "@/lib/constants";
 import { formatDate, relativeTime } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
 import { Flag, ArrowUp, ArrowDown, SearchX } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type SortKey = "type" | "jurisdiction" | "name" | "parent" | "status" | "impact" | "next";
 type SortDir = "asc" | "desc";
@@ -45,7 +46,6 @@ interface EntriesGridProps {
 }
 
 export function EntriesGrid({ entries }: EntriesGridProps) {
-  const router = useRouter();
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -84,7 +84,8 @@ export function EntriesGrid({ entries }: EntriesGridProps) {
 
   return (
     <div className="overflow-x-auto rounded-xl border border-border anim-enter">
-      <table className="w-full text-[12px]">
+      <table className="w-full text-[14px]">
+        <caption className="sr-only">Tracker records. Use the column buttons to change sorting.</caption>
         <thead className="bg-surface/60 border-b border-border">
           <tr>
             <Th label="Type" sortKey="type" current={sortKey} dir={sortDir} onSort={handleSort} />
@@ -98,35 +99,39 @@ export function EntriesGrid({ entries }: EntriesGridProps) {
         </thead>
         <tbody>
           {rows.map((entry) => {
-            const statusInfo = STATUSES.find((s) => s.value === entry.status);
             return (
-              <tr
-                key={entry.id}
-                onClick={() => router.push(`/tracker/${entry.id}`)}
-                className="border-b border-border last:border-b-0 cursor-pointer transition-colors hover:bg-hover"
-              >
-                <td className="px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3 whitespace-nowrap">
+              <tr key={entry.id} className="border-b border-border last:border-b-0 transition-colors hover:bg-hover">
+                <td className="px-3 py-3 text-[14px] text-fg-3 whitespace-nowrap">
                   <span className="inline-flex items-center gap-1.5">
                     <InstrumentTypeIcon type={entry.type} className="w-3.5 h-3.5" title={typeLabel(entry.type)} />
                     {typeLabel(entry.type)}
                   </span>
                 </td>
-                <td className="px-3 py-2.5 whitespace-nowrap">
+                <td className="px-3 py-3 whitespace-nowrap">
                   <JurisdictionBadge code={entry.jurisdiction} />
                 </td>
-                <td className="px-3 py-2.5 max-w-[320px]">
+                <td className="px-3 py-3 max-w-[320px]">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-fg truncate">{entry.shortName}</span>
+                    <Link
+                      href={`/tracker/${entry.id}`}
+                      className="inline-flex min-h-11 items-center truncate font-medium text-fg underline-offset-4 hover:text-accent-text hover:underline"
+                    >
+                      {entry.shortName}
+                    </Link>
                     {entry.flagged && (
-                      <Flag
-                        className="w-3 h-3 flex-shrink-0"
-                        style={{ color: "var(--amber)" }}
-                        fill="currentColor"
-                      />
+                      <span className="inline-flex items-center" title="Flagged">
+                        <Flag
+                          className="w-4 h-4 flex-shrink-0"
+                          style={{ color: "var(--amber)" }}
+                          fill="currentColor"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">Flagged</span>
+                      </span>
                     )}
                   </div>
                 </td>
-                <td className="px-3 py-2.5 max-w-[200px]">
+                <td className="px-3 py-3 max-w-[200px]">
                   {entry.parentShortName ? (
                     <span className="text-fg-3 truncate block" title={entry.parentShortName}>
                       {entry.parentShortName}
@@ -135,20 +140,15 @@ export function EntriesGrid({ entries }: EntriesGridProps) {
                     <span className="text-fg-3 opacity-30">—</span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 whitespace-nowrap">
-                  <span
-                    className="font-mono text-[10px] uppercase tracking-[0.04em] font-medium"
-                    style={{ color: statusInfo?.color || "var(--fg-3)" }}
-                  >
-                    {statusInfo?.label || entry.status}
-                  </span>
+                <td className="px-3 py-3 whitespace-nowrap">
+                  <StatusBadge status={entry.status} />
                 </td>
-                <td className="px-3 py-2.5">
+                <td className="px-3 py-3">
                   <div className="flex justify-center">
                     <ImpactIndicator score={entry.impactScore} />
                   </div>
                 </td>
-                <td className="px-3 py-2.5 text-right font-mono text-[11px] text-fg-3 tabular-nums whitespace-nowrap">
+                <td className="px-3 py-3 text-right text-[14px] text-fg-3 tabular-nums whitespace-nowrap">
                   {entry.nextKeyDate ? formatDate(entry.nextKeyDate) : relativeTime(entry.updatedAt)}
                 </td>
               </tr>
@@ -180,12 +180,17 @@ function Th({
     align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
   return (
     <th
-      onClick={() => onSort(sortKey)}
-      className={`px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.06em] font-semibold cursor-pointer select-none transition-colors hover:text-fg ${alignClass} ${
+      scope="col"
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      className={`px-3 py-1 text-[14px] font-semibold ${alignClass} ${
         active ? "text-fg" : "text-fg-3"
       }`}
     >
-      <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className="inline-flex min-h-11 items-center gap-1 rounded-md px-1 transition-colors hover:bg-hover hover:text-fg"
+      >
         {label}
         {active &&
           (dir === "asc" ? (
@@ -193,7 +198,7 @@ function Th({
           ) : (
             <ArrowDown className="w-3 h-3" />
           ))}
-      </span>
+      </button>
     </th>
   );
 }

@@ -11,7 +11,7 @@ import type { KeyDate } from "@/lib/types";
 // Extract dated milestones (commencement, application, transition ends,
 // consultation windows) from an entry's source documents and merge them into
 // keyDates. Existing dates win on conflict; the deadlines table re-syncs so
-// Horizon picks the new dates up immediately.
+// Tracker deadlines pick the new dates up immediately.
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

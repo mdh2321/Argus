@@ -3,29 +3,16 @@
 import Link from "next/link";
 import { use } from "react";
 import { useDigestIssue } from "@/hooks/use-digest";
-import { useHorizon } from "@/hooks/use-horizon";
 import { getFlag, getJurisdictionName } from "@/lib/digest-utils";
 import { StoryBlock } from "@/components/digest/story-block";
 import { CopyButton } from "@/components/digest/copy-button";
-import { Loader2, Telescope, ArrowRight } from "lucide-react";
+import { CalendarClock, Loader2, ArrowRight } from "lucide-react";
 
 export default function DigestIssuePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { data, isLoading } = useDigestIssue(slug);
-  const { data: horizonData } = useHorizon();
   const issue = data?.issue;
   const stories = data?.stories || [];
-
-  // The issue links into live surfaces instead of re-synthesizing them: the
-  // old "regulatory radar" section is now a pointer at the Horizon page.
-  // Anchored on the API's `today` so render stays pure.
-  const horizonToday = horizonData?.today ? new Date(horizonData.today).getTime() : null;
-  const horizonNext90 = horizonToday === null
-    ? 0
-    : (horizonData?.items || []).filter((item) => {
-        const days = (new Date(item.date).getTime() - horizonToday) / 86400000;
-        return days >= 0 && days <= 90;
-      }).length;
 
   if (isLoading) {
     return (
@@ -126,20 +113,18 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
         </section>
       )}
 
-      {/* Live-surface pointer — replaces the old generated "regulatory radar" */}
-      {horizonNext90 > 0 && (
-        <Link
-          href="/tracker/horizon"
-          className="group mb-10 flex items-center gap-3 rounded-xl bg-surface px-5 py-3.5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
-        >
-          <Telescope className="h-4 w-4 flex-shrink-0" style={{ color: "var(--accent)" }} />
-          <span className="text-[14px] text-fg-2">
-            <span className="font-semibold text-fg">{horizonNext90} key date{horizonNext90 === 1 ? "" : "s"}</span>{" "}
-            in the next 90 days on the live Horizon
-          </span>
-          <ArrowRight className="ml-auto h-4 w-4 text-fg-3 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      )}
+      {/* Live-surface pointer — upcoming lifecycle work stays in Tracker. */}
+      <Link
+        href="/tracker?lifecycle=upcoming"
+        className="group mb-10 flex items-center gap-3 rounded-xl bg-surface px-5 py-3.5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
+      >
+        <CalendarClock className="h-4 w-4 flex-shrink-0" style={{ color: "var(--accent)" }} />
+        <span className="text-[14px] text-fg-2">
+          <span className="font-semibold text-fg">Review upcoming legislation</span>{" "}
+          in the Tracker library
+        </span>
+        <ArrowRight className="ml-auto h-4 w-4 text-fg-3 transition-transform group-hover:translate-x-0.5" />
+      </Link>
 
       {/* Table of Contents — follows the grouped + impact-sorted render order */}
       <section className="mb-10 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
@@ -181,4 +166,3 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
     </div>
   );
 }
-

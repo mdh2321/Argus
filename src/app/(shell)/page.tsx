@@ -170,10 +170,10 @@ export default function DashboardPage() {
             <h2 className="text-[13px] font-semibold text-fg uppercase tracking-[0.04em] font-mono">Upcoming Dates</h2>
           </div>
           <Link
-            href="/tracker/horizon"
+            href="/tracker?lifecycle=upcoming"
             className="font-mono text-[11px] tracking-[0.04em] uppercase text-accent-text hover:text-accent flex items-center gap-1.5 transition-colors"
           >
-            Horizon <ArrowRight className="w-3 h-3" />
+            Upcoming <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
         {upcomingDates.length > 0 ? (

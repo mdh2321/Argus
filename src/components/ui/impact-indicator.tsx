@@ -17,13 +17,19 @@ export function ImpactIndicator({
   score: number | null;
   showLabel?: boolean;
 }) {
-  if (!score) return <span className="text-fg-3 text-[11px]">--</span>;
+  if (!score) {
+    return (
+      <span className="text-[14px] text-fg-3" aria-label="Impact not assessed">
+        Not rated
+      </span>
+    );
+  }
 
   const color = COLORS[score] || "var(--fg-3)";
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex gap-[2px] items-end">
+    <div className="flex items-center gap-2" role="img" aria-label={`Impact: ${IMPACT_LABELS[score]} (${score} of 5)`}>
+      <div className="flex gap-[3px] items-end" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
@@ -36,7 +42,7 @@ export function ImpactIndicator({
         ))}
       </div>
       {showLabel && (
-        <span className="font-mono text-[10px] tracking-[0.04em] uppercase font-medium" style={{ color }}>
+        <span className="text-[14px] font-medium" style={{ color }} aria-hidden="true">
           {IMPACT_LABELS[score]}
         </span>
       )}

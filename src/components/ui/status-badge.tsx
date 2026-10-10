@@ -5,8 +5,8 @@ import { STATUSES } from "@/lib/constants";
 export function StatusBadge({ status }: { status: string }) {
   const info = STATUSES.find((s) => s.value === status);
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-[3px] font-mono text-[10px] tracking-[0.04em] uppercase font-medium st-${status}`}>
-      <span className="w-[5px] h-[5px] rounded-full bg-current opacity-60" />
+    <span className={`inline-flex min-h-[30px] items-center gap-2 rounded-full px-2.5 py-1 text-[14px] font-medium st-${status}`}>
+      <span className="h-2 w-2 rounded-full border-2 border-current" aria-hidden="true" />
       {info?.label || status}
     </span>
   );

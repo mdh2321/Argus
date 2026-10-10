@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { JurisdictionBadge } from "@/components/ui/jurisdiction-badge";
 import { ImpactIndicator } from "@/components/ui/impact-indicator";
-import { STATUSES } from "@/lib/constants";
 import { formatDate, relativeTime } from "@/lib/utils";
 import type { Entry } from "@/lib/types";
 import { Flag, Clock, CornerDownRight, Sparkles, ShieldAlert, Compass, SearchX } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type LifecycleStage = "horizon" | "active" | "archive";
 
@@ -111,7 +111,7 @@ export function EntriesKanban({ entries }: EntriesKanbanProps) {
       {COLUMNS.map(({ stage, label, description, Icon }) => {
         const items = grouped[stage];
         return (
-          <div
+          <section
             key={stage}
             className="flex flex-col rounded-2xl border border-border bg-surface/40 min-h-[280px]"
           >
@@ -119,31 +119,33 @@ export function EntriesKanban({ entries }: EntriesKanbanProps) {
             <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2 min-w-0">
                 <Icon className="w-3.5 h-3.5 flex-shrink-0 text-fg-3" />
-                <span className="font-mono text-[11px] uppercase tracking-[0.06em] font-semibold text-fg-2">
+                <h2 className="text-[16px] font-semibold text-fg-2">
                   {label}
-                </span>
-                <span className="font-mono text-[10px] text-fg-3 tabular-nums">
-                  {items.length}
+                </h2>
+                <span className="inline-grid h-7 min-w-7 place-items-center rounded-full border border-border px-1 text-[14px] text-fg-3 tabular-nums">
+                  <span className="sr-only">Records: </span>{items.length}
                 </span>
               </div>
             </div>
-            <p className="px-4 pt-2 pb-1 text-[10px] text-fg-3 leading-snug">
+            <p className="px-4 pt-3 pb-1 text-[14px] text-fg-3 leading-snug">
               {description}
             </p>
 
             {/* Cards */}
-            <div className="flex-1 flex flex-col gap-2 p-2">
+            <ul className="flex-1 flex flex-col gap-2 p-2">
               {items.length === 0 ? (
-                <div className="px-2 py-6 text-center text-[11px] text-fg-3">
+                <li className="px-2 py-6 text-center text-[14px] text-fg-3">
                   Nothing here
-                </div>
+                </li>
               ) : (
                 items.map((entry) => (
-                  <KanbanCard key={entry.id} entry={entry} />
+                  <li key={entry.id}>
+                    <KanbanCard entry={entry} />
+                  </li>
                 ))
               )}
-            </div>
-          </div>
+            </ul>
+          </section>
         );
       })}
     </div>
@@ -151,36 +153,38 @@ export function EntriesKanban({ entries }: EntriesKanbanProps) {
 }
 
 function KanbanCard({ entry }: { entry: Entry }) {
-  const router = useRouter();
-  const statusInfo = STATUSES.find((s) => s.value === entry.status);
   const verb = relationshipVerb(entry.type);
 
   return (
-    <div
-      onClick={() => router.push(`/tracker/${entry.id}`)}
-      className="group relative cursor-pointer rounded-xl border border-border bg-surface px-3 py-2.5 transition-all duration-150 hover:border-fg-3 hover:shadow-[var(--shadow-card)]"
+    <Link
+      href={`/tracker/${entry.id}`}
+      className="group relative block min-h-11 rounded-xl border border-border bg-surface p-4 transition-all duration-150 hover:border-border-hover hover:shadow-[var(--shadow-card)]"
     >
       {/* Top row: jurisdiction + impact + flag */}
       <div className="flex items-center gap-2 mb-1.5">
         <JurisdictionBadge code={entry.jurisdiction} />
         <ImpactIndicator score={entry.impactScore} />
         {entry.flagged && (
-          <Flag
-            className="w-3 h-3"
-            style={{ color: "var(--amber)" }}
-            fill="currentColor"
-          />
+          <span className="inline-flex items-center" title="Flagged">
+            <Flag
+              className="w-4 h-4"
+              style={{ color: "var(--amber)" }}
+              fill="currentColor"
+              aria-hidden="true"
+            />
+            <span className="sr-only">Flagged</span>
+          </span>
         )}
       </div>
 
       {/* Title */}
-      <div className="text-[13px] font-medium text-fg group-hover:text-accent transition-colors leading-snug line-clamp-2">
+      <h3 className="text-[16px] font-semibold text-fg group-hover:text-accent-text transition-colors leading-snug line-clamp-2">
         {entry.shortName}
-      </div>
+      </h3>
 
       {/* Parent relationship badge */}
       {entry.parentShortName && (
-        <div className="mt-1.5 flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+        <div className="mt-2 flex items-center gap-1.5 text-[14px] text-fg-3">
           <CornerDownRight className="w-2.5 h-2.5" />
           <span className="truncate">
             {verb} <span className="text-fg-2">{entry.parentShortName}</span>
@@ -189,14 +193,9 @@ function KanbanCard({ entry }: { entry: Entry }) {
       )}
 
       {/* Bottom meta: status, next date */}
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span
-          className="font-mono text-[10px] uppercase tracking-[0.04em] font-medium"
-          style={{ color: statusInfo?.color || "var(--fg-3)" }}
-        >
-          {statusInfo?.label || entry.status}
-        </span>
-        <div className="flex items-center gap-1 font-mono text-[10px] text-fg-3 tabular-nums">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <StatusBadge status={entry.status} />
+        <div className="flex items-center gap-1.5 text-[14px] text-fg-3 tabular-nums">
           {entry.nextKeyDate ? (
             <>
               <Clock className="w-2.5 h-2.5" />
@@ -207,6 +206,6 @@ function KanbanCard({ entry }: { entry: Entry }) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

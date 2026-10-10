@@ -1532,7 +1532,7 @@ function RelatedEntryList({ items }: { items: RelatedEntryWithKind[] }) {
   );
 }
 
-// One-tap source-grounded date extraction (Horizon upgrade, Jul 2026): pulls
+// One-tap source-grounded date extraction: pulls
 // commencement / transition / consultation dates out of the attached source
 // documents and merges them into keyDates. Existing dates always win.
 function ExtractDatesButton({ entryId, onDone }: { entryId: string; onDone: () => void }) {

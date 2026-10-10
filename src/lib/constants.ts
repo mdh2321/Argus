@@ -1,8 +1,16 @@
+// Tracked jurisdictions. This is the single source of truth: filter bars, the
+// horizon rows, scan/capture/gap AI validation and the digest reference
+// extractor all derive their valid-code set from here. Order is display order
+// only — no consumer depends on index. "China (Mainland)" is named explicitly
+// because mainland PRC and Hong Kong SAR are separate legal systems and an
+// instrument in one says nothing about the other.
 export const JURISDICTIONS = [
   { code: "AU", name: "Australia", flag: "🇦🇺" },
   { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
   { code: "SG", name: "Singapore", flag: "🇸🇬" },
+  { code: "ID", name: "Indonesia", flag: "🇮🇩" },
   { code: "JP", name: "Japan", flag: "🇯🇵" },
+  { code: "CN", name: "China (Mainland)", flag: "🇨🇳" },
   { code: "HK", name: "Hong Kong SAR", flag: "🇭🇰" },
   { code: "IN", name: "India", flag: "🇮🇳" },
   { code: "PH", name: "Philippines", flag: "🇵🇭" },
@@ -124,7 +132,10 @@ export const RELATIONSHIP_KINDS = [
 ] as const;
 
 export const STATUSES = [
-  { value: "monitoring", label: "Monitoring", color: "#6b7280" },
+  // Legacy ingestion used `monitoring` as a fallback when lifecycle was
+  // unknown. Keep the stored value for compatibility, but present it honestly
+  // as a data-quality state rather than a legislative lifecycle stage.
+  { value: "monitoring", label: "Status Unclassified", color: "#6b7280" },
   { value: "proposed", label: "Proposed", color: "#6366f1" },
   { value: "consultation", label: "Consultation", color: "#06b6d4" },
   { value: "bill_introduced", label: "Bill Introduced", color: "#a855f7" },
@@ -134,6 +145,9 @@ export const STATUSES = [
   // commencement (staged-commencement handling).
   { value: "partially_in_force", label: "Partially In Force", color: "#84cc16" },
   { value: "in_force", label: "In Force", color: "#22c55e" },
+  // Non-legislative instruments such as regulator guidance can be operative
+  // without technically being "in force".
+  { value: "current", label: "Current", color: "#22c55e" },
   { value: "amended", label: "Amended", color: "#22c55e" },
   // An in-flight bill / amendment / consultation that was withdrawn or died
   // before commencing. Terminal — any staleness it imposed on a parent is
@@ -145,6 +159,26 @@ export const STATUSES = [
   { value: "superseded", label: "Superseded", color: "#44403c" },
   { value: "enforcement", label: "Enforcement", color: "#ef4444" },
 ] as const;
+
+// Broad lifecycle buckets used by the Tracker library. `monitoring` is
+// deliberately absent: unclassified records remain discoverable in All and
+// through the precise Status filter, but are not guessed into Live/Upcoming.
+export const LIVE_ENTRY_STATUSES = [
+  "partially_in_force",
+  "in_force",
+  "current",
+  "amended",
+  "enforcement",
+] as const;
+
+export const UPCOMING_ENTRY_STATUSES = [
+  "proposed",
+  "consultation",
+  "bill_introduced",
+  "passed",
+] as const;
+
+export type TrackerLifecycle = "all" | "live" | "upcoming";
 
 // Canonical deadline-urgency tokens (G3). Urgency is the most safety-critical
 // signal and renders across the deadlines API, horizon, dashboard, entry page

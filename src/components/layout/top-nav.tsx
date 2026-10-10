@@ -42,14 +42,15 @@ export function TopNav() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const trackerLibrary = pathname === "/tracker";
 
   const secondaryActive = secondaryLinks.some((l) => isActive(pathname, l.href));
 
   return (
-    <nav className="sticky top-0 z-50 bg-glass backdrop-blur-xl border-b border-border">
-      <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-3">
+    <nav aria-label="Primary navigation" className="sticky top-0 z-50 bg-glass backdrop-blur-xl border-b border-border">
+      <div className={`${trackerLibrary ? "max-w-[1440px]" : "max-w-5xl"} mx-auto px-4 sm:px-6 min-h-16 flex items-center justify-between gap-3`}>
         {/* Left: logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link href="/" className="flex min-h-11 items-center gap-2 flex-shrink-0" aria-label="Argus home">
           <ArgusLogo size={24} className="text-fg" />
           <span className="font-mono text-[11px] font-semibold tracking-[0.12em] uppercase text-fg">
             Argus
@@ -65,7 +66,7 @@ export function TopNav() {
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150 data-[state=open]:bg-hover ${
+                className={`inline-flex min-h-11 items-center gap-1 px-3 rounded-lg text-[14px] font-medium transition-all duration-150 data-[state=open]:bg-hover ${
                   secondaryActive
                     ? "text-fg bg-hover"
                     : "text-fg-3 hover:text-fg-2 hover:bg-hover"
@@ -86,7 +87,7 @@ export function TopNav() {
                   <DropdownMenu.Item key={link.href} asChild>
                     <Link
                       href={link.href}
-                      className={`flex items-center px-2.5 py-1.5 rounded-md font-mono text-[11px] tracking-[0.04em] uppercase cursor-pointer outline-none data-[highlighted]:bg-hover data-[highlighted]:text-fg ${
+                      className={`flex min-h-11 items-center px-3 rounded-md text-[14px] font-medium cursor-pointer data-[highlighted]:bg-hover data-[highlighted]:text-fg ${
                         isActive(pathname, link.href) ? "text-fg" : "text-fg-2"
                       }`}
                     >
@@ -137,6 +138,7 @@ export function TopNav() {
             onClick={() => setDrawerOpen((o) => !o)}
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             aria-expanded={drawerOpen}
+            aria-controls="mobile-navigation"
             className="md:hidden"
           >
             {drawerOpen ? (
@@ -150,7 +152,7 @@ export function TopNav() {
 
       {/* Mobile drawer */}
       {drawerOpen && (
-        <div className="md:hidden border-t border-border bg-glass backdrop-blur-xl anim-enter">
+        <div id="mobile-navigation" className="md:hidden border-t border-border bg-glass backdrop-blur-xl anim-enter">
           <div className="max-w-5xl mx-auto px-4 py-3 grid grid-cols-2 gap-1.5">
             {allLinks.map((link) => {
               const active = isActive(pathname, link.href);
@@ -160,7 +162,7 @@ export function TopNav() {
                   href={link.href}
                   onClick={() => setDrawerOpen(false)}
                   aria-current={active ? "page" : undefined}
-                  className={`px-3 py-2.5 rounded-lg font-mono text-[12px] font-medium tracking-[0.04em] uppercase transition-colors ${
+                  className={`inline-flex min-h-11 items-center rounded-lg px-3 text-[14px] font-medium transition-colors ${
                     active
                       ? "text-fg bg-hover"
                       : "text-fg-2 hover:text-fg hover:bg-hover"
@@ -178,7 +180,7 @@ export function TopNav() {
 }
 
 const LINK_CLASS =
-  "nav-dot inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium tracking-[0.04em] uppercase transition-all duration-150";
+  "nav-dot inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-[14px] font-medium transition-all duration-150";
 
 // A primary nav link. Digest gets a lazy hover preview of the latest issue's
 // top stories — a zero-click glance at what's new, in the spirit of
@@ -197,7 +199,7 @@ function NavPrimaryLink({ link, active }: { link: { href: string; label: string 
       <Link
         href={link.href}
         aria-current={active ? "page" : undefined}
-        className={`${LINK_CLASS} ${active ? "active text-fg bg-hover" : "text-fg-3 hover:text-fg-2 hover:bg-hover"}`}
+        className={`${LINK_CLASS} ${active ? "active text-fg shadow-[inset_0_-1px_0_var(--border-hover)]" : "text-fg-3 hover:text-fg-2 hover:bg-hover"}`}
       >
         {link.label}
       </Link>
@@ -257,7 +259,7 @@ function ProfileChip() {
     return (
       <Link
         href="/settings"
-        className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-[10px] font-medium tracking-[0.04em] uppercase text-accent-text hover:bg-hover transition-all duration-150"
+        className="hidden min-h-11 lg:inline-flex items-center gap-1.5 px-2.5 rounded-lg text-[13px] font-medium text-accent-text hover:bg-hover transition-all duration-150"
         title="Your profile shapes every output — set it up"
       >
         Set up profile →
@@ -268,7 +270,7 @@ function ProfileChip() {
   return (
     <Link
       href="/settings"
-      className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-[10px] font-medium tracking-[0.04em] uppercase text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
+      className="hidden min-h-11 lg:inline-flex items-center gap-1.5 px-2.5 rounded-lg text-[13px] font-medium text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
       title={`Argus is acting for ${companyName}${profile?.role ? ` · ${profile.role}` : ""} — click to edit profile`}
     >
       <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />

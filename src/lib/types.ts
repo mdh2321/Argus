@@ -219,7 +219,7 @@ export interface SatelliteActivity {
   line: string; // e.g. "1 bill in flight · guidance updated 3d ago"
 }
 
-// What kind of action a dated milestone demands (Horizon typing, Jul 2026):
+// What kind of action a dated milestone demands:
 //   compliance — an obligation lands: in force, applies, transition ends
 //   process    — a window to act closes: consultation, submissions, hearing
 //   watch      — an event to monitor: expected publication, decision, passage
@@ -487,6 +487,11 @@ export interface EntriesResponse {
   page: number;
   limit: number;
   totalPages: number;
+  lifecycleCounts: {
+    all: number;
+    live: number;
+    upcoming: number;
+  };
 }
 
 export interface EntryRelated {
@@ -561,31 +566,6 @@ export interface ComparisonResult {
   gaps: string; // synthesis: divergences + where jurisdictions are silent
   markdown: string; // paste-ready (built server-side from the structure)
   generatedAt: string;
-}
-
-// One future key date on an active entry, with the context the Horizon page
-// needs to render a row. labels for the same (entry, date) are merged
-// server-side into a single `label`.
-export interface HorizonItem {
-  id: string;
-  entryId: string;
-  date: string;
-  label: string;
-  shortName: string;
-  jurisdiction: string;
-  category: string;
-  status: string;
-  impactScore: number | null;
-  regulator: string | null;
-  impactOnUs: string | null;
-  impactOnCustomers: string | null;
-  whyItMatters: string | null;
-  kind: DeadlineKind;
-}
-
-export interface HorizonResponse {
-  items: HorizonItem[];
-  today: string;
 }
 
 export interface IngestRequest {

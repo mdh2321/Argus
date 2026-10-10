@@ -102,6 +102,41 @@ export const JURISDICTION_CONFIGS: JurisdictionConfig[] = [
     courtDomains: ["sc.judiciary.gov.ph", "lawphil.net"],
     searchBudget: 8,
   },
+  // CN/ID added Aug 2026. Domains resolved live when added; note CN gov sites
+  // serve on www.* with no apex A record, which Exa's domain filter handles
+  // (it matches subdomains). npc.gov.cn is the legislature — where draft and
+  // passed laws appear before regulators publish implementing measures.
+  {
+    code: "CN",
+    name: "China",
+    tier: "T2",
+    regulatorDomains: [
+      "cac.gov.cn",
+      "miit.gov.cn",
+      "samr.gov.cn",
+      "pbc.gov.cn",
+      "nfra.gov.cn",
+      "tc260.org.cn",
+      "npc.gov.cn",
+    ],
+    courtDomains: ["court.gov.cn"],
+    searchBudget: 8,
+  },
+  {
+    code: "ID",
+    name: "Indonesia",
+    tier: "T2",
+    regulatorDomains: [
+      "komdigi.go.id",
+      "ojk.go.id",
+      "bi.go.id",
+      "bssn.go.id",
+      "kemenkum.go.id",
+      "peraturan.go.id",
+    ],
+    courtDomains: ["mahkamahagung.go.id", "mkri.id"],
+    searchBudget: 8,
+  },
 ];
 
 export function getJurisdictionConfig(code: string): JurisdictionConfig | undefined {
@@ -137,6 +172,8 @@ export const KEY_REGULATORS: Record<string, string[]> = {
   HK: ["PCPD", "HKMA", "SFC"],
   IN: ["MeitY", "RBI", "CERT-In", "SEBI"],
   PH: ["NPC", "BSP", "DICT"],
+  CN: ["CAC", "MIIT", "SAMR", "PBOC"],
+  ID: ["Komdigi", "OJK", "BSSN", "Bank Indonesia"],
 };
 
 export const TIER_1_CODES = JURISDICTION_CONFIGS.filter((j) => j.tier === "T1").map((j) => j.code);
@@ -170,7 +207,7 @@ export type SearchTopic = (typeof SEARCH_TOPICS)[number];
 // - topical_esign_commerce:  e-signature / digital trust / contract law, unrestricted
 // - topical_cyber_platform:  cyber / platform regulation, unrestricted
 // - judicial_canonical:      court domains only, judgment-focused query
-// - native_language:         per-jurisdiction non-English pass (currently JP only)
+// - native_language:         per-jurisdiction non-English pass (JP, CN, ID)
 export type SearchProfileKind =
   | "topical_privacy_ai"
   | "topical_esign_commerce"
@@ -221,12 +258,34 @@ export const SEARCH_PROFILES: SearchProfile[] = [
 ];
 
 // Per-jurisdiction extra profiles (e.g. Japanese-language pass for JP).
+// Required wherever the regulator publishes primarily in a non-English
+// language: the English profiles above semantically miss almost everything on
+// ppc.go.jp / cac.gov.cn / komdigi.go.id, because those sites simply have no
+// English text to match against.
 export const JURISDICTION_EXTRA_PROFILES: Record<string, SearchProfile[]> = {
   JP: [
     {
       kind: "native_language",
       buildQuery: () =>
         `日本 法律 規制 個人情報保護 人工知能 電子署名 個人情報保護委員会 金融庁 経済産業省 総務省`,
+      includeDomainsOf: (j) => [...j.regulatorDomains, ...j.courtDomains],
+      numResults: 8,
+    },
+  ],
+  CN: [
+    {
+      kind: "native_language",
+      buildQuery: () =>
+        `中国 法律 法规 个人信息保护 数据安全 数据出境 人工智能 电子签名 国家网信办 工业和信息化部 市场监管总局`,
+      includeDomainsOf: (j) => [...j.regulatorDomains, ...j.courtDomains],
+      numResults: 8,
+    },
+  ],
+  ID: [
+    {
+      kind: "native_language",
+      buildQuery: () =>
+        `Indonesia peraturan undang-undang pelindungan data pribadi keamanan siber kecerdasan buatan tanda tangan elektronik Komdigi OJK BSSN`,
       includeDomainsOf: (j) => [...j.regulatorDomains, ...j.courtDomains],
       numResults: 8,
     },

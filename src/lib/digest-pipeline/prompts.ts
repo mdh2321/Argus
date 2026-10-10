@@ -161,7 +161,7 @@ Tasks:
 
 6. **Slug**: Lowercase, kebab-case version of the thematic title. Example: "ai-regulation-takes-shape".
 
-The digest is deliberately slim: executive brief + stories only. Forward-looking radar content lives on the platform's live Horizon page; cross-border and thematic synthesis lives in Signals. Do not produce radar, cross-border, scorecard, or region-insight sections.
+The digest is deliberately slim: executive brief + stories only. Forward-looking legislation lives in the Tracker's Upcoming view; cross-border and thematic synthesis lives in Signals. Do not produce radar, cross-border, scorecard, or region-insight sections.
 
 Return JSON:
 {

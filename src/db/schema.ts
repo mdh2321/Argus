@@ -2,7 +2,7 @@ import { sqliteTable, text, integer, real, type AnySQLiteColumn } from "drizzle-
 
 export const entries = sqliteTable("entries", {
   id: text("id").primaryKey(),
-  jurisdiction: text("jurisdiction").notNull(), // AU, NZ, SG, JP, HK, IN, PH
+  jurisdiction: text("jurisdiction").notNull(), // free text; tracked set in constants.JURISDICTIONS — AU, NZ, SG, ID, JP, CN, HK, IN, PH
   category: text("category").notNull(),
   type: text("type").notNull(), // legislation (Act), amending-act, bill, regulation (labelled "Subordinate legislation"), binding-guidance, interpretive-guidance, enforcement, court-decision, consultation, policy — see constants.ENTRY_TYPES / ENTRY_TYPE_GROUPS (authority derived via authorityForType)
   status: text("status").notNull(), // monitoring, proposed, consultation, bill_introduced, passed, in_force, amended, repealed, enforcement

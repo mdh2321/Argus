@@ -13,7 +13,7 @@ Impact framing throughout: effects on Docusign directly, or on Docusign via cust
 | **Dashboard** (`/`) | Top stories, signals, deadlines, stats — the daily landing view |
 | **Ask** (`/ask`) | Streamed, cited Q&A over the tracker/digest corpus (FTS5 retrieval, multi-turn) |
 | **Compare** (`/compare`) | On-demand cross-jurisdiction comparison table for any topic, grounded in the tracker; pinnable to the Shelf |
-| **Tracker** (`/tracker`) | The canonical corpus: laws, bills, regulations, binding guidance per jurisdiction, with impact lenses, sources, deadlines, relationships. `/tracker/horizon` = timeline view |
+| **Tracker** (`/tracker`) | The canonical corpus: laws, bills, regulations, and binding guidance per jurisdiction, with impact lenses, sources, deadlines, relationships, and an Upcoming lifecycle view |
 | **Digest** (`/digest`) | Weekly AI-generated issue (Exa search → pipeline → executive brief + stories), delivered via Telegram |
 | **Library** (`/library`) | Topic dossiers and the Shelf (pinned/saved artifacts) |
 | **Methodology** (`/methodology`) | How scoring/grounding works |
