@@ -11,7 +11,7 @@ import { ImpactIndicator } from "@/components/ui/impact-indicator";
 import { getFlag } from "@/lib/digest-utils";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Database, Newspaper, Radar, ChevronRight, Scale } from "lucide-react";
+import { Loader2, RefreshCw, Database, Newspaper, Radar, ChevronRight } from "lucide-react";
 
 // One topic page = a compiled dossier: synthesized explainer (stored,
 // regenerated on demand) + tracked laws, recent stories, and active signals
@@ -72,13 +72,6 @@ export default function TopicPage({ params }: { params: Promise<{ slug: string }
               getMarkdown={() => `**${topic.title} — state of play**\n\n${topic.content}`}
             />
           )}
-          <Link
-            href={`/compare?topic=${encodeURIComponent(topic.title)}`}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-[11px] font-medium text-fg-3 transition-colors hover:bg-hover hover:text-fg-2"
-          >
-            <Scale className="h-3 w-3" />
-            Compare
-          </Link>
           <button
             onClick={regenerate}
             disabled={regenerating}

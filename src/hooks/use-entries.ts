@@ -3,12 +3,12 @@
 import useSWR from "swr";
 import type { EntriesResponse, EntryDetailResponse, Entry } from "@/lib/types";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url).then((r) => { if (!r.ok) throw new Error(`Unable to load tracker records (${r.status})`); return r.json(); });
 
 export function useEntries(params?: Record<string, string>) {
   const searchParams = new URLSearchParams(params || {});
   const key = `/api/tracker/entries?${searchParams.toString()}`;
-  return useSWR<EntriesResponse>(key, fetcher);
+  return useSWR<EntriesResponse>(key, fetcher, { keepPreviousData: true });
 }
 
 export function useEntry(id: string | null) {

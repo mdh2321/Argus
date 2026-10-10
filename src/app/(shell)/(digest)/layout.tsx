@@ -6,7 +6,7 @@ const tabs = [
   { href: "/digest", label: "Latest", exact: true },
   { href: "/digest/issues", label: "Archive" },
   { href: "/digest/tags", label: "Tags" },
-  { href: "/digest/saved", label: "Saved" },
+  { href: "/saved", label: "Threads" },
 ];
 
 export default function DigestLayout({

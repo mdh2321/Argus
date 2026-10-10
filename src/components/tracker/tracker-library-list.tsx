@@ -30,9 +30,9 @@ interface TrackerLibraryListProps {
 }
 
 const BASE_GRID =
-  "grid min-w-[850px] grid-cols-[76px_minmax(300px,1fr)_148px_190px_64px] items-center gap-3";
+  "grid grid-cols-2 lg:grid-cols-[76px_minmax(180px,1fr)_120px_145px_54px] items-center gap-x-4 gap-y-3";
 const UPCOMING_GRID =
-  "grid min-w-[1040px] grid-cols-[76px_minmax(280px,1fr)_148px_172px_190px_64px] items-center gap-3";
+  "grid grid-cols-2 lg:grid-cols-[60px_minmax(180px,1fr)_115px_115px_130px_45px] items-center gap-x-3 gap-y-3";
 
 export function TrackerLibraryList({
   entries,
@@ -56,8 +56,22 @@ export function TrackerLibraryList({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <div className={`${gridClass} border-b border-border px-1 text-[11px] font-medium text-fg-3`} role="row">
+    <div>
+      <div className="flex flex-wrap items-center gap-3 border-b border-border py-3 lg:hidden">
+        <label htmlFor="tracker-sort" className="text-[12px] text-fg-3">Sort by</label>
+        <select id="tracker-sort" value={sortField} onChange={(event) => onSort(event.target.value as TrackerSortField)} className="min-h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-[14px] text-fg">
+          <option value="short_name">Legislation</option>
+          <option value="jurisdiction">Jurisdiction</option>
+          <option value="status">Status</option>
+          {showNextDate && <option value="next_key_date">Next date</option>}
+          <option value="type">Type</option>
+          <option value="impact_score">Impact</option>
+        </select>
+        <button type="button" onClick={() => onSort(sortField)} aria-label={sortOrder === "asc" ? "Sort descending" : "Sort ascending"} className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-fg-2 hover:bg-hover">
+          {sortOrder === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+        </button>
+      </div>
+      <div className={`${gridClass} hidden lg:grid border-b border-border px-3 py-2 text-[12px] font-medium text-fg-3`} role="row">
         <SortHeader
           label="Jurisdiction"
           field="jurisdiction"
@@ -144,14 +158,14 @@ function TrackerLibraryRow({
 
   return (
     <li
-      className={`${gridClass} border-b border-border px-1 transition-colors hover:bg-hover ${
-        density === "comfortable" ? "min-h-[74px] py-2.5" : "min-h-[50px] py-1.5"
+      className={`${gridClass} border-b border-border px-3 transition-colors duration-200 hover:bg-hover focus-within:bg-hover ${
+        density === "comfortable" ? "min-h-[100px] py-5" : "min-h-[64px] py-3"
       }`}
     >
-      <JurisdictionBadge code={entry.jurisdiction} />
+      <div className="order-0"><JurisdictionBadge code={entry.jurisdiction} /></div>
 
-      <div className="min-w-0">
-        <h3 className="m-0 truncate text-[14px] font-medium leading-snug text-fg">
+      <div className="order-2 col-span-2 min-w-0 lg:order-none lg:col-span-1">
+        <h3 className="m-0 text-[16px] font-medium leading-snug text-fg">
           <Link
             href={`/tracker/${entry.id}`}
             className="rounded-sm underline-offset-4 transition-colors hover:text-accent-text hover:underline"
@@ -160,17 +174,17 @@ function TrackerLibraryRow({
           </Link>
         </h3>
         {density === "comfortable" && entry.summary && (
-          <p className="mt-1 truncate text-[12px] leading-snug text-fg-2">
+          <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-fg-2">
             {entry.summary}
           </p>
         )}
         {density === "comfortable" && meta.length > 0 && (
-          <p className="mt-0.5 truncate text-[11px] text-fg-3">{meta.join(" · ")}</p>
+          <p className="mt-1 line-clamp-2 text-[12px] text-fg-3">{meta.join(" · ")}</p>
         )}
       </div>
 
       <span
-        className="inline-flex items-center gap-2 whitespace-nowrap text-[12px] font-medium"
+        className="order-1 inline-flex items-center justify-end gap-2 text-right text-[12px] font-medium lg:order-none lg:justify-start lg:text-left"
         style={{ color: status?.color ?? "var(--fg-3)" }}
       >
         <span className="h-2 w-2 rounded-full border-2 border-current" aria-hidden="true" />
@@ -178,7 +192,7 @@ function TrackerLibraryRow({
       </span>
 
       {showNextDate && (
-        <span className="min-w-0">
+        <span className="order-3 col-span-2 min-w-0 lg:order-none lg:col-span-1">
           <span className="block whitespace-nowrap text-[12px] font-medium tabular-nums text-fg">
             {formatDate(entry.nextKeyDate)}
           </span>
@@ -188,15 +202,16 @@ function TrackerLibraryRow({
         </span>
       )}
 
-      <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap text-[12px] text-fg-2">
+      <span className="order-4 inline-flex min-w-0 items-center gap-2 text-[12px] text-fg-2 lg:order-none">
         <InstrumentTypeIcon type={entry.type} tone="muted" className="h-4 w-4" />
         <span className="truncate">{instrumentTypeLabel(entry.type)}</span>
       </span>
 
       <span
-        className="whitespace-nowrap text-[12px] font-medium tabular-nums text-fg"
+        className="order-5 whitespace-nowrap text-right text-[12px] font-medium tabular-nums text-fg lg:order-none lg:text-left"
         aria-label={entry.impactScore ? `Impact ${entry.impactScore} of 5` : "Impact not assessed"}
       >
+        <span className="mr-1 text-fg-3 lg:hidden">Impact</span>
         {entry.impactScore ? `${entry.impactScore}/5` : "—"}
       </span>
     </li>

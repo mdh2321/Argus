@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { openEvidence } from "@/components/evidence/evidence-panel";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -210,13 +211,6 @@ export function CitationPopover({
   onClose: () => void;
 }) {
   const effectivePin = pin ?? (citation.pin ? { ...citation.pin, entryId: citation.id } : null);
-  const pinHref = effectivePin
-    ? `/tracker/${effectivePin.entryId}?revealDoc=${encodeURIComponent(effectivePin.sourceDocumentId)}${
-        typeof effectivePin.quoteStart === "number" && typeof effectivePin.quoteEnd === "number"
-          ? `&quoteStart=${effectivePin.quoteStart}&quoteEnd=${effectivePin.quoteEnd}`
-          : ""
-      }${effectivePin.sectionRef ? `&sectionRef=${encodeURIComponent(effectivePin.sectionRef)}` : ""}`
-    : null;
 
   return (
     <div className="absolute left-0 top-full z-30 mt-1.5 w-[340px] rounded-xl border border-border bg-surface p-3 shadow-[var(--shadow-l)]">
@@ -237,7 +231,7 @@ export function CitationPopover({
         <div className="mt-2 rounded-md border border-border bg-bg px-2.5 py-1.5">
           <div className="mb-1 inline-flex items-center gap-1 text-[10px] text-fg-3">
             <Quote className="h-2.5 w-2.5" />
-            {effectivePin.quoteVerified ? "Verified passage" : "Cited passage"}
+            {effectivePin.quoteVerified ? "Quoted passage" : "Cited passage"}
             {effectivePin.sectionRef && <span className="font-mono">· {effectivePin.sectionRef}</span>}
           </div>
           <blockquote className="border-l-2 border-accent/40 pl-2 text-[11px] italic text-fg-2">
@@ -247,11 +241,11 @@ export function CitationPopover({
       )}
 
       <div className="mt-2 flex flex-wrap gap-3">
-        {pinHref ? (
-          <Link href={pinHref} className="inline-flex items-center gap-1 text-[11px] text-accent hover:underline">
+        {effectivePin ? (
+          <button type="button" onClick={() => { openEvidence({ documentId: effectivePin.sourceDocumentId, sourceUrl: citation.externalUrl, sectionRef: effectivePin.sectionRef, quote: effectivePin.quote, quoteStart: effectivePin.quoteStart, quoteEnd: effectivePin.quoteEnd }); onClose(); }} className="inline-flex items-center gap-1 text-[13px] text-accent hover:underline">
             <ExternalLink className="h-2.5 w-2.5" />
             View passage in source
-          </Link>
+          </button>
         ) : (
           citation.kind !== "web" && (
             <Link href={citation.href} className="inline-flex items-center gap-1 text-[11px] text-accent hover:underline">
@@ -354,7 +348,13 @@ function ParagraphBlock({
             <span key={id} className="relative">
               <button
                 type="button"
-                onClick={() => setOpenId(openId === id ? null : id)}
+                onClick={() => {
+                  const pin = paragraph.pin?.entryId === id ? paragraph.pin : citation.pin;
+                  if (pin) {
+                    openEvidence({ documentId: pin.sourceDocumentId, sourceName: citation.title, sourceUrl: citation.externalUrl, sectionRef: pin.sectionRef, quote: pin.quote, quoteStart: pin.quoteStart, quoteEnd: pin.quoteEnd, claim: paragraph.text });
+                    setOpenId(null);
+                  } else setOpenId(openId === id ? null : id);
+                }}
                 className="inline-flex items-center gap-1 rounded-md border border-border bg-surface px-1.5 py-0.5 text-[10px] text-fg-3 transition-colors hover:border-border-hover hover:text-fg-2"
                 title={citation.title}
               >

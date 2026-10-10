@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url).then((r) => { if (!r.ok) throw new Error("Unable to load digest"); return r.json(); });
 
 // ── Types (matching API responses) ─────────────────────────────
 

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Activity, Loader2 } from "lucide-react";
 import { workflowLabel } from "@/lib/agent-workflows";
+import * as Popover from "@radix-ui/react-popover";
 import { relativeTime } from "@/lib/utils";
 
 // E1 — header activity + cost indicator. Polls /api/activity: shows a "running"
@@ -42,7 +43,6 @@ export function ActivityPopover() {
     refreshInterval: 15_000,
   });
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
   const prevInFlight = useRef<number | null>(null);
 
   const inFlight = data?.inFlight.length ?? 0;
@@ -56,27 +56,10 @@ export function ActivityPopover() {
     prevInFlight.current = inFlight;
   }, [inFlight]);
 
-  // Close on outside click or Escape.
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
   return (
-    <div className="relative" ref={ref}>
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
       <button
-        onClick={() => setOpen((v) => !v)}
         className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-2.5 text-fg-3 hover:text-fg-2 hover:bg-hover transition-all duration-150"
         aria-label="Activity and cost"
         aria-expanded={open}
@@ -93,8 +76,9 @@ export function ActivityPopover() {
         )}
       </button>
 
-      {open && (
-        <div id="activity-popover-content" className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-surface shadow-[var(--shadow-l)] z-[90] overflow-hidden">
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content id="activity-popover-content" side="right" align="end" sideOffset={16} className="w-80 rounded-xl border border-border bg-surface shadow-[var(--shadow-l)] z-[90] overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <div className="flex items-baseline justify-between">
               <span className="text-[14px] font-medium text-fg-3">
@@ -142,8 +126,8 @@ export function ActivityPopover() {
               <div className="px-4 py-4 text-center text-[14px] text-fg-3">No runs yet.</div>
             )}
           </div>
-        </div>
-      )}
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/layout/page-header";
 import { MessagesSquare, ArrowRight } from "lucide-react";
-import { AddToMatterButton } from "@/components/shared/add-to-matter";
 
 interface SessionSummary {
   id: string;
@@ -28,7 +27,7 @@ export default function ThreadsPage() {
     <div className="anim-enter mx-auto max-w-3xl">
       <PageHeader
         icon={MessagesSquare}
-        title="Threads"
+        title="Conversations"
         subtitle="Your past Ask Argus conversations — pick one up any time."
       />
 
@@ -41,7 +40,7 @@ export default function ThreadsPage() {
       ) : sessions.length === 0 ? (
         <EmptyState
           icon={MessagesSquare}
-          title="No threads yet"
+          title="No conversations yet"
           description="Conversations you have with Ask Argus are saved here — pick one up where you left off, any time."
         />
       ) : (
@@ -59,14 +58,6 @@ export default function ThreadsPage() {
                   {s.turns} turn{s.turns === 1 ? "" : "s"} · {relativeTime(s.updatedAt)}
                 </p>
               </Link>
-              <AddToMatterButton
-                kind="thread"
-                refId={s.id}
-                label={s.title}
-                href={`/ask?session=${s.id}`}
-                iconOnly
-                className="flex-shrink-0 p-1 text-fg-3 transition-colors hover:text-accent"
-              />
               <Link
                 href={`/ask?session=${s.id}`}
                 aria-label={`Open thread: ${s.title}`}

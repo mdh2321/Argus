@@ -128,12 +128,12 @@ export default function AutomationsPage() {
     <div className="anim-enter mx-auto max-w-3xl">
       {/* Header */}
       <div className="mb-8 flex items-end justify-between gap-4">
-        <div className="relative grid-pattern py-4">
+        <div className="py-4">
           <div className="relative z-10 flex items-center gap-2.5">
             <Cpu className="h-5 w-5" style={{ color: "var(--accent)" }} />
-            <h1 className="text-gradient text-[28px] font-bold tracking-[-0.02em]">Automations</h1>
+            <h1 className="page-title">Automations</h1>
           </div>
-          <p className="relative z-10 mt-1.5 text-[14px] text-fg-3">
+          <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-fg-3">
             The agents working in the background — what they do, when they last ran, and what they cost.
           </p>
         </div>
@@ -158,7 +158,7 @@ export default function AutomationsPage() {
                 .join(" · ")
             : "";
           return (
-            <div key={agent.workflow} className="flex flex-col rounded-xl bg-surface p-4 shadow-[var(--shadow-card)]">
+            <div key={agent.workflow} className="quiet-card flex flex-col p-6">
               <div className="flex items-start gap-3">
                 <span
                   className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
@@ -167,8 +167,8 @@ export default function AutomationsPage() {
                   <Icon className="h-4.5 w-4.5" style={{ color: agent.color }} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[15px] font-semibold text-fg">{agent.label}</h3>
-                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-fg-3">{agent.desc}</p>
+                  <h3 className="text-[18px] font-medium text-fg">{agent.label}</h3>
+                  <p className="mt-0.5 text-[15px] leading-relaxed text-fg-3">{agent.desc}</p>
                 </div>
               </div>
 

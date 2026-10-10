@@ -1,3 +1,4 @@
+import { EvidencePanel } from "@/components/evidence/evidence-panel";
 import { TopNav } from "@/components/layout/top-nav";
 import { GlobalSearch } from "@/components/shared/global-search";
 import { CaptureModal } from "@/components/shared/capture-modal";
@@ -17,6 +18,7 @@ export default function ShellLayout({
         Skip to main content
       </a>
       <TopNav />
+      <EvidencePanel />
       <GlobalSearch />
       <CaptureModal />
       <ShellMain>{children}</ShellMain>

@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import type { Signal } from "@/lib/types";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url).then((r) => { if (!r.ok) throw new Error("Unable to load signals"); return r.json(); });
 
 export function useSignals(params?: { status?: string }) {
   const searchParams = new URLSearchParams();

@@ -7,7 +7,6 @@ import { TagBadge } from "./tag-badge";
 import { StorySummary } from "./story-summary";
 import { CopyButton } from "./copy-button";
 import { StoryFollowup } from "./story-followup";
-import { AddToMatterButton } from "@/components/shared/add-to-matter";
 import { SourceFavicon } from "@/components/ui/source-favicon";
 import { ImpactGlyph } from "./impact-glyph";
 import { Clock, ChevronDown, Star, Share2, Mail, EyeOff, Loader2, RefreshCw, AlertTriangle, ThumbsUp } from "lucide-react";
@@ -27,7 +26,6 @@ function sourceTypeColor(type: string): string {
 
 export function StoryBlock({
   story,
-  issueSlug,
 }: {
   story: DigestStory;
   issueSlug?: string;
@@ -130,13 +128,12 @@ export function StoryBlock({
   return (
     <article
       id={story.id}
-      className="scroll-mt-20 cursor-pointer rounded-xl bg-surface p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
-      onClick={() => setExpanded(!expanded)}
+      className="scroll-mt-8 border-b border-border py-7"
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           {/* Headline — flush left, nothing pushing it in */}
-          <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-fg">
+          <h3 className="text-[23px] font-medium leading-snug tracking-[-0.025em] text-fg">
             {hasLink ? (
               <a
                 href={story.url!}
@@ -192,6 +189,7 @@ export function StoryBlock({
 
           {/* Expanded extras */}
           <div
+            inert={!expanded}
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
               expanded ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
             }`}
@@ -247,13 +245,6 @@ export function StoryBlock({
                 className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                <AddToMatterButton
-                  kind="story"
-                  refId={story.id}
-                  label={story.title}
-                  href={issueSlug ? `/digest/issues/${issueSlug}#${story.id}` : "/digest"}
-                  className={ghostAction}
-                />
                 <button onClick={() => generateDraft("linkedin")} disabled={drafting} className={ghostAction} title="Draft a LinkedIn post in your voice (copy-only, never auto-posted)">
                   {drafting && draftFormat === "linkedin" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Share2 className="h-3 w-3" />}
                   LinkedIn draft
@@ -354,9 +345,7 @@ export function StoryBlock({
           >
             <Star className="h-4 w-4" fill={saved ? "currentColor" : "none"} />
           </button>
-          <ChevronDown
-            className={`h-4 w-4 text-fg-3 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-          />
+          <button type="button" onClick={() => setExpanded(!expanded)} aria-expanded={expanded} aria-label={expanded ? "Collapse story" : "Expand story"} className="rounded-lg p-2 text-fg-3 hover:bg-hover"><ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} /></button>
         </div>
       </div>
     </article>

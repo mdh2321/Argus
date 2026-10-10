@@ -10,14 +10,17 @@ Impact framing throughout: effects on Docusign directly, or on Docusign via cust
 
 | Surface | What it does |
 |---|---|
-| **Dashboard** (`/`) | Top stories, signals, deadlines, stats — the daily landing view |
+| **Dashboard** (`/`) | Priority reviews, upcoming dates and concise radar signals; full context in side panels |
 | **Ask** (`/ask`) | Streamed, cited Q&A over the tracker/digest corpus (FTS5 retrieval, multi-turn) |
-| **Compare** (`/compare`) | On-demand cross-jurisdiction comparison table for any topic, grounded in the tracker; pinnable to the Shelf |
 | **Tracker** (`/tracker`) | The canonical corpus: laws, bills, regulations, and binding guidance per jurisdiction, with impact lenses, sources, deadlines, relationships, and an Upcoming lifecycle view |
 | **Digest** (`/digest`) | Weekly AI-generated issue (Exa search → pipeline → executive brief + stories), delivered via Telegram |
-| **Library** (`/library`) | Topic dossiers and the Shelf (pinned/saved artifacts) |
-| **Methodology** (`/methodology`) | How scoring/grounding works |
+| **Threads** (`/saved`) | Searchable briefings, saved answers and starred stories; links to topic dossiers and conversations |
+| **Automations** (`/automations`) | Existing background workflows, run history and costs |
 | **Settings** (`/settings`) | Profile, jurisdictions, API health |
+
+Tracker entries open in the tabbed reading view: Overview, Analysis, Timeline, Instrument and Sources. Footnotes open the shared evidence panel; exact quotes are checked against the attached snapshot before highlighting. Ambiguous or missing pinpoints are identified explicitly. The entry menu’s **Edit & manage record** opens the complete existing editor at `/tracker/[id]/legacy`; `/v2` bookmarks still work. The list retains search, filters, ordering, density and return position.
+
+Compare, Methodology and Matters pages are retired from navigation and redirect to active screens. Their APIs and stored content remain intact. Existing `/library/shelf` and `/digest/saved` bookmarks redirect to Threads.
 
 ## Stack
 

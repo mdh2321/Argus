@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { ArgusAvatar } from "@/components/ui/argus-logo";
+import { openEvidence } from "@/components/evidence/evidence-panel";
 import type {
   AskAnswerTrace,
   AskConversationalAnswer,
@@ -34,7 +36,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   ArrowRight,
-  Eye,
   ExternalLink,
   LoaderCircle,
   FileText,
@@ -203,7 +204,7 @@ async function fetchSources(q: string): Promise<AskSourceOption[]> {
     const res = await fetch(`/api/ask/sources?q=${encodeURIComponent(q)}`);
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.sources ?? []) as AskSourceOption[];
+    return ((data.sources ?? []) as AskSourceOption[]).filter(source => source.kind !== "matter");
   } catch {
     return [];
   }
@@ -512,7 +513,7 @@ export default function AskPage() {
         }),
       });
       if (!res.ok) throw new Error("pin failed");
-      toast.success("Conversation pinned to the Shelf");
+      toast.success("Conversation added to Threads");
     } catch {
       toast.error("Couldn't pin this conversation");
     } finally {
@@ -539,12 +540,12 @@ export default function AskPage() {
           ? "Ask a follow-up about this story…"
           : hasConversation
             ? "Ask a follow-up…  (use @ to add a source)"
-            : "Ask about a topic, deadline, or change — type @ to scope to specific sources…"
+            : "What would you like to understand?"
       }
     />
   );
 
-  // The Sources bar sits above the Ask card. It shows even with no sources
+  // The source selector sits above the Ask card. It shows even with no sources
   // selected so "Add sources" is always a discoverable, one-click affordance —
   // typing "@" stays as a shortcut. Hidden in News mode, where scope is fixed
   // to the story being discussed.
@@ -556,20 +557,18 @@ export default function AskPage() {
     <div className="anim-enter">
       {!hasConversation ? (
         /* ===== Hero / empty state ===== */
-        <div className="mx-auto flex min-h-[72vh] max-w-3xl flex-col items-center justify-center py-8">
-          <div className="grid-pattern relative mb-8 w-full py-6 text-center">
-            <div className="relative z-10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-accent bg-accent-bg">
-              <Eye className="h-6 w-6" style={{ color: "var(--accent)" }} />
-            </div>
-            <h1 className="text-gradient relative z-10 text-[34px] font-bold leading-tight tracking-[-0.02em]">
+        <div className="mx-auto flex min-h-[66vh] max-w-3xl flex-col items-center justify-center py-8">
+          <div className="relative mb-8 w-full py-6 text-center">
+            <div className="mx-auto mb-5 flex justify-center"><ArgusAvatar size={128} working={busy} /></div>
+            <h1 className="page-title">
               Ask Argus
             </h1>
-            <p className="relative z-10 mx-auto mt-2 max-w-xl text-[14px] leading-relaxed text-fg-3">
+            <p className="relative z-10 mx-auto mt-2 max-w-xl text-[16px] leading-relaxed text-fg-3">
               {isNews
-                ? "Chatting about a news story — quick, conversational answers grounded in the article, with live web search and checkable sources."
+                ? "Explore this story, with its sources close at hand."
                 : scopes.length > 0
-                  ? "Scoped to your selected sources — answers draw on these records, with passage-level grounding."
-                  : "Ask a legal-intelligence question and get a brief with linked citations across your tracked records. Pick a workflow below, add sources from the Sources bar (or @), or just start typing."}
+                  ? "Ask a question about your selected sources."
+                  : "Make sense of what’s changing. Follow the evidence."}
             </p>
           </div>
 
@@ -601,7 +600,7 @@ export default function AskPage() {
             </div>
           ) : (
             /* Smart starters — each nudges a different workflow */
-            <div className="mt-6 grid w-full gap-2.5 sm:grid-cols-2">
+            <div className="mt-6 grid w-full gap-3 sm:grid-cols-2">
               {STARTERS.map((starter) => (
                 <StarterCard
                   key={starter.label}
@@ -617,17 +616,17 @@ export default function AskPage() {
         /* ===== Conversation ===== */
         <div className="mx-auto max-w-3xl">
           <div className="mb-5 flex items-center gap-2.5">
-            <Eye className="h-5 w-5" style={{ color: "var(--accent)" }} />
+            <ArgusAvatar size={40} working={busy} />
             <h1 className="text-[18px] font-semibold tracking-[-0.01em] text-fg">Ask Argus</h1>
             <div className="ml-auto flex items-center gap-1.5">
               <button
                 onClick={() => void pinConversation()}
                 disabled={busy || pinningConversation}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:border-border-hover hover:text-fg-2 disabled:opacity-50"
-                title="Pin this whole conversation to the Shelf"
+                title="Save this conversation"
               >
                 <BookmarkPlus className="h-3.5 w-3.5" />
-                {pinningConversation ? "Pinning…" : "Pin"}
+                {pinningConversation ? "Saving…" : "Save"}
               </button>
               <button
                 onClick={() => setHistoryOpen(true)}
@@ -706,7 +705,7 @@ function SourceChips({
   disabled: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border-accent bg-accent-bg/40 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-2 px-1 py-2">
       <span className="font-mono text-[10px] uppercase tracking-[0.04em] text-accent">Sources</span>
       {scopes.map((scope, i) => {
         const Meta = KIND_META[scope.kind];
@@ -953,7 +952,7 @@ function Composer({
     <form
       onSubmit={onSubmit}
       className={`relative rounded-2xl border border-border bg-surface transition-shadow focus-within:border-border-accent focus-within:shadow-[var(--shadow-l)] ${
-        large ? "p-4 shadow-[var(--shadow-card)]" : "p-3.5 shadow-[var(--shadow-m)]"
+        large ? "p-6 shadow-[var(--shadow-card)]" : "p-3.5 shadow-[var(--shadow-m)]"
       }`}
     >
       {mentionQuery !== null && mentionResults.length > 0 && (
@@ -967,6 +966,7 @@ function Composer({
       )}
 
       <textarea
+        aria-label="Your question for Argus"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
@@ -1001,9 +1001,6 @@ function Composer({
             />
           )}
           <WebToggle web={web} setWeb={setWeb} disabled={busy} />
-          {large && !hideMode && (
-            <span className="hidden text-[12px] text-fg-3 sm:inline">{MODE_META[mode].blurb}</span>
-          )}
           {hideMode && (
             <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-accent">
               <Newspaper className="h-3 w-3" />
@@ -1014,7 +1011,7 @@ function Composer({
         <button
           type="submit"
           disabled={busy || !input.trim()}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-white transition-all hover:bg-accent-2 hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
+          className="argus-primary"
         >
           {busy ? (
             <>
@@ -1048,7 +1045,7 @@ function StarterCard({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="group flex items-start gap-3 rounded-2xl border border-border bg-surface p-3.5 text-left shadow-[var(--shadow-s)] transition-all hover:border-border-hover hover:shadow-[var(--shadow-m)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="group flex items-start gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-colors hover:border-border-hover hover:bg-hover disabled:opacity-50"
     >
       <span
         className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${starter.chipClass}`}
@@ -1057,7 +1054,7 @@ function StarterCard({
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="text-[12px] font-semibold text-fg">{starter.label}</span>
+          <span className="text-[15px] font-medium text-fg">{starter.label}</span>
           <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
             <ModeIcon className="h-2.5 w-2.5" />
             {MODE_META[starter.mode].label}
@@ -1233,7 +1230,6 @@ const REALM_LABEL: Record<string, string> = {
 
 function SourceRow({ index, citation }: { index: number; citation: AskArgusCitation }) {
   const external = citation.externalUrl;
-  const [pinOpen, setPinOpen] = useState(false);
   const pin = citation.pin;
   const inner = (
     <>
@@ -1267,16 +1263,6 @@ function SourceRow({ index, citation }: { index: number; citation: AskArgusCitat
     </Link>
   );
 
-  // Deep-link that opens the tracker entry and fires the reveal-source event on
-  // the pinned passage (§3.1).
-  const pinHref = pin
-    ? `${citation.href}?revealDoc=${encodeURIComponent(pin.sourceDocumentId)}${
-        typeof pin.quoteStart === "number" && typeof pin.quoteEnd === "number"
-          ? `&quoteStart=${pin.quoteStart}&quoteEnd=${pin.quoteEnd}`
-          : ""
-      }${pin.sectionRef ? `&sectionRef=${encodeURIComponent(pin.sectionRef)}` : ""}`
-    : null;
-
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-1.5">
@@ -1299,29 +1285,13 @@ function SourceRow({ index, citation }: { index: number; citation: AskArgusCitat
         <div className="ml-6">
           <button
             type="button"
-            onClick={() => setPinOpen((v) => !v)}
-            className="inline-flex items-center gap-1 text-[10px] text-fg-3 hover:text-accent transition-colors"
+            onClick={() => openEvidence({ documentId: pin.sourceDocumentId, sourceName: citation.title, sourceUrl: external, sectionRef: pin.sectionRef, quote: pin.quote, quoteStart: pin.quoteStart, quoteEnd: pin.quoteEnd })}
+            className="inline-flex items-center gap-1.5 py-1 text-[13px] text-accent-text hover:text-accent transition-colors"
           >
             <Quote className="h-2.5 w-2.5" />
-            {pin.quoteVerified ? "Verified passage" : "Cited passage"}
+            Read cited passage
             {pin.sectionRef && <span className="font-mono">· {pin.sectionRef}</span>}
           </button>
-          {pinOpen && (
-            <div className="mt-1 rounded-md border border-border bg-bg px-2.5 py-1.5">
-              <blockquote className="border-l-2 border-accent/40 pl-2 text-[11px] italic text-fg-2">
-                &ldquo;{pin.quote}&rdquo;
-              </blockquote>
-              {pinHref && (
-                <Link
-                  href={pinHref}
-                  className="mt-1 inline-flex items-center gap-1 text-[10px] text-accent hover:underline"
-                >
-                  <ExternalLink className="h-2.5 w-2.5" />
-                  View in source
-                </Link>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -1414,7 +1384,7 @@ function AnswerCard({
         body: JSON.stringify({ title: answer.query, content: askAnswerToMarkdown(answer) }),
       });
       if (!res.ok) throw new Error("pin failed");
-      toast.success("Pinned to the Shelf");
+      toast.success("Added to Threads");
     } catch {
       toast.error("Couldn't pin this answer");
     } finally {
@@ -1507,7 +1477,7 @@ function AnswerCard({
             className="inline-flex items-center gap-1.5 rounded-xl bg-accent/10 px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.04em] text-accent transition-colors hover:bg-accent/20 disabled:opacity-50"
           >
             <BookmarkPlus className="h-3.5 w-3.5" />
-            {saving ? "Pinning…" : "Pin to Shelf"}
+            {saving ? "Saving…" : "Save answer"}
           </button>
           <button
             onClick={onFork}
@@ -1553,6 +1523,7 @@ function AnswerCard({
                     >
                       Open in Argus <ArrowRight className="h-3 w-3" />
                     </Link>
+                    {citation.pin && <button type="button" className="inline-flex items-center gap-1 text-[13px] text-accent-text" onClick={() => openEvidence({ documentId: citation.pin!.sourceDocumentId, sourceName: citation.title, sourceUrl: citation.externalUrl, sectionRef: citation.pin!.sectionRef, quote: citation.pin!.quote, quoteStart: citation.pin!.quoteStart, quoteEnd: citation.pin!.quoteEnd })}><Quote size={13} />Read cited passage</button>}
                     {citation.externalUrl && (
                       <a
                         href={citation.externalUrl}

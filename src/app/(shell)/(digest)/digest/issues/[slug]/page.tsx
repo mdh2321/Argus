@@ -63,7 +63,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
         <div className="label-mono mb-2">
           apac legal digest / {issue.date}
         </div>
-        <h1 className="mb-4 text-[2rem] font-bold leading-[1.15] text-fg">
+        <h1 className="mb-4 text-[38px] font-medium leading-[1.15] tracking-[-.035em] text-fg">
           {issue.title}
         </h1>
 
@@ -84,7 +84,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       </div>
 
       {/* Synopsis */}
-      <section className="mb-8 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
+      <section className="mb-8 border-t border-border pt-6">
         <h2 className="label-mono mb-3">Synopsis</h2>
         <ul className="space-y-2">
           {issue.synopsis.map((s: string, i: number) => (
@@ -98,7 +98,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
 
       {/* Executive brief */}
       {issue.executiveBrief && (
-        <section className="mb-8 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
+        <section className="mb-8 border-t border-border pt-6">
           <h2 className="label-mono mb-3">Executive Brief</h2>
           <div className="space-y-3">
             {issue.executiveBrief
@@ -127,7 +127,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
       </Link>
 
       {/* Table of Contents — follows the grouped + impact-sorted render order */}
-      <section className="mb-10 rounded-xl bg-surface p-6 shadow-[var(--shadow-card)]">
+      <section className="mb-10 border-y border-border py-6">
         <h2 className="label-mono mb-3">Contents</h2>
         <ol className="space-y-1">
           {jurisdictionOrder.flatMap((code) => byJurisdiction[code]).map((story, i) => (
@@ -156,7 +156,7 @@ export default function DigestIssuePage({ params }: { params: Promise<{ slug: st
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-1">
             {byJurisdiction[code].map((story) => (
               <StoryBlock key={story.id} story={story} issueSlug={issue.slug} />
             ))}

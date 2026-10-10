@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { List, Plus, Rows3 } from "lucide-react";
@@ -52,7 +52,7 @@ function TrackerContent() {
   const [filters, setFilters] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     searchParams.forEach((value, key) => {
-      if (!["search", "sort", "order", "page", "limit", "lifecycle", "anchored"].includes(key)) {
+      if (!["search", "sort", "order", "page", "limit", "lifecycle", "anchored", "density"].includes(key)) {
         initial[key] = value;
       }
     });
@@ -60,7 +60,7 @@ function TrackerContent() {
   });
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [lifecycle, setLifecycle] = useState<TrackerLifecycle>(initialLifecycle);
-  const [density, setDensity] = useState<Density>("comfortable");
+  const [density, setDensity] = useState<Density>(searchParams.get("density") === "compact" ? "compact" : "comfortable");
   const [sortField, setSortField] = useState<TrackerSortField>(initialSort);
   const [sortOrder, setSortOrder] = useState<SortOrder>(
     searchParams.get("order") === "desc" ? "desc" : "asc"
@@ -82,7 +82,49 @@ function TrackerContent() {
     if (!params[key]) delete params[key];
   });
 
-  const { data, isLoading } = useEntries(params);
+  const { data, isLoading, error } = useEntries(params);
+
+  const viewParams = new URLSearchParams(params);
+  viewParams.delete("limit");
+  if (density === "compact") viewParams.set("density", "compact");
+  const viewUrl = `/tracker?${viewParams.toString()}`;
+  const restored = useRef(false);
+
+  useEffect(() => {
+    if (`${window.location.pathname}${window.location.search}` !== viewUrl) {
+      window.history.replaceState(null, "", viewUrl);
+    }
+    sessionStorage.setItem("argus:tracker-return", viewUrl);
+  }, [viewUrl]);
+
+  useEffect(() => {
+    if (!data || isLoading || restored.current) return;
+    restored.current = true;
+    const saved = sessionStorage.getItem("argus:tracker-scroll");
+    if (!saved) return;
+    try {
+      const position = JSON.parse(saved);
+      if (position.url === viewUrl && Number.isFinite(position.y)) {
+        requestAnimationFrame(() => window.scrollTo({ top: position.y, behavior: "instant" }));
+      }
+    } catch { /* An expired view state should never block the list. */ }
+  }, [data, isLoading, viewUrl]);
+
+  useEffect(() => {
+    const restoreFromUrl = () => {
+      const p = new URLSearchParams(window.location.search);
+      const next: Record<string,string> = {};
+      p.forEach((value, key) => { if (!["search", "sort", "order", "page", "limit", "lifecycle", "anchored", "density"].includes(key)) next[key] = value; });
+      setFilters(next); setSearch(p.get("search") || "");
+      const life = parseLifecycle(p.get("lifecycle"));
+      setLifecycle(life); setSortField(parseSortField(p.get("sort")) ?? (life === "upcoming" ? "next_key_date" : "short_name"));
+      setSortOrder(p.get("order") === "desc" ? "desc" : "asc");
+      setPage(Math.max(1, parseInt(p.get("page") || "1", 10) || 1));
+      setDensity(p.get("density") === "compact" ? "compact" : "comfortable");
+    };
+    window.addEventListener("popstate", restoreFromUrl);
+    return () => window.removeEventListener("popstate", restoreFromUrl);
+  }, []);
 
   const changeLifecycle = useCallback((next: TrackerLifecycle) => {
     setLifecycle(next);
@@ -132,10 +174,15 @@ function TrackerContent() {
   const counts = data?.lifecycleCounts ?? { all: 0, live: 0, upcoming: 0 };
 
   return (
-    <div className="anim-enter">
-      <header className="flex items-center justify-between gap-4 pb-4">
+    <div className="anim-enter" onClickCapture={event => {
+      const link = (event.target as HTMLElement).closest("a");
+      if (link?.getAttribute("href")?.startsWith("/tracker/")) {
+        sessionStorage.setItem("argus:tracker-scroll", JSON.stringify({ url: viewUrl, y: window.scrollY }));
+      }
+    }}>
+      <header className="flex items-center justify-between gap-4 pb-8">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.03em] text-fg">
+          <h1 className="text-[36px] sm:text-[44px] font-medium leading-tight tracking-[-0.04em] text-fg">
             Tracker
           </h1>
           <span className="text-[12px] tabular-nums text-fg-3">
@@ -162,9 +209,9 @@ function TrackerContent() {
         searchValue={search}
       />
 
-      <section className="mt-3" aria-labelledby="tracker-library-heading" aria-busy={isLoading}>
+      <section className="mt-6" aria-labelledby="tracker-library-heading" aria-busy={isLoading}>
         <h2 id="tracker-library-heading" className="sr-only">Legislation library</h2>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div className="flex flex-wrap items-center gap-3">
             <fieldset className="inline-flex rounded-lg border border-border bg-hover p-0.5">
               <legend className="sr-only">Lifecycle</legend>
@@ -213,8 +260,13 @@ function TrackerContent() {
           </fieldset>
         </div>
 
+        {error && (
+          <p role="alert" className="mt-4 rounded-xl border border-red/30 bg-red-bg px-4 py-3 text-[14px] text-red-text">
+            Couldn’t update records. {data ? "Showing the previous results. " : ""}Try refreshing the page.
+          </p>
+        )}
         <div>
-          {isLoading ? (
+          {isLoading && !data ? (
             <div className="mt-3" role="status" aria-label="Loading tracker records">
               <SkeletonList rows={8} />
             </div>
@@ -239,7 +291,7 @@ function TrackerContent() {
               <button
                 type="button"
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
-                disabled={page === 1}
+                disabled={isLoading || page === 1}
                 className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-[12px] font-medium text-fg-2 transition-colors hover:bg-hover hover:text-fg disabled:opacity-40"
               >
                 Previous
@@ -247,7 +299,7 @@ function TrackerContent() {
               <button
                 type="button"
                 onClick={() => setPage((current) => Math.min(data.totalPages, current + 1))}
-                disabled={page === data.totalPages}
+                disabled={isLoading || page === data.totalPages}
                 className="inline-flex min-h-9 items-center rounded-lg border border-border px-3 text-[12px] font-medium text-fg-2 transition-colors hover:bg-hover hover:text-fg disabled:opacity-40"
               >
                 Next

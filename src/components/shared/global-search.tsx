@@ -56,15 +56,15 @@ const KIND_META: Record<SearchItem["kind"], { heading: string; icon: LucideIcon 
 const KIND_ORDER: SearchItem["kind"][] = ["entry", "story", "knowledge", "signal", "regulator", "tag"];
 
 const NAV_ITEMS = [
-  { label: "Dashboard", path: "/" },
+  { label: "Overview", path: "/" },
   { label: "Ask", path: "/ask" },
   { label: "Tracker", path: "/tracker" },
   { label: "Tracker · Upcoming", path: "/tracker?lifecycle=upcoming" },
   { label: "Digest", path: "/digest" },
   { label: "All Digest Issues", path: "/digest/issues" },
-  { label: "Library · Topics", path: "/library" },
-  { label: "Library · Shelf", path: "/library/shelf" },
-  { label: "Methodology", path: "/methodology" },
+  { label: "Topics", path: "/library" },
+  { label: "Threads", path: "/saved" },
+  { label: "Automations", path: "/automations" },
   { label: "Settings", path: "/settings" },
 ];
 

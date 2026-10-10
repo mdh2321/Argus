@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useDigestIssues, type DigestStory } from "@/hooks/use-digest";
-import { IssueCardCompact } from "@/components/digest/issue-card";
-import { StoryFeedCard } from "@/components/digest/story-feed-card";
+import { StoryRow } from "@/components/digest/story-row";
 import { DigestSearchDialog } from "@/components/digest/search-dialog";
 import { GapNudge } from "@/components/digest/gap-nudge";
 import { getFlag } from "@/lib/digest-utils";
@@ -25,58 +24,35 @@ function rankStories(stories: DigestStory[]): DigestStory[] {
 export default function DigestPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [jur, setJur] = useState<string | null>(null);
-  const { data, isLoading } = useDigestIssues({ limit: 7 });
+  const { data, isLoading, error } = useDigestIssues({ limit: 7 });
   const issues = data?.issues || [];
   const latest = issues[0];
   const recent = issues.slice(1);
 
-  const ranked = useMemo(() => rankStories(latest?.stories || []), [latest]);
+  const ranked = rankStories(latest?.stories || []);
 
   // Jurisdiction filter tabs — only the ones actually present in this issue.
-  const jurisdictions = useMemo(() => {
-    const seen = new Set<string>();
-    for (const s of ranked) if (s.jurisdictionCode) seen.add(s.jurisdictionCode);
-    return [...seen];
-  }, [ranked]);
+  const jurisdictions = [...new Set(ranked.map(s => s.jurisdictionCode).filter((code): code is string => !!code))];
 
   const filtered = jur ? ranked.filter((s) => s.jurisdictionCode === jur) : ranked;
-  const [hero, ...rest] = filtered;
+
 
   return (
     <>
       <div className="anim-enter">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div className="relative grid-pattern py-4">
-            <div className="relative z-10 flex items-center gap-2.5">
-              <BookOpen className="h-5 w-5" style={{ color: "var(--purple)" }} />
-              <h1 className="text-gradient text-[28px] font-bold tracking-[-0.02em]">Digest</h1>
-            </div>
-            {latest ? (
-              <p className="relative z-10 mt-1.5 font-mono text-[12px] text-fg-3">
-                {latest.weekOf} &middot; {latest.storyCount} stories &middot; {latest.jurisdictionCount} jurisdictions &middot; {latest.readTime} min read
-              </p>
-            ) : (
-              <p className="relative z-10 mt-1.5 text-[14px] text-fg-3">Weekly intelligence for APAC tech law</p>
-            )}
-          </div>
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="flex h-8 flex-shrink-0 items-center gap-2 rounded-lg border border-border bg-transparent px-3 text-[13px] text-fg-3 transition-colors hover:border-border-hover hover:text-fg-2"
-          >
-            <Search className="h-3.5 w-3.5" />
-            Search
-            <kbd className="rounded bg-hover px-1.5 py-0.5 font-mono text-[10px] text-fg-3">&#x2318;K</kbd>
-          </button>
-        </div>
+        <header className="mb-9 flex items-start justify-between gap-5">
+          <div><p className="page-kicker mb-3">The intelligence briefing</p><h1 className="page-title">Digest</h1><p className="mt-3 text-[16px] text-fg-3">{latest ? `${latest.weekOf} · ${latest.storyCount} stories · ${latest.readTime} min read` : "The developments worth your attention."}</p></div>
+          <button onClick={() => setSearchOpen(true)} className="argus-secondary"><Search size={16} />Search issues</button>
+        </header>
 
+        {error && <p role="alert" className="mb-5 text-red-text">The digest couldn’t be loaded. Try refreshing.</p>}
         {isLoading ? (
           <SkeletonCards count={4} />
         ) : !latest ? (
           <EmptyState
             icon={BookOpen}
             title="No digest issues yet"
-            description="The weekly digest generates automatically each morning. Run one now with npm run digest:ensure."
+            description="Your published briefings will appear here."
           />
         ) : (
           <>
@@ -95,25 +71,10 @@ export default function DigestPage() {
               </div>
             )}
 
-            {/* Hero + grid feed */}
-            {hero && (
-              <section className="mb-8">
-                <StoryFeedCard story={hero} issueSlug={latest.slug} hero />
-                {rest.length > 0 && (
-                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 stagger">
-                    {rest.map((story) => (
-                      <StoryFeedCard key={story.id} story={story} issueSlug={latest.slug} />
-                    ))}
-                  </div>
-                )}
-                <Link
-                  href={`/digest/issues/${latest.slug}`}
-                  className="mt-5 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.04em] text-accent-text transition-colors hover:text-accent"
-                >
-                  Read the full issue <ArrowRight className="h-3 w-3" />
-                </Link>
-              </section>
-            )}
+            <section className="mb-8 border-t border-border">
+              {filtered.map(story => <StoryRow key={story.id} story={story} issueSlug={latest.slug} />)}
+              <Link href={`/digest/issues/${latest.slug}`} className="argus-primary mt-7">Read the full issue<ArrowRight size={16} /></Link>
+            </section>
 
             {/* Gap suggestions: tracker entries worth adding */}
             <GapNudge />
@@ -127,9 +88,9 @@ export default function DigestPage() {
                     see all &rarr;
                   </Link>
                 </div>
-                <ul className="space-y-2 stagger">
+                <ul className="divide-y divide-border border-t border-border">
                   {recent.map((issue) => (
-                    <IssueCardCompact key={issue.slug} issue={issue} />
+                    <li key={issue.slug}><Link href={`/digest/issues/${issue.slug}`} className="group flex items-center gap-6 py-5"><span className="w-28 shrink-0 text-[13px] text-fg-3">{issue.date}</span><span className="min-w-0 flex-1 text-[17px] text-fg group-hover:text-accent-text">{issue.title}</span><span className="text-[13px] text-fg-3">{issue.storyCount} stories →</span></Link></li>
                   ))}
                 </ul>
               </section>

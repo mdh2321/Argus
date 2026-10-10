@@ -28,20 +28,20 @@ export function StoryFeedCard({
   return (
     <Link
       href={`/digest/issues/${issueSlug}#${story.id}`}
-      className="group flex flex-col rounded-xl bg-surface p-5 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-card-hover)]"
+      className="group flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-5 sm:p-6 transition-colors duration-200 hover:border-border-hover hover:bg-hover"
     >
       <h3
-        className={`font-semibold leading-snug tracking-[-0.01em] text-fg transition-colors group-hover:text-accent ${
-          hero ? "text-[22px]" : "text-[16px]"
+        className={`font-medium leading-[1.25] tracking-[-0.025em] text-fg transition-colors group-hover:text-accent-text ${
+          hero ? "text-[25px] sm:text-[29px]" : "text-[18px]"
         }`}
       >
         {story.title}
       </h3>
 
-      <div className="mt-2 flex items-center gap-2 font-mono text-[11px] text-fg-3">
+      <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-[12px] text-fg-3">
         {hasLink && <SourceFavicon url={story.url} size={14} />}
         <span className="leading-none">{getFlag(story.jurisdictionCode || "")}</span>
-        <span className="truncate">{story.source}</span>
+        <span className="min-w-0 break-words">{story.source}</span>
         <span className="opacity-50">&middot;</span>
         <span className="tnum flex-shrink-0">{dateLabel}</span>
         <span className="ml-auto flex flex-shrink-0 items-center gap-2.5">
@@ -61,7 +61,7 @@ export function StoryFeedCard({
 
       {story.summary && (
         <p
-          className={`mt-2.5 text-[13px] leading-relaxed text-fg-2 ${
+          className={`mt-4 text-[14px] leading-[1.75] text-fg-2 ${
             hero ? "line-clamp-3" : "line-clamp-2"
           }`}
         >

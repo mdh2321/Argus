@@ -6,9 +6,9 @@ import { SubNav } from "@/components/layout/sub-nav";
 // living wiki, compiled and regenerated, never hand-authored. Shelf — frozen
 // artifacts stamped with their generation date, never auto-updated.
 const tabs = [
+  { href: "/saved", label: "Threads", exact: true },
   { href: "/library", label: "Topics", exact: true },
-  { href: "/library/shelf", label: "Shelf" },
-  { href: "/library/threads", label: "Threads" },
+  { href: "/library/threads", label: "Conversations" },
 ];
 
 export default function LibraryLayout({

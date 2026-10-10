@@ -99,8 +99,8 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(o.value)}
             className={cn(
               "relative z-10 flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] px-3 py-1.5",
-              "font-mono text-[11px] font-medium uppercase tracking-[0.04em] transition-colors duration-150",
-              active ? "text-white" : "text-fg-3 hover:text-fg-2"
+              "text-[13px] font-medium transition-colors duration-150",
+              active ? "text-[var(--accent-ink)]" : "text-fg-3 hover:text-fg-2"
             )}
           >
             {o.icon}
